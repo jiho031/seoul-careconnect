@@ -1,0 +1,255 @@
+.site-footer {
+    width: 100%;
+    background: #ffffff;
+    color: #071846;
+    border-top: 1px solid rgba(174, 190, 213, 0.35);
+}
+
+.footer-inner {
+    max-width: 1920px;
+    margin: 0 auto;
+    padding: 72px 48px 34px;
+}
+
+.footer-main {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr 0.95fr 1.35fr;
+    align-items: start;
+    column-gap: 64px;
+}
+
+.footer-brand,
+.footer-column,
+.footer-notice {
+    min-height: 230px;
+}
+
+.footer-brand {
+    padding-left: 36px;
+}
+
+.footer-logo-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    margin-bottom: 24px;
+}
+
+.footer-logo {
+    display: block;
+    width: 286px;
+    height: auto;
+    object-fit: contain;
+}
+
+.footer-brand p,
+.footer-notice p {
+    margin: 0 0 15px;
+    font-size: 24px;
+    line-height: 1.32;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    color: #071846;
+}
+
+.footer-column {
+    border-left: 2px solid #b6c2d4;
+    padding-left: 78px;
+}
+
+.footer-column h2,
+.footer-notice h2 {
+    margin: 0 0 30px;
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #071846;
+}
+
+.footer-column a {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 48px;
+    margin: 0 0 7px;
+    color: #071846;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+}
+
+.footer-shortcuts a {
+    justify-content: space-between;
+    max-width: 285px;
+}
+
+.footer-shortcuts span {
+    color: #7390bd;
+    font-size: 44px;
+    line-height: 1;
+    font-weight: 300;
+    transform: translateY(-2px);
+}
+
+.footer-help svg {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    fill: none;
+    stroke: #7892bf;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.footer-notice {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 46px;
+    border-left: 2px solid #b6c2d4;
+    padding-left: 88px;
+    padding-right: 28px;
+}
+
+.footer-notice-text {
+    min-width: 0;
+}
+
+.footer-shield {
+    width: 145px;
+    flex: 0 0 145px;
+    margin-top: 74px;
+    opacity: 0.78;
+}
+
+.footer-shield svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    fill: none;
+    stroke: #9bacc8;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    border-top: 2px solid #b6c2d4;
+    margin-top: 44px;
+    padding: 27px 44px 0;
+}
+
+.footer-legal {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+}
+
+.footer-legal a {
+    color: #071846;
+    text-decoration: none;
+}
+
+.footer-legal span {
+    color: #5d6d89;
+}
+
+.footer-bottom p {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: #071846;
+}
+
+@media (max-width: 1280px) {
+    .footer-inner {
+        padding: 58px 32px 30px;
+    }
+
+    .footer-main {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 42px;
+        column-gap: 42px;
+    }
+
+    .footer-brand,
+    .footer-column,
+    .footer-notice {
+        min-height: auto;
+    }
+
+    .footer-column,
+    .footer-notice {
+        padding-left: 42px;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-inner {
+        padding: 44px 22px 28px;
+    }
+
+    .footer-main {
+        grid-template-columns: 1fr;
+        row-gap: 34px;
+    }
+
+    .footer-brand {
+        padding-left: 0;
+    }
+
+    .footer-logo {
+        width: 220px;
+    }
+
+    .footer-column,
+    .footer-notice {
+        border-left: 0;
+        border-top: 1px solid #c9d4e4;
+        padding: 28px 0 0;
+    }
+
+    .footer-column h2,
+    .footer-notice h2 {
+        font-size: 24px;
+        margin-bottom: 18px;
+    }
+
+    .footer-brand p,
+    .footer-notice p,
+    .footer-column a,
+    .footer-legal,
+    .footer-bottom p {
+        font-size: 17px;
+    }
+
+    .footer-notice {
+        display: block;
+    }
+
+    .footer-shield {
+        display: none;
+    }
+
+    .footer-bottom {
+        display: block;
+        margin-top: 34px;
+        padding: 22px 0 0;
+    }
+
+    .footer-legal {
+        gap: 18px;
+        margin-bottom: 16px;
+    }
+}

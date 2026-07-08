@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 | 서울 케어넥트</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/signup.css}" href="/css/signup.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="signup-page">
+    <section class="signup-wrap" aria-label="회원가입 화면">
+        <div class="signup-card" role="region" aria-labelledby="signupTitle">
+            <div class="signup-logo-box">
+                <img th:src="@{/images/logo-cropped.png}" src="/images/logo-cropped.png" onerror="this.onerror=null; this.src='/images/logo.png';" alt="서울 케어넥트">
+            </div>
+
+            <div class="signup-title-box">
+                <span class="signup-eyebrow">서울 복지·지원정책 신청 가이드</span>
+                <h1 id="signupTitle">회원가입</h1>
+                <p>기본 정보만 입력하고 내게 필요한 정책을 더 쉽게 찾아보세요.</p>
+            </div>
+
+            <form class="signup-form" action="#" method="post">
+                <div class="signup-row two-col">
+                    <div class="signup-field">
+                        <label for="userName">이름</label>
+                        <input id="userName" name="userName" type="text" placeholder="이름을 입력하세요" autocomplete="name">
+                    </div>
+
+                    <div class="signup-field">
+                        <label for="birthYear">출생연도</label>
+                        <input id="birthYear" name="birthYear" type="text" inputmode="numeric" placeholder="예: 1972">
+                    </div>
+                </div>
+
+                <div class="signup-field with-button">
+                    <div class="form-group form-full">
+                        <label for="email">이메일</label>
+                        <input type="email" id="email" name="email" placeholder="example@email.com">
+                    </div>
+                </div>
+
+                <div class="signup-row two-col">
+                    <div class="signup-field">
+                        <label for="password">비밀번호</label>
+                        <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" autocomplete="new-password">
+                    </div>
+
+                    <div class="signup-field">
+                        <label for="passwordConfirm">비밀번호 확인</label>
+                        <input id="passwordConfirm" name="passwordConfirm" type="password" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password">
+                    </div>
+                </div>
+
+
+
+                <div class="signup-agreement-box">
+                    <label class="signup-check all-check">
+                        <input type="checkbox">
+                        <span>전체 약관에 동의합니다.</span>
+                    </label>
+
+                    <div class="signup-agreement-list">
+                        <label class="signup-check">
+                            <input type="checkbox">
+                            <span>이용약관 동의 <em>필수</em></span>
+                        </label>
+                        <label class="signup-check">
+                            <input type="checkbox">
+                            <span>개인정보 수집 및 이용 동의 <em>필수</em></span>
+                        </label>
+                        <label class="signup-check">
+                            <input type="checkbox">
+                            <span>마감 알림 및 서비스 안내 수신 동의 <em class="choice">선택</em></span>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="signup-submit" type="button">회원가입</button>
+            </form>
+
+            <div class="signup-login-link">
+                <span>이미 계정이 있으신가요?</span>
+                <a href="/login">로그인</a>
+            </div>
+        </div>
+
+        <aside class="signup-side-panel" aria-label="회원가입 안내">
+            <span class="side-badge">처음 이용하시나요?</span>
+            <h2>가입하면 정책을<br>더 편하게 관리할 수 있어요</h2>
+            <p>관심 지역과 생애주기를 저장하면 정책 찾기, 관심 정책, 신청 준비 화면에서 더 빠르게 확인할 수 있습니다.</p>
+
+            <div class="side-feature-list">
+                <div class="side-feature-item">
+                    <span>맞춤</span>
+                    <strong>내 조건에 가까운 정책 확인</strong>
+                    <p>지역과 생애주기 기준으로 정책을 빠르게 살펴볼 수 있어요.</p>
+                </div>
+                <div class="side-feature-item">
+                    <span>저장</span>
+                    <strong>관심 정책 모아보기</strong>
+                    <p>나중에 다시 볼 정책을 마이페이지에서 관리할 수 있어요.</p>
+                </div>
+                <div class="side-feature-item">
+                    <span>준비</span>
+                    <strong>신청 체크리스트 활용</strong>
+                    <p>필요 서류와 신청 단계를 하나씩 확인할 수 있어요.</p>
+                </div>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

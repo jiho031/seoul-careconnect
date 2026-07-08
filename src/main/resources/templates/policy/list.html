@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정책 찾기 | 서울 케어넥트</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/policy-list.css}" href="/css/policy-list.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="policy-list-page">
+    <section class="policy-hero">
+        <div class="policy-container">
+            <span class="eyebrow">서울 복지·지원정책 통합 검색</span>
+            <h1>내 상황에 맞는 정책을<br>쉽게 찾아보세요</h1>
+            <p>지역, 생애주기, 분야, 지원 대상 조건을 선택하고 서울시와 자치구 정책을 한 번에 확인할 수 있습니다.</p>
+
+            <form class="search-filter-card" action="#" method="get" aria-label="정책 검색 조건">
+                <div class="policy-search-row">
+                    <label class="sr-only" for="policyKeyword">정책 검색어</label>
+                    <span class="search-icon" aria-hidden="true">
+                        <svg viewBox="0 0 28 28" focusable="false">
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <path d="M18.5 18.5L25 25"></path>
+                        </svg>
+                    </span>
+                    <input id="policyKeyword" type="search" placeholder="찾고 싶은 정책을 검색하세요. 예: 청년 월세, 출산 지원, 주거 지원">
+                    <button type="button">검색</button>
+                </div>
+
+                <div class="filter-grid">
+                    <div class="filter-field">
+                        <label for="region">지역</label>
+                        <select id="region">
+                            <option>전체</option>
+                            <option>서울시 전체</option>
+                            <option>강남구</option>
+                            <option>노원구</option>
+                            <option>동대문구</option>
+                            <option>마포구</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="lifeCycle">생애주기</label>
+                        <select id="lifeCycle">
+                            <option>전체</option>
+                            <option>청년</option>
+                            <option>중장년</option>
+                            <option>노년</option>
+                            <option>영유아</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="category">분야</label>
+                        <select id="category">
+                            <option>전체</option>
+                            <option>일자리</option>
+                            <option>주거</option>
+                            <option>생활지원</option>
+                            <option>교육</option>
+                            <option>돌봄</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="target">지원 대상</label>
+                        <select id="target">
+                            <option>전체</option>
+                            <option>청년</option>
+                            <option>중장년</option>
+                            <option>어르신</option>
+                            <option>1인가구</option>
+                            <option>저소득층</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="status">신청 상태</label>
+                        <select id="status">
+                            <option>전체</option>
+                            <option>신청 가능</option>
+                            <option>최근 등록</option>
+                            <option>마감</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="sort">정렬</label>
+                        <select id="sort">
+                            <option>마감임박순</option>
+                            <option>최신순</option>
+                            <option>인기순</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="reset-btn" type="button">초기화</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </section>
+
+    <section class="result-section">
+        <div class="policy-container">
+            <div class="result-head">
+                <div>
+                    <h2>정책 검색 결과</h2>
+                    <p>총 <strong>128</strong>개의 정책이 검색되었습니다.</p>
+                </div>
+                <div class="result-tabs" aria-label="빠른 보기">
+                    <a href="#" class="active">전체</a>
+                    <a href="#">신청 가능</a>
+                    <a href="#">최근 등록</a>
+                </div>
+            </div>
+
+            <div class="policy-card-list">
+                <article class="policy-result-card">
+                    <div class="card-top">
+                        <div class="policy-badges">
+                            <span class="badge status">신청가능</span>
+                            <span class="badge dday red">D-5</span>
+                        </div>
+                        <button class="bookmark-btn" type="button">관심 저장</button>
+                    </div>
+                    <h3><a href="#">중장년 직업역량 강화 교육</a></h3>
+                    <p class="agency">서울특별시 · 일자리정책과</p>
+                    <p class="summary">중장년층의 재취업과 직무 역량 강화를 돕기 위한 교육 지원 정책입니다.</p>
+                    <dl class="info-grid">
+                        <div>
+                            <dt>신청 기간</dt>
+                            <dd>2025.07.01 ~ 2025.07.10</dd>
+                        </div>
+                        <div>
+                            <dt>신청 방법</dt>
+                            <dd>온라인 신청</dd>
+                        </div>
+                        <div>
+                            <dt>지역</dt>
+                            <dd>서울시 전체</dd>
+                        </div>
+                    </dl>
+                    <div class="card-bottom">
+                        <div class="tags">
+                            <span>중장년</span>
+                            <span>일자리</span>
+                            <span>교육</span>
+                        </div>
+                        <a class="detail-btn" href="#">상세 보기</a>
+                    </div>
+                </article>
+
+                <article class="policy-result-card">
+                    <div class="card-top">
+                        <div class="policy-badges">
+                            <span class="badge status">신청가능</span>
+                            <span class="badge dday orange">D-9</span>
+                        </div>
+                        <button class="bookmark-btn" type="button">관심 저장</button>
+                    </div>
+                    <h3><a href="#">어르신 건강관리 지원</a></h3>
+                    <p class="agency">노원구 · 어르신복지과</p>
+                    <p class="summary">어르신의 건강 상담과 예방 관리를 지원하여 일상생활의 안정성을 높이는 정책입니다.</p>
+                    <dl class="info-grid">
+                        <div>
+                            <dt>신청 기간</dt>
+                            <dd>2025.07.03 ~ 2025.07.28</dd>
+                        </div>
+                        <div>
+                            <dt>신청 방법</dt>
+                            <dd>방문 신청</dd>
+                        </div>
+                        <div>
+                            <dt>지역</dt>
+                            <dd>노원구</dd>
+                        </div>
+                    </dl>
+                    <div class="card-bottom">
+                        <div class="tags">
+                            <span>어르신</span>
+                            <span>건강</span>
+                            <span>돌봄</span>
+                        </div>
+                        <a class="detail-btn" href="#">상세 보기</a>
+                    </div>
+                </article>
+
+                <article class="policy-result-card">
+                    <div class="card-top">
+                        <div class="policy-badges">
+                            <span class="badge status">신청가능</span>
+                            <span class="badge dday teal">D-14</span>
+                        </div>
+                        <button class="bookmark-btn" type="button">관심 저장</button>
+                    </div>
+                    <h3><a href="#">1인가구 생활지원금</a></h3>
+                    <p class="agency">동대문구 · 복지정책과</p>
+                    <p class="summary">생활 안정이 필요한 1인가구를 대상으로 생활비 부담을 줄일 수 있도록 지원합니다.</p>
+                    <dl class="info-grid">
+                        <div>
+                            <dt>신청 기간</dt>
+                            <dd>2025.07.01 ~ 2025.07.30</dd>
+                        </div>
+                        <div>
+                            <dt>신청 방법</dt>
+                            <dd>온라인 · 방문</dd>
+                        </div>
+                        <div>
+                            <dt>지역</dt>
+                            <dd>동대문구</dd>
+                        </div>
+                    </dl>
+                    <div class="card-bottom">
+                        <div class="tags">
+                            <span>1인가구</span>
+                            <span>생활지원</span>
+                            <span>저소득</span>
+                        </div>
+                        <a class="detail-btn" href="#">상세 보기</a>
+                    </div>
+                </article>
+
+                <article class="policy-result-card">
+                    <div class="card-top">
+                        <div class="policy-badges">
+                            <span class="badge status muted">최근등록</span>
+                            <span class="badge dday blue">NEW</span>
+                        </div>
+                        <button class="bookmark-btn" type="button">관심 저장</button>
+                    </div>
+                    <h3><a href="#">신혼부부 주거 지원</a></h3>
+                    <p class="agency">서울특별시 · 주거복지센터</p>
+                    <p class="summary">신혼부부의 주거비 부담을 완화하기 위해 주거 관련 상담과 지원 정보를 제공합니다.</p>
+                    <dl class="info-grid">
+                        <div>
+                            <dt>등록일</dt>
+                            <dd>2025.06.23</dd>
+                        </div>
+                        <div>
+                            <dt>신청 방법</dt>
+                            <dd>공식 사이트 확인</dd>
+                        </div>
+                        <div>
+                            <dt>지역</dt>
+                            <dd>서울시 전체</dd>
+                        </div>
+                    </dl>
+                    <div class="card-bottom">
+                        <div class="tags">
+                            <span>주거</span>
+                            <span>신혼부부</span>
+                            <span>서울시 전체</span>
+                        </div>
+                        <a class="detail-btn" href="#">상세 보기</a>
+                    </div>
+                </article>
+            </div>
+
+            <nav class="pagination" aria-label="페이지 이동">
+                <a href="#" class="disabled">이전</a>
+                <a href="#" class="active">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">다음</a>
+            </nav>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/common.js}" src="/js/common.js"></script>
+</body>
+</html>

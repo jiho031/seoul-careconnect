@@ -1,0 +1,25 @@
+<header class="site-header" th:fragment="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/" aria-label="서울 케어넥트 홈">
+      <img th:src="@{/images/logo-cropped.png}" src="/images/logo-cropped.png" alt="서울 케어넥트" onerror="this.onerror=null;this.src='/images/logo.png';">
+    </a>
+
+    <button class="nav-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="globalNav">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav-menu" id="globalNav" aria-label="주요 메뉴">
+      <a href="/policies">정책 찾기</a>
+      <a href="#">관심 정책</a>
+      <a href="#">신청 가이드</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a href="/reports" class="nav-report-button">누락 신고</a>
+      <a class="btn-login" href="/login">로그인</a>
+      <a class="btn-join" href="/signup">회원가입</a>
+    </div>
+  </div>
+</header>

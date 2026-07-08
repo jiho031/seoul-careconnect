@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 | 서울 케어넥트</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/login.css}" href="/css/login.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="login-page">
+    <section class="login-wrap" aria-label="로그인 화면">
+        <div class="login-info-panel">
+            <span class="login-eyebrow">서울 복지·지원정책 신청 가이드</span>
+            <h1>내게 필요한 정책을<br>놓치지 않도록</h1>
+            <p>서울 케어넥트에 로그인하고 관심 정책, 신청 준비 체크리스트, 마감 알림을 한 곳에서 관리해보세요.</p>
+
+            <div class="login-benefit-list">
+                <div class="login-benefit-item">
+                    <span>01</span>
+                    <div>
+                        <strong>관심 정책 저장</strong>
+                        <p>나에게 필요한 정책을 저장하고 다시 확인할 수 있어요.</p>
+                    </div>
+                </div>
+                <div class="login-benefit-item">
+                    <span>02</span>
+                    <div>
+                        <strong>신청 준비 체크</strong>
+                        <p>필요 서류와 신청 단계를 체크하면서 준비할 수 있어요.</p>
+                    </div>
+                </div>
+                <div class="login-benefit-item">
+                    <span>03</span>
+                    <div>
+                        <strong>마감 임박 확인</strong>
+                        <p>저장한 정책의 마감일을 놓치지 않도록 확인할 수 있어요.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-card" role="region" aria-labelledby="loginTitle">
+            <div class="login-logo-box">
+                <img th:src="@{/images/logo-cropped.png}" src="/images/logo-cropped.png" onerror="this.onerror=null; this.src='/images/logo.png';" alt="서울 케어넥트">
+            </div>
+
+            <div class="login-title-box">
+                <h2 id="loginTitle">로그인</h2>
+                <p>계정 정보를 입력하고 서비스를 이용해보세요.</p>
+            </div>
+
+            <form class="login-form" action="#" method="post">
+                <div class="login-field">
+                    <label for="email">이메일</label>
+                    <input id="email" name="email" type="email" placeholder="example@email.com" autocomplete="email">
+                </div>
+
+                <div class="login-field">
+                    <label for="password">비밀번호</label>
+                    <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+                </div>
+
+                <div class="login-options">
+                    <label class="remember-check">
+                        <input type="checkbox">
+                        <span>로그인 상태 유지</span>
+                    </label>
+                    <a href="#">비밀번호 찾기</a>
+                </div>
+
+                <button class="login-submit" type="button">로그인</button>
+            </form>
+
+            <div class="login-links">
+                <span>아직 계정이 없으신가요?</span>
+                <a href="/signup">회원가입</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
