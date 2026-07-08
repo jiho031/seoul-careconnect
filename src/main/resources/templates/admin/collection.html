@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울 케어넥트 관리자 - API 수집 현황</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}" href="/css/admin.css">
+    <link rel="stylesheet" th:href="@{/css/admin_collection.css}" href="/css/admin_collection.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <aside class="admin-side">
+            <p class="admin-side-title">관리자 메뉴</p>
+
+            <nav class="admin-menu">
+                <a th:href="@{/admin/dashboard}" href="/admin/dashboard">📊 대시보드</a>
+                <a class="active" th:href="@{/admin/collection}" href="/admin/collection">🔗 API 수집 현황</a>
+                <a th:href="@{/admin/policy-errors}" href="/admin/policy-errors">⚠️ 정책 오류 관리</a>
+                <a th:href="@{/admin/ai-review}" href="/admin/ai-review">🤖 AI 요약 오류 관리</a>
+                <a th:href="@{/admin/reports}" href="/admin/reports">🚨 사용자 신고 관리</a>
+                <a th:href="@{/admin/policies}" href="/admin/policies">📌 정책 목록</a>
+                <a th:href="@{/admin/policies/new}" href="/admin/policies/new">📝 수동 등록/수정</a>
+                <a th:href="@{/admin/users}" href="/admin/users">👥 회원 관리</a>
+                <a th:href="@{/admin/super}" href="/admin/super">👑 최고 관리자</a>
+            </nav>
+        </aside>
+
+        <section class="admin-content">
+            <div class="admin-head">
+                <div>
+                    <h1>API 수집 현황</h1>
+                    <p>외부 정책 API의 자동 수집 상태, 성공/실패 내역, 재수집 필요 항목을 관리합니다.</p>
+                </div>
+
+                <div class="admin-actions">
+                    <button class="admin-btn">수집 로그 다운로드</button>
+                    <button class="admin-btn primary">수동 재수집 실행</button>
+                </div>
+            </div>
+
+            <div class="admin-stat-grid">
+                <article class="admin-stat-card">
+                    <span>오늘 수집 요청</span>
+                    <strong>42건</strong>
+                    <small>전체 API 호출 기준</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>수집 성공</span>
+                    <strong>36건</strong>
+                    <small>정상 저장 완료</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>확인 필요</span>
+                    <strong>3건</strong>
+                    <small>필수값 누락 또는 데이터 이상</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>수집 실패</span>
+                    <strong>3건</strong>
+                    <small>API 오류 또는 응답 실패</small>
+                </article>
+            </div>
+
+            <div class="admin-grid-2 collection-top">
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>API 연동 상태</h2>
+                        <span class="admin-list-count">총 4개 연동</span>
+                        <button type="button" class="icon-refresh-btn" id="refreshApiStatusBtn" aria-label="API 연동 상태 새로고침">
+                            ↻
+                        </button>
+                    </div>
+
+                    <div class="api-source-list">
+                        <article class="api-source-item">
+                            <div>
+                                <strong>서울시 정책 API</strong>
+                                <p>마지막 수집: 2026.07.13 09:30</p>
+                            </div>
+                            <span class="admin-tag ok">정상</span>
+                        </article>
+
+                        <article class="api-source-item">
+                            <div>
+                                <strong>서울시50플러스 교육 API</strong>
+                                <p>마지막 수집: 2026.07.13 09:20</p>
+                            </div>
+                            <span class="admin-tag ok">정상</span>
+                        </article>
+
+                        <article class="api-source-item">
+                            <div>
+                                <strong>복지 정책 API</strong>
+                                <p>마지막 수집: 2026.07.13 08:50</p>
+                            </div>
+                            <span class="admin-tag wait">확인 필요</span>
+                        </article>
+
+                        <article class="api-source-item">
+                            <div>
+                                <strong>자치구 공고 API</strong>
+                                <p>마지막 수집: 2026.07.13 08:10</p>
+                            </div>
+                            <span class="admin-tag bad">실패</span>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>수집 처리 기준</h2>
+                        <a class="admin-link" href="#">기준 수정 ›</a>
+                    </div>
+
+                    <div class="collection-rule-list">
+                        <article class="collection-rule-item">
+                            <strong>자동 등록</strong>
+                            <p>정책명, 기관, 신청기간, 대상, 공식 URL이 정상 수집된 경우 자동 등록합니다.</p>
+                        </article>
+
+                        <article class="collection-rule-item">
+                            <strong>확인 필요</strong>
+                            <p>필수값 누락, 기간 오류, 대상 불명확, 중복 가능성이 있는 경우 관리자 확인 대상으로 분류합니다.</p>
+                        </article>
+
+                        <article class="collection-rule-item">
+                            <strong>수집 실패</strong>
+                            <p>API 응답 실패, JSON 파싱 오류, 서버 오류 발생 시 실패 로그에 기록합니다.</p>
+                        </article>
+                    </div>
+                </section>
+            </div>
+
+            <section class="admin-card">
+                <div class="admin-card-head">
+                    <h2>최근 API 수집 로그</h2>
+                    <span class="admin-list-count">최근 4건</span>
+                    <button type="button" class="icon-refresh-btn" id="refreshApiLogBtn" aria-label="최근 API 수집 로그 새로고침">
+                        ↻
+                    </button>
+                </div>
+
+                <table class="admin-table collection-table" id="apiLogTable">
+                    <thead>
+                    <tr>
+                        <th>수집 시간</th>
+                        <th>API 출처</th>
+                        <th>수집 결과</th>
+                        <th>신규 정책</th>
+                        <th>확인 필요</th>
+                        <th>실패 사유</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>2026.07.13 09:30</td>
+                        <td>서울시 정책 API</td>
+                        <td><span class="admin-tag ok">성공</span></td>
+                        <td>18건</td>
+                        <td>1건</td>
+                        <td>-</td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">상세</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>2026.07.13 09:20</td>
+                        <td>서울시50플러스 교육 API</td>
+                        <td><span class="admin-tag ok">성공</span></td>
+                        <td>12건</td>
+                        <td>0건</td>
+                        <td>-</td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">상세</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>2026.07.13 08:50</td>
+                        <td>복지 정책 API</td>
+                        <td><span class="admin-tag wait">부분 성공</span></td>
+                        <td>6건</td>
+                        <td>2건</td>
+                        <td>일부 정책 신청기간 누락</td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">확인</a>
+                                <a href="#">재수집</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>2026.07.13 08:10</td>
+                        <td>자치구 공고 API</td>
+                        <td><span class="admin-tag bad">실패</span></td>
+                        <td>0건</td>
+                        <td>0건</td>
+                        <td>API 응답 시간 초과</td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">로그</a>
+                                <a href="#">재시도</a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <div class="admin-bottom-grid collection-bottom">
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>확인 필요 항목</h2>
+                        <a class="admin-link" th:href="@{/admin/policy-errors}" href="/admin/policy-errors">오류 관리로 이동 ›</a>
+                    </div>
+
+                    <div class="collection-issue-list">
+                        <article class="collection-issue-item">
+                            <span class="admin-tag wait">필수값 누락</span>
+                            <div>
+                                <strong>중장년 직업역량 강화 교육</strong>
+                                <p>신청 마감일이 수집되지 않았습니다.</p>
+                            </div>
+                        </article>
+
+                        <article class="collection-issue-item">
+                            <span class="admin-tag bad">중복 후보</span>
+                            <div>
+                                <strong>소상공인 긴급 경영지원</strong>
+                                <p>기존 정책과 기관, 기간, 제목이 유사합니다.</p>
+                            </div>
+                        </article>
+
+                        <article class="collection-issue-item">
+                            <span class="admin-tag ai">AI 확인</span>
+                            <div>
+                                <strong>1인가구 생활지원금</strong>
+                                <p>AI 요약 생성 결과가 너무 길어 확인이 필요합니다.</p>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>다음 자동 수집 일정</h2>
+                        <a class="admin-link" href="#">스케줄 설정 ›</a>
+                    </div>
+
+                    <div class="schedule-list">
+                        <article class="schedule-item">
+                            <strong>서울시 정책 API</strong>
+                            <p>매일 09:00 / 18:00 자동 수집</p>
+                        </article>
+
+                        <article class="schedule-item">
+                            <strong>서울시50플러스 교육 API</strong>
+                            <p>매일 09:10 / 18:10 자동 수집</p>
+                        </article>
+
+                        <article class="schedule-item">
+                            <strong>복지 정책 API</strong>
+                            <p>매일 09:20 자동 수집</p>
+                        </article>
+
+                        <article class="schedule-item">
+                            <strong>자치구 공고 API</strong>
+                            <p>오류 해결 후 재수집 예정</p>
+                        </article>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/common.js}" src="/js/common.js"></script>
+
+<script>
+    const refreshApiStatusBtn = document.getElementById('refreshApiStatusBtn');
+    const refreshApiLogBtn = document.getElementById('refreshApiLogBtn');
+
+    refreshApiStatusBtn?.addEventListener('click', function () {
+        this.classList.add('loading');
+
+        setTimeout(() => {
+            this.classList.remove('loading');
+            alert('API 연동 상태 영역만 새로고침 예정');
+        }, 700);
+    });
+
+    refreshApiLogBtn?.addEventListener('click', function () {
+        this.classList.add('loading');
+
+        setTimeout(() => {
+            this.classList.remove('loading');
+            alert('최근 API 수집 로그 영역만 새로고침 예정');
+        }, 700);
+    });
+</script>
+</body>
+</html>
