@@ -25,6 +25,7 @@
                         <p>나에게 필요한 정책을 저장하고 다시 확인할 수 있어요.</p>
                     </div>
                 </div>
+
                 <div class="login-benefit-item">
                     <span>02</span>
                     <div>
@@ -32,6 +33,7 @@
                         <p>필요 서류와 신청 단계를 체크하면서 준비할 수 있어요.</p>
                     </div>
                 </div>
+
                 <div class="login-benefit-item">
                     <span>03</span>
                     <div>
@@ -44,7 +46,7 @@
 
         <div class="login-card" role="region" aria-labelledby="loginTitle">
             <div class="login-logo-box">
-                <img th:src="@{/images/logo-cropped.png}" src="/images/logo-cropped.png" onerror="this.onerror=null; this.src='/images/logo.png';" alt="서울 케어넥트">
+                <img th:src="@{/images/logo.png}" src="/images/logo.png" alt="서울 케어넥트">
             </div>
 
             <div class="login-title-box">
@@ -52,26 +54,46 @@
                 <p>계정 정보를 입력하고 서비스를 이용해보세요.</p>
             </div>
 
-            <form class="login-form" action="#" method="post">
+            <form class="login-form" th:action="@{/login}" method="post">
                 <div class="login-field">
-                    <label for="email">이메일</label>
-                    <input id="email" name="email" type="email" placeholder="example@email.com" autocomplete="email">
+                    <label for="email">이메일 <em class="required">*</em></label>
+                    <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            placeholder="example@email.com"
+                            autocomplete="email"
+                            required>
                 </div>
 
                 <div class="login-field">
-                    <label for="password">비밀번호</label>
-                    <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+                    <label for="password">비밀번호 <em class="required">*</em></label>
+                    <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            placeholder="비밀번호를 입력하세요"
+                            autocomplete="current-password"
+                            required>
+                </div>
+
+                <div class="login-error" th:if="${param.error}">
+                    이메일 또는 비밀번호가 올바르지 않습니다.
+                </div>
+
+                <div class="login-success" th:if="${param.logout}">
+                    로그아웃되었습니다.
                 </div>
 
                 <div class="login-options">
                     <label class="remember-check">
-                        <input type="checkbox">
+                        <input type="checkbox" name="remember-me">
                         <span>로그인 상태 유지</span>
                     </label>
                     <a href="#">비밀번호 찾기</a>
                 </div>
 
-                <button class="login-submit" type="button">로그인</button>
+                <button class="login-submit" type="submit">로그인</button>
             </form>
 
             <div class="login-links">
@@ -83,5 +105,30 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    const loginForm = document.querySelector(".login-form");
+    const loginBtn = document.querySelector(".login-submit");
+
+    loginBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!email) {
+            alert("이메일을 입력해주세요.");
+            return;
+        }
+
+        if (!password) {
+            alert("비밀번호를 입력해주세요.");
+            return;
+        }
+
+        loginForm.submit();
+    });
+</script>
+
 </body>
 </html>

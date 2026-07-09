@@ -1,4 +1,4 @@
-<header class="site-header" th:fragment="nav">
+<header class="site-header" th:fragment="nav" xmlns:sec="http://www.w3.org/1999/xhtml">
   <div class="nav-inner">
     <a class="brand" href="/" aria-label="서울 케어넥트 홈">
       <img th:src="@{/images/logo-cropped.png}" src="/images/logo-cropped.png" alt="서울 케어넥트" onerror="this.onerror=null;this.src='/images/logo.png';">
@@ -18,8 +18,17 @@
 
     <div class="nav-actions">
       <a href="/reports" class="nav-report-button">누락 신고</a>
-      <a class="btn-login" href="/login">로그인</a>
-      <a class="btn-join" href="/signup">회원가입</a>
+
+      <a sec:authorize="isAnonymous()" class="btn-login" href="/login">로그인</a>
+      <a sec:authorize="isAnonymous()" class="btn-join" href="/signup">회원가입</a>
+
+      <a sec:authorize="isAuthenticated()" class="btn-login" href="/mypage">마이페이지</a>
+
+      <form sec:authorize="isAuthenticated()"
+            th:action="@{/logout}"
+            method="post"
+            class="nav-logout-form">
+        <button type="submit" class="btn-join">로그아웃</button>
+      </form>
     </div>
-  </div>
 </header>

@@ -387,6 +387,19 @@ body {
     word-break: keep-all;
 }
 
+.required {
+    color: #e54848;
+    font-style: normal;
+    font-weight: 900;
+    margin-left: 3px;
+}
+
+#emailMessage{
+    margin-top:8px;
+    font-size:14px;
+    font-weight:700;
+}
+
 @media (max-width: 1080px) {
     .signup-page {
         padding: 50px 28px 70px;
