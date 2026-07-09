@@ -60,6 +60,25 @@ body {
     background: rgba(255, 255, 255, 0.11);
 }
 
+.required {
+    color: #e54848;
+    font-style: normal;
+    font-weight: 900;
+    margin-left: 3px;
+}
+
+.login-error {
+    color: #e54848;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.login-success {
+    color: #118c87;
+    font-size: 14px;
+    font-weight: 700;
+}
+
 .login-eyebrow {
     position: relative;
     z-index: 1;

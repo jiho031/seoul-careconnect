@@ -389,6 +389,26 @@ img {
   border-color: #137c79;
   transform: translateY(-1px);
 }
+
+.nav-logout-form {
+  margin: 0;
+  display: inline-flex;
+}
+
+.nav-logout-form button {
+  height: 44px;
+  min-width: 82px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #00777d;
+  color: #fff;
+  background: linear-gradient(180deg, #008e94 0%, #00757b 100%);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .nav-report-button {
     width: 100%;

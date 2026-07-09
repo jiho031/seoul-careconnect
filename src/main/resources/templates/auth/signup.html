@@ -23,34 +23,61 @@
                 <p>기본 정보만 입력하고 내게 필요한 정책을 더 쉽게 찾아보세요.</p>
             </div>
 
-            <form class="signup-form" action="#" method="post">
+            <form class="signup-form" th:action="@{/signup}" method="post">
                 <div class="signup-row two-col">
                     <div class="signup-field">
-                        <label for="userName">이름</label>
-                        <input id="userName" name="userName" type="text" placeholder="이름을 입력하세요" autocomplete="name">
+                        <label for="userName">이름 <em class="required">*</em></label>
+                        <input id="userName" name="name" type="text" placeholder="이름을 입력하세요">
                     </div>
 
                     <div class="signup-field">
-                        <label for="birthYear">출생연도</label>
+                        <label for="birthYear">출생연도 <em class="required">*</em></label>
                         <input id="birthYear" name="birthYear" type="text" inputmode="numeric" placeholder="예: 1972">
                     </div>
                 </div>
 
-                <div class="signup-field with-button">
-                    <div class="form-group form-full">
-                        <label for="email">이메일</label>
-                        <input type="email" id="email" name="email" placeholder="example@email.com">
+                <div class="signup-field">
+                    <label for="email">이메일 <em class="required">*</em></label>
+
+                    <div class="input-button-group">
+                        <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="example@email.com">
+
+                        <button type="button" id="sendEmailBtn">
+                            인증발송
+                        </button>
                     </div>
+                </div>
+
+                <div class="signup-field">
+                    <label for="verifyCode">인증번호 <em class="required">*</em></label>
+
+                    <div class="input-button-group">
+                        <input
+                                type="text"
+                                id="verifyCode"
+                                name="verifyCode"
+                                placeholder="인증번호 입력">
+
+                        <button type="button" id="checkEmailBtn">
+                            인증확인
+                        </button>
+                    </div>
+
+                    <small id="emailMessage"></small>
                 </div>
 
                 <div class="signup-row two-col">
                     <div class="signup-field">
-                        <label for="password">비밀번호</label>
+                        <label for="password">비밀번호 <em class="required">*</em></label>
                         <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" autocomplete="new-password">
                     </div>
 
                     <div class="signup-field">
-                        <label for="passwordConfirm">비밀번호 확인</label>
+                        <label for="passwordConfirm">비밀번호 확인 <em class="required">*</em></label>
                         <input id="passwordConfirm" name="passwordConfirm" type="password" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password">
                     </div>
                 </div>
@@ -59,27 +86,31 @@
 
                 <div class="signup-agreement-box">
                     <label class="signup-check all-check">
-                        <input type="checkbox">
+                        <input type="checkbox" id="agreeAll">
                         <span>전체 약관에 동의합니다.</span>
                     </label>
 
                     <div class="signup-agreement-list">
                         <label class="signup-check">
-                            <input type="checkbox">
+                            <input type="checkbox" class="agree-item required-agree" id="agreeTerms">
                             <span>이용약관 동의 <em>필수</em></span>
                         </label>
+
                         <label class="signup-check">
-                            <input type="checkbox">
+                            <input type="checkbox" class="agree-item required-agree" id="agreePrivacy">
                             <span>개인정보 수집 및 이용 동의 <em>필수</em></span>
                         </label>
+
                         <label class="signup-check">
-                            <input type="checkbox">
+                            <input type="checkbox" class="agree-item" id="agreeNotice">
                             <span>마감 알림 및 서비스 안내 수신 동의 <em class="choice">선택</em></span>
                         </label>
                     </div>
                 </div>
 
-                <button class="signup-submit" type="button">회원가입</button>
+                <button class="signup-submit" type="submit">
+                    회원가입
+                </button>
             </form>
 
             <div class="signup-login-link">
@@ -115,5 +146,119 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script>
+    const sendBtn = document.getElementById("sendEmailBtn");
+    const checkBtn = document.getElementById("checkEmailBtn");
+    const message = document.getElementById("emailMessage");
+    const signupForm = document.querySelector(".signup-form");
+
+    let emailVerified = false;
+
+    sendBtn.addEventListener("click", async () => {
+        const email = document.getElementById("email").value.trim();
+
+        if (!email) {
+            alert("이메일을 입력해주세요.");
+            return;
+        }
+
+        try {
+            const res = await fetch("/email/send", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email })
+            });
+
+            const result = await res.json();
+
+            alert(result.message);
+            message.innerText = result.message;
+            message.style.color = result.success ? "green" : "red";
+
+            if (result.success) {
+                emailVerified = false;
+            }
+
+        } catch (e) {
+            alert("인증번호 발송 중 오류가 발생했습니다.");
+        }
+    });
+
+    checkBtn.addEventListener("click", async () => {
+        const email = document.getElementById("email").value.trim();
+        const verifyCode = document.getElementById("verifyCode").value.trim();
+
+        if (!email || !verifyCode) {
+            alert("이메일과 인증번호를 입력해주세요.");
+            return;
+        }
+
+        try {
+            const res = await fetch("/email/check", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, verifyCode })
+            });
+
+            const result = await res.json();
+
+            alert(result.message);
+            message.innerText = result.message;
+            message.style.color = result.success ? "green" : "red";
+
+            emailVerified = result.success;
+
+        } catch (e) {
+            alert("인증 확인 중 오류가 발생했습니다.");
+        }
+    });
+
+    signupForm.addEventListener("submit", (event) => {
+        const name = document.getElementById("userName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const passwordConfirm = document.getElementById("passwordConfirm").value.trim();
+
+        if (!name || !email || !password || !passwordConfirm) {
+            event.preventDefault();
+            alert("필수 정보를 모두 입력해주세요.");
+            return;
+        }
+
+        if (password !== passwordConfirm) {
+            event.preventDefault();
+            alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            return;
+        }
+
+        if (!emailVerified) {
+            event.preventDefault();
+            alert("이메일 인증을 완료해주세요.");
+            return;
+        }
+
+        alert("회원가입이 되었습니다.");
+    });
+
+    const agreeAll = document.getElementById("agreeAll");
+    const agreeItems = document.querySelectorAll(".agree-item");
+    const requiredAgrees = document.querySelectorAll(".required-agree");
+
+    agreeAll.addEventListener("change", () => {
+        agreeItems.forEach((checkbox) => {
+            checkbox.checked = agreeAll.checked;
+        });
+    });
+
+    agreeItems.forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+            agreeAll.checked = Array.from(agreeItems).every((item) => item.checked);
+        });
+    });
+</script>
 </body>
 </html>
