@@ -318,7 +318,6 @@ img {
     left: 16px;
     right: 16px;
     z-index: 110;
-    display: flex;
     background: #fff;
     border: 1px solid #d7e4f0;
     box-shadow: var(--shadow);
@@ -326,6 +325,7 @@ img {
 
   body.nav-open .nav-menu {
     top: 84px;
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
@@ -334,16 +334,51 @@ img {
   }
 
   body.nav-open .nav-menu a {
+    min-height: 60px;
     padding: 18px 22px;
+    display: flex;
+    align-items: center;
     border-bottom: 1px solid #edf3f8;
   }
 
+  /* 메뉴 3개 × 60px + 시작 위치 84px */
   body.nav-open .nav-actions {
-    top: 355px;
-    justify-content: center;
+    top: 264px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
     padding: 16px;
     border-top: 0;
     border-radius: 0 0 16px 16px;
+  }
+
+  body.nav-open .nav-actions a,
+  body.nav-open .nav-actions button {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    margin: 0;
+  }
+
+  /* 누락 신고는 첫 줄 전체 사용 */
+  body.nav-open .nav-actions .nav-report-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0;
+  }
+
+  /* 로그아웃이 form 안에 있다면 */
+  body.nav-open .nav-actions form {
+    width: 100%;
+    margin: 0;
+  }
+
+  body.nav-open .nav-actions form button {
+    border: 1px solid #00777d;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #008e94 0%, #00757b 100%);
+    color: #fff;
+    font-weight: 900;
   }
 
   .footer-inner,
@@ -413,6 +448,6 @@ img {
   .nav-report-button {
     width: 100%;
     height: 44px;
-    margin-top: 8px;
+    margin: 0;
   }
 }

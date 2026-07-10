@@ -24,7 +24,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
     @Column(nullable = false, length = 50)
@@ -63,10 +63,19 @@ public class User {
         if (this.region == null) this.region = "서울";
         if (this.uiMode == null) this.uiMode = "DEFAULT";
         if (this.isActive == null) this.isActive = true;
+        if (this.provider == null) {
+            this.provider = "LOCAL";
+        }
     }
 
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @Column(nullable = false, length = 20)
+    private String provider = "LOCAL";
+
+    @Column(length = 100)
+    private String providerId;
 }
