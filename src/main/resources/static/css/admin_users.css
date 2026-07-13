@@ -1,0 +1,259 @@
+
+.user-filter {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(130px, 1fr)) 90px;
+    gap: 10px;
+}
+
+/* 회원 목록 카드 */
+.user-list-card {
+    margin-top: 16px;
+    min-height: 820px;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-refresh-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #041b4d;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-refresh-btn:hover {
+    color: #167b7e;
+}
+
+/* 회원 테이블 */
+.user-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.user-table th {
+    white-space: nowrap;
+    padding-bottom: 8px;
+}
+
+.user-table td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    vertical-align: middle;
+}
+
+/* 컬럼 너비 */
+.user-table th:nth-child(1),
+.user-table td:nth-child(1) {
+    width: 22%;
+}
+
+.user-table th:nth-child(2),
+.user-table td:nth-child(2) {
+    width: 12%;
+    text-align: center;
+}
+
+.user-table th:nth-child(3),
+.user-table td:nth-child(3) {
+    width: 9%;
+    text-align: center;
+}
+
+.user-table th:nth-child(4),
+.user-table td:nth-child(4) {
+    width: 15%;
+}
+
+.user-table th:nth-child(5),
+.user-table td:nth-child(5) {
+    width: 10%;
+    text-align: center;
+}
+
+.user-table th:nth-child(6),
+.user-table td:nth-child(6) {
+    width: 10%;
+}
+
+.user-table th:nth-child(7),
+.user-table td:nth-child(7) {
+    width: 13%;
+}
+
+.user-table th:nth-child(8),
+.user-table td:nth-child(8) {
+    width: 9%;
+    text-align: center;
+}
+
+/* 줄바꿈 정리 */
+.user-table td:nth-child(1),
+.user-table td:nth-child(4),
+.user-table td:nth-child(6),
+.user-table td:nth-child(7) {
+    white-space: normal;
+    line-height: 1.45;
+}
+
+.user-table td:nth-child(2),
+.user-table td:nth-child(3),
+.user-table td:nth-child(5),
+.user-table td:nth-child(8) {
+    white-space: nowrap;
+}
+
+/* 회원명 */
+.user-name {
+    display: block;
+    color: #041b4d;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    line-height: 1.35;
+}
+
+.user-sub {
+    display: block;
+    color: #66758f;
+    font-size: 10.5px;
+    line-height: 1.35;
+}
+
+/* 회원 유형 배지 */
+.user-role {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.user-role.user {
+    background: #eef4f8;
+    color: #66758f;
+}
+
+.user-role.admin {
+    background: #e6f0ff;
+    color: #2b66c7;
+}
+
+.user-role.super {
+    background: #efe7ff;
+    color: #7651d1;
+}
+
+/* 관리 버튼 */
+.user-table .table-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.user-table .table-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: #f4f8fb;
+    color: #248c8f;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+/* 페이지네이션을 목록 카드 하단으로 */
+.user-list-card .admin-pagination {
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+/* 하단 안내 카드 */
+.user-bottom {
+    margin-top: 16px;
+    margin-bottom: 20px;
+}
+
+.user-rule-list,
+.user-process-list {
+    display: grid;
+    gap: 10px;
+}
+
+.user-rule-item,
+.user-process-item {
+    padding: 14px;
+    border: 1px solid #edf2f7;
+    border-radius: 14px;
+    background: #fbfdff;
+}
+
+.user-rule-item strong {
+    display: block;
+    color: #041b4d;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.user-rule-item p,
+.user-process-item p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.user-process-item {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+/* 페이지 하단 여백 */
+.admin-content {
+    padding-bottom: 20px;
+}
+
+@media (max-width: 1100px) {
+    .user-filter {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .user-list-card {
+        overflow-x: auto;
+    }
+
+    .user-table {
+        min-width: 1040px;
+    }
+}
+
+@media (max-width: 900px) {
+    .user-process-item {
+        grid-template-columns: 1fr;
+    }
+}
