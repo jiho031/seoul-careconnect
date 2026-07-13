@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -84,6 +87,7 @@ public class LocalWelfareClient implements ExternalPolicyClient {
              page < pageNo + maxPages && detailCalls < maxDetailCount;
              page++) {
 
+            // 지역 조건을 요청에 넣으면 NO DATA FOUND가 발생하므로 전국 목록을 먼저 조회합니다.
             String listRaw = api.get(listUrl, Map.of(
                     "serviceKey", serviceKey,
                     "pageNo", page,
@@ -117,10 +121,15 @@ public class LocalWelfareClient implements ExternalPolicyClient {
             }
 
             for (JsonNode listItem : listItems) {
-                if (detailCalls >= maxDetailCount) break;
+                if (detailCalls >= maxDetailCount) {
+                    break;
+                }
 
                 String servId = reader.firstText(listItem, "servId");
-                if (servId == null || result.containsKey(servId)) continue;
+
+                if (servId == null || result.containsKey(servId)) {
+                    continue;
+                }
 
                 String detailRaw = null;
                 JsonNode detailItem = null;
@@ -136,9 +145,13 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                             .stream()
                             .findFirst()
                             .orElse(detailRoot);
-                } catch (RuntimeException ignored) {
-                    detailRaw = null;
-                    detailItem = null;
+
+                } catch (RuntimeException detailError) {
+                    log.warn(
+                            "지자체 복지 상세 API 호출 실패: servId={}, 원인={}",
+                            servId,
+                            detailError.getMessage()
+                    );
                 } finally {
                     detailCalls++;
                 }
@@ -153,7 +166,9 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 );
             }
 
-            if (listItems.size() < numOfRows) break;
+            if (listItems.size() < numOfRows) {
+                break;
+            }
         }
 
         log.info(
@@ -171,14 +186,26 @@ public class LocalWelfareClient implements ExternalPolicyClient {
             String rawXml
     ) {
         String title = first(detail, list, "servNm", "serviceName", "title");
-        String target = first(
+
+        String targetGroup = first(
                 detail,
                 list,
+                "trgterIndvdlNmArray",
                 "trgterIndvdlNm",
                 "trgterIndvdl",
                 "supportTarget",
                 "target"
         );
+
+        String supportTarget = first(
+                detail,
+                list,
+                "sprtTrgtCn",
+                "supportTargetContent"
+        );
+
+        String target = reader.joinNonBlank("\n", targetGroup, supportTarget);
+
         String summary = first(
                 detail,
                 list,
@@ -186,6 +213,7 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 "serviceSummary",
                 "summary"
         );
+
         String benefit = first(
                 detail,
                 list,
@@ -194,20 +222,24 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 "serviceSummary",
                 "description"
         );
+
         String criteria = first(
                 detail,
                 list,
-                "slctCrit",
                 "slctCritCn",
+                "slctCrit",
                 "selectionCriteria"
         );
+
         String applyMethod = first(
                 detail,
                 list,
-                "aplyMtd",
                 "aplyMtdCn",
+                "aplyMtdNm",
+                "aplyMtd",
                 "applyMethod"
         );
+
         String officialUrl = first(
                 detail,
                 list,
@@ -216,21 +248,27 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 "homepageUrl",
                 "link"
         );
+
         String agencyName = first(
                 detail,
                 list,
+                "bizChrDeptNm",
                 "jurOrgNm",
                 "jurMnofNm",
                 "organizationName",
                 "agencyName"
         );
+
         String contact = first(
                 detail,
                 list,
                 "rprsCtadr",
+                "wlfareInfoReldCn",
                 "phone",
                 "contact"
         );
+
+        // 신청 기간 필드만 사용하며, 시행 기간(enfcBgngYmd/enfcEndYmd)은 날짜로 저장하지 않습니다.
         String startText = first(
                 detail,
                 list,
@@ -239,6 +277,7 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 "reqstBeginDe",
                 "startDate"
         );
+
         String endText = first(
                 detail,
                 list,
@@ -247,6 +286,7 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 "reqstEndDe",
                 "endDate"
         );
+
         String periodText = first(
                 detail,
                 list,
@@ -255,18 +295,33 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 "reqstPd",
                 "applicationPeriod"
         );
-        ExternalDateParser.DateRange periodRange = dateParser.parseRange(periodText);
+
+        ExternalDateParser.DateRange periodRange =
+                dateParser.parseRange(periodText);
+
         var startDate = dateParser.parseSingle(startText);
         var endDate = dateParser.parseSingle(endText);
-        if (startDate == null) startDate = periodRange.startDate();
-        if (endDate == null) endDate = periodRange.endDate();
+
+        if (startDate == null) {
+            startDate = periodRange.startDate();
+        }
+
+        if (endDate == null) {
+            endDate = periodRange.endDate();
+        }
+
+        String enforcementEndText = first(detail, list, "enfcEndYmd");
+        boolean ongoingService = isOpenEndedEnforcement(enforcementEndText);
 
         String district = first(detail, list, "sggNm");
+
         String status = reader.joinNonBlank(
                 " ",
                 first(detail, list, "servStts", "serviceStatus", "status"),
-                periodText
+                periodText,
+                ongoingService ? "상시" : null
         );
+
         String documents = first(
                 detail,
                 list,
@@ -274,9 +329,11 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 "requiredDocuments",
                 "reqstMthPapersCn"
         );
+
         String content = reader.joinNonBlank(
                 "\n",
-                target,
+                targetGroup,
+                supportTarget,
                 criteria,
                 benefit,
                 applyMethod,
@@ -318,13 +375,30 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 .build();
     }
 
-    private String first(JsonNode preferred, JsonNode fallback, String... names) {
+    private boolean isOpenEndedEnforcement(String enforcementEndText) {
+        if (enforcementEndText == null) {
+            return false;
+        }
+
+        String digitsOnly = enforcementEndText.replaceAll("[^0-9]", "");
+        return "99991231".equals(digitsOnly);
+    }
+
+    private String first(
+            JsonNode preferred,
+            JsonNode fallback,
+            String... names
+    ) {
         String value = reader.firstText(preferred, names);
-        return value != null ? value : reader.firstText(fallback, names);
+        return value != null
+                ? value
+                : reader.firstText(fallback, names);
     }
 
     private String valueOr(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
+        return value == null || value.isBlank()
+                ? fallback
+                : value;
     }
 
     private String preview(String value, int maxLength) {
@@ -332,14 +406,10 @@ public class LocalWelfareClient implements ExternalPolicyClient {
             return "응답 없음";
         }
 
-        String normalized = value
-                .replaceAll("\\s+", " ")
-                .trim();
+        String normalized = value.replaceAll("\\s+", " ").trim();
 
-        if (normalized.length() <= maxLength) {
-            return normalized;
-        }
-
-        return normalized.substring(0, maxLength);
+        return normalized.length() <= maxLength
+                ? normalized
+                : normalized.substring(0, maxLength);
     }
 }
