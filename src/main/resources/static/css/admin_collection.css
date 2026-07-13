@@ -1,0 +1,182 @@
+.api-source-list {
+    display: grid;
+    gap: 10px;
+}
+
+.api-source-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border: 1px solid #edf2f7;
+    border-radius: 14px;
+    background: #fbfdff;
+}
+
+.api-source-item strong {
+    display: block;
+    color: #041b4d;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.api-source-item p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+}
+
+.collection-rule-list {
+    display: grid;
+    gap: 10px;
+}
+
+.collection-rule-item {
+    padding: 14px;
+    border: 1px solid #d8e4ef;
+    border-radius: 14px;
+    background: #fbfdff;
+}
+
+.collection-rule-item strong {
+    display: block;
+    color: #041b4d;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.collection-rule-item p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.collection-table td {
+    white-space: nowrap;
+}
+
+.collection-table td:nth-child(6) {
+    white-space: normal;
+    color: #66758f;
+    font-size: 12px;
+}
+
+.collection-issue-list {
+    display: grid;
+    gap: 10px;
+}
+
+.collection-issue-item {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 13px;
+    border: 1px solid #edf2f7;
+    border-radius: 14px;
+    background: #fbfdff;
+}
+
+.collection-issue-item strong {
+    display: block;
+    color: #041b4d;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.collection-issue-item p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.schedule-list {
+    display: grid;
+    gap: 10px;
+}
+
+.schedule-item {
+    padding: 13px 14px;
+    border: 1px solid #edf2f7;
+    border-radius: 14px;
+    background: #fbfdff;
+}
+
+.schedule-item strong {
+    display: block;
+    color: #041b4d;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.schedule-item p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    .collection-issue-item {
+        grid-template-columns: 1fr;
+    }
+
+    .collection-table {
+        min-width: 880px;
+    }
+}
+
+/* API 수집 현황 페이지: 상단 박스와 로그 박스 간격 */
+.collection-top {
+    margin-bottom: 18px;
+}
+
+/* 최근 API 수집 로그 카드 위 여백 보정 */
+.collection-top + .admin-card {
+    margin-top: 18px;
+}
+
+.collection-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-refresh-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #041b4d;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-refresh-btn:hover {
+    background: transparent;
+    color: #167b7e;
+}
+
+.icon-refresh-btn.loading {
+    pointer-events: none;
+    animation: refreshSpin 0.8s linear infinite;
+}
+
+@keyframes refreshSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

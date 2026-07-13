@@ -1,0 +1,211 @@
+/* ===============================
+   AI 요약 오류 관리 페이지 전용 CSS
+   파일명: admin_ai_review.css
+================================ */
+
+.ai-filter {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(130px, 1fr)) 90px;
+    gap: 10px;
+}
+
+.ai-review-card {
+    margin-top: 16px;
+}
+
+.ai-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-refresh-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #041b4d;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-refresh-btn:hover {
+    color: #167b7e;
+}
+
+.ai-review-list {
+    display: grid;
+    gap: 14px;
+}
+
+.ai-review-item {
+    padding: 16px;
+    border: 1px solid #edf2f7;
+    border-radius: 16px;
+    background: #fbfdff;
+}
+
+.ai-review-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.ai-review-top strong {
+    display: block;
+    color: #041b4d;
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.ai-review-top p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+}
+
+.ai-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.ai-badge.mismatch {
+    background: #ffe8e4;
+    color: #c34733;
+}
+
+.ai-badge.difficult {
+    background: #fff0db;
+    color: #c67510;
+}
+
+.ai-badge.missing {
+    background: #efe7ff;
+    color: #7651d1;
+}
+
+.ai-compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.ai-summary-box {
+    padding: 14px;
+    border: 1px solid #d8e4ef;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.ai-summary-box span {
+    display: block;
+    color: #66758f;
+    font-size: 12px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.ai-summary-box p {
+    margin: 0;
+    color: #102044;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.ai-summary-box.original {
+    background: #fff;
+}
+
+.ai-summary-box.source {
+    background: #f4fbfa;
+    border-color: #bfe8e4;
+}
+
+.ai-review-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.ai-bottom {
+    margin-top: 16px;
+}
+
+.ai-rule-list,
+.ai-process-list {
+    display: grid;
+    gap: 10px;
+}
+
+.ai-rule-item,
+.ai-process-item {
+    padding: 14px;
+    border: 1px solid #edf2f7;
+    border-radius: 14px;
+    background: #fbfdff;
+}
+
+.ai-rule-item strong {
+    display: block;
+    color: #041b4d;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.ai-rule-item p,
+.ai-process-item p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.ai-process-item {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+@media (max-width: 1100px) {
+    .ai-filter {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ai-compare-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .ai-review-top {
+        flex-direction: column;
+    }
+
+    .ai-review-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .ai-process-item {
+        grid-template-columns: 1fr;
+    }
+}
