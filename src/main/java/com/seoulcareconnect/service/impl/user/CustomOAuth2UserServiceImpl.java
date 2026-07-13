@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.oauth2.core.OAuth2Error;
 
 import java.util.Collections;
 import java.util.Map;
@@ -62,15 +63,25 @@ public class CustomOAuth2UserServiceImpl implements CustomOAuth2UserService {
                 );
 
         if (existingByProvider.isPresent()) {
-            return existingByProvider.get();
+            User user = existingByProvider.get();
+
+            validateActiveUser(user);
+
+            return user;
         }
 
-        if (info.email() != null) {
+        if (info.email() != null && !info.email().isBlank()) {
+
             Optional<User> existingByEmail =
-                    userRepository.findByEmail(info.email());
+                    userRepository.findByEmail(
+                            info.email().trim().toLowerCase()
+                    );
 
             if (existingByEmail.isPresent()) {
                 User user = existingByEmail.get();
+
+                // 탈퇴 계정이면 소셜 계정 연결 전에 차단
+                validateActiveUser(user);
 
                 user.setProvider(info.provider());
                 user.setProviderId(info.providerId());
@@ -82,12 +93,11 @@ public class CustomOAuth2UserServiceImpl implements CustomOAuth2UserService {
         User user = new User();
 
         user.setEmail(info.email());
-
-        // 소셜 로그인 계정 전용 임의 비밀번호
         user.setPassword(
-                passwordEncoder.encode(UUID.randomUUID().toString())
+                passwordEncoder.encode(
+                        UUID.randomUUID().toString()
+                )
         );
-
         user.setName(info.name());
         user.setProvider(info.provider());
         user.setProviderId(info.providerId());
@@ -97,6 +107,16 @@ public class CustomOAuth2UserServiceImpl implements CustomOAuth2UserService {
         user.setIsActive(true);
 
         return userRepository.save(user);
+    }
+
+    private void validateActiveUser(User user) {
+
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error("inactive_user"),
+                    "탈퇴하거나 비활성화된 계정입니다."
+            );
+        }
     }
 
     @SuppressWarnings("unchecked")
