@@ -85,12 +85,23 @@
                     로그아웃되었습니다.
                 </div>
 
+
+                <div class="login-error" th:if="${param.expired}">
+                    로그인 시간이 만료되었습니다. 다시 로그인해주세요.
+                </div>
+
+                <div class="login-success" th:if="${param.reset}">
+                    비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.
+                </div>
+
                 <div class="login-options">
                     <label class="remember-check">
                         <input type="checkbox" name="remember-me">
                         <span>로그인 상태 유지</span>
                     </label>
-                    <a href="#">비밀번호 찾기</a>
+                    <a th:href="@{/password/find}" href="/password/find">
+                        비밀번호 찾기
+                    </a>
                 </div>
 
                 <button class="login-submit" type="submit">로그인</button>
@@ -129,25 +140,23 @@
 
 <script>
     const loginForm = document.querySelector(".login-form");
-    const loginBtn = document.querySelector(".login-submit");
 
-    loginBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-
+    loginForm.addEventListener("submit", function (event) {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
 
         if (!email) {
+            event.preventDefault();
             alert("이메일을 입력해주세요.");
+            document.getElementById("email").focus();
             return;
         }
 
         if (!password) {
+            event.preventDefault();
             alert("비밀번호를 입력해주세요.");
-            return;
+            document.getElementById("password").focus();
         }
-
-        loginForm.submit();
     });
 </script>
 

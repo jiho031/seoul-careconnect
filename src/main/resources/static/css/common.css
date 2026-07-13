@@ -451,3 +451,148 @@ img {
     margin: 0;
   }
 }
+
+/* =========================================================
+   세션 만료 안내 팝업
+========================================================= */
+
+.session-timeout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.session-timeout-modal.is-open {
+  display: flex;
+}
+
+.session-timeout-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 19, 48, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.session-timeout-dialog {
+  width: min(440px, 100%);
+  padding: 38px 34px 32px;
+  position: relative;
+  z-index: 1;
+  border: 1px solid #d4e5ee;
+  border-radius: 26px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 28px 70px rgba(4, 27, 57, 0.28);
+}
+
+.session-timeout-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: linear-gradient(135deg, #11938d 0%, #176da8 100%);
+  font-size: 30px;
+  font-weight: 950;
+  box-shadow: 0 12px 26px rgba(17, 130, 137, 0.25);
+}
+
+.session-timeout-dialog h2 {
+  margin: 0 0 14px;
+  color: #071947;
+  font-size: 25px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.session-timeout-dialog p {
+  margin: 0;
+  color: #5f708a;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.65;
+}
+
+.session-timeout-dialog p strong {
+  color: #087e79;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.session-timeout-question {
+  margin-top: 8px !important;
+  color: #14254f !important;
+  font-weight: 800 !important;
+}
+
+.session-timeout-actions {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.session-extend-button,
+.session-logout-button {
+  height: 52px;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          background-color 0.2s ease;
+}
+
+.session-extend-button {
+  border: 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, #118c87 0%, #176ca8 100%);
+  box-shadow: 0 12px 22px rgba(20, 119, 132, 0.22);
+}
+
+.session-logout-button {
+  border: 1px solid #ccdce8;
+  color: #425673;
+  background: #ffffff;
+}
+
+.session-extend-button:hover,
+.session-logout-button:hover {
+  transform: translateY(-1px);
+}
+
+.session-extend-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+
+@media (max-width: 520px) {
+  .session-timeout-dialog {
+    padding: 32px 22px 24px;
+    border-radius: 22px;
+  }
+
+  .session-timeout-dialog h2 {
+    font-size: 22px;
+  }
+
+  .session-timeout-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .session-extend-button {
+    grid-row: 1;
+  }
+}
+
