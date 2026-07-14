@@ -36,36 +36,46 @@ public class AdminCollectionService {
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
         LocalDateTime tomorrowStart = todayStart.plusDays(1);
 
-        List<SyncLog> todayLogs = syncLogRepository.findAll()
-                .stream()
+        List<SyncLog> allLogs = syncLogRepository.findAll();
+
+        SyncLog latestLog = allLogs.stream()
+                .filter(log -> log.getStartedAt() != null)
+                .max(Comparator.comparing(SyncLog::getStartedAt))
+                .orElse(null);
+
+        long latestSuccessCount = latestLog == null
+                ? 0
+                : safeCount(latestLog.getSuccessCount());
+
+        long latestFailCount = latestLog == null
+                ? 0
+                : safeCount(latestLog.getFailCount());
+
+        long latestProcessedCount =
+                latestSuccessCount + latestFailCount;
+
+        long todayRunCount = allLogs.stream()
                 .filter(log -> log.getStartedAt() != null)
                 .filter(log ->
                         !log.getStartedAt().isBefore(todayStart)
                                 && log.getStartedAt().isBefore(tomorrowStart)
                 )
-                .toList();
+                .count();
 
-        long successCount = todayLogs.stream()
-                .mapToLong(log -> safeCount(log.getSuccessCount()))
-                .sum();
-
-        long failCount = todayLogs.stream()
-                .mapToLong(log -> safeCount(log.getFailCount()))
-                .sum();
-
-        long requestedCount = successCount + failCount;
-
-        List<PolicySource> sources = policySourceRepository.findAll();
+        List<PolicySource> sources =
+                policySourceRepository.findAll();
 
         long activeSourceCount = sources.stream()
-                .filter(source -> Boolean.TRUE.equals(source.getIsActive()))
+                .filter(source ->
+                        Boolean.TRUE.equals(source.getIsActive())
+                )
                 .count();
 
         return AdminCollectionSummaryDTO.builder()
-                .todayRequestedCount(requestedCount)
-                .todaySuccessCount(successCount)
-                .reviewRequiredCount(0)
-                .todayFailCount(failCount)
+                .latestProcessedCount(latestProcessedCount)
+                .latestSuccessCount(latestSuccessCount)
+                .latestFailCount(latestFailCount)
+                .todayRunCount(todayRunCount)
                 .totalSourceCount(sources.size())
                 .activeSourceCount(activeSourceCount)
                 .totalPolicyCount(policyRepository.count())

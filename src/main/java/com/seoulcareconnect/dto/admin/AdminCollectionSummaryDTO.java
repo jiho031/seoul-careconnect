@@ -7,24 +7,19 @@ import lombok.Getter;
 @Builder
 public class AdminCollectionSummaryDTO {
 
-    // 오늘 API에서 받아온 전체 항목 수
-    private long todayRequestedCount;
+    // 가장 최근 수집 1회의 처리 건수
+    private long latestProcessedCount;
 
-    // 오늘 정상적으로 정책 저장 또는 수정된 항목 수
-    private long todaySuccessCount;
+    // 가장 최근 수집 1회의 성공 건수
+    private long latestSuccessCount;
 
-    // 관리자 확인이 필요한 항목 수
-    private long reviewRequiredCount;
+    // 가장 최근 수집 1회의 실패 건수
+    private long latestFailCount;
 
-    // 오늘 수집에 실패한 항목 수
-    private long todayFailCount;
+    // 오늘 실행된 수집 로그 수
+    private long todayRunCount;
 
-    // 등록된 전체 API 출처 수
     private long totalSourceCount;
-
-    // 현재 활성화된 API 출처 수
     private long activeSourceCount;
-
-    // 현재 등록된 전체 정책 수
     private long totalPolicyCount;
 }
