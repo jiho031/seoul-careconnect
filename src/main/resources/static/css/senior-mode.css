@@ -1,0 +1,1267 @@
+/* =========================================================
+   고령친화 화면 모드
+   DB 값은 기존 LARGE_TEXT를 그대로 사용합니다.
+========================================================= */
+
+body.large-text-mode {
+  --senior-body: 19px;
+  --senior-small: 16px;
+  --senior-label: 19px;
+  --senior-control: 19px;
+  --senior-control-height: 62px;
+  --senior-radius: 16px;
+  --senior-focus: 0 0 0 5px rgba(0, 127, 132, .20);
+  color: #061846;
+  font-size: var(--senior-body);
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+body.large-text-mode :focus-visible {
+  outline: 4px solid #ffbf47 !important;
+  outline-offset: 3px !important;
+}
+
+body.large-text-mode input,
+body.large-text-mode select,
+body.large-text-mode textarea,
+body.large-text-mode button {
+  font-size: var(--senior-control);
+}
+
+body.large-text-mode input,
+body.large-text-mode select,
+body.large-text-mode textarea {
+  border-width: 2px;
+}
+
+body.large-text-mode input:focus,
+body.large-text-mode select:focus,
+body.large-text-mode textarea:focus {
+  box-shadow: var(--senior-focus) !important;
+}
+
+body.large-text-mode small {
+  font-size: var(--senior-small);
+  line-height: 1.65;
+}
+
+/* =========================================================
+   상단 네비게이션
+========================================================= */
+
+body.large-text-mode .site-header {
+  height: 92px;
+}
+
+body.large-text-mode .nav-inner {
+  width: min(1560px, calc(100% - 48px));
+  grid-template-columns: 230px minmax(0, 1fr) auto;
+  gap: 28px;
+}
+
+body.large-text-mode .brand,
+body.large-text-mode .brand img {
+  width: 210px;
+  min-width: 210px;
+}
+
+body.large-text-mode .nav-menu {
+  gap: clamp(28px, 3vw, 48px);
+}
+
+body.large-text-mode .nav-menu a {
+  padding: 31px 0;
+  font-size: 21px;
+}
+
+body.large-text-mode .nav-actions {
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+body.large-text-mode .nav-actions a,
+body.large-text-mode .nav-actions button {
+  min-width: 108px;
+  height: 56px;
+  padding: 0 18px;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+body.large-text-mode .nav-logout-form {
+  flex: 0 0 auto;
+}
+
+/* 넓은 화면에서도 공간이 부족하면 고령친화 모드는 메뉴 버튼으로 전환 */
+@media (max-width: 1180px) {
+  body.large-text-mode .site-header {
+    height: 80px;
+  }
+
+  body.large-text-mode .nav-inner {
+    width: calc(100% - 32px);
+    grid-template-columns: 1fr 52px;
+    gap: 12px;
+  }
+
+  body.large-text-mode .brand,
+  body.large-text-mode .brand img {
+    width: 190px;
+    min-width: 190px;
+  }
+
+  body.large-text-mode .nav-toggle {
+    display: block;
+    width: 52px;
+    height: 52px;
+  }
+
+  body.large-text-mode .nav-menu,
+  body.large-text-mode .nav-actions {
+    display: none;
+  }
+
+  body.large-text-mode.nav-open .nav-menu,
+  body.large-text-mode.nav-open .nav-actions {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    z-index: 110;
+    background: #fff;
+    border: 2px solid #cbdbea;
+    box-shadow: var(--shadow);
+  }
+
+  body.large-text-mode.nav-open .nav-menu {
+    top: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    border-radius: 18px 18px 0 0;
+    overflow: hidden;
+  }
+
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 68px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    border-bottom: 1px solid #e5edf5;
+  }
+
+  body.large-text-mode.nav-open .nav-actions {
+    top: 296px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 18px;
+    border-top: 0;
+    border-radius: 0 0 18px 18px;
+  }
+
+  body.large-text-mode.nav-open .nav-actions .nav-report-button {
+    grid-column: 1 / -1;
+  }
+
+  body.large-text-mode.nav-open .nav-actions a,
+  body.large-text-mode.nav-open .nav-actions button,
+  body.large-text-mode.nav-open .nav-actions form {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* =========================================================
+   메인 화면
+========================================================= */
+
+body.large-text-mode .hero {
+  min-height: 0;
+  padding: 54px 0 70px;
+}
+
+body.large-text-mode .hero-city {
+  width: 360px;
+  height: 650px;
+  bottom: 40px;
+  opacity: .22;
+}
+
+body.large-text-mode .hero-inner {
+  width: min(1180px, calc(100% - 56px));
+  grid-template-columns: 1fr;
+  justify-content: stretch;
+  gap: 34px;
+}
+
+body.large-text-mode .hero-copy {
+  padding-top: 0;
+}
+
+body.large-text-mode .hero-copy h1 {
+  font-size: clamp(52px, 5vw, 64px);
+  line-height: 1.2;
+  letter-spacing: -.065em;
+}
+
+body.large-text-mode .hero-copy h1 strong {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+body.large-text-mode .hero-copy > p {
+  margin: 22px 0 32px;
+  font-size: 22px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .search-card {
+  padding: 32px;
+  border-width: 2px;
+  border-radius: 24px;
+}
+
+body.large-text-mode .search-line {
+  height: 70px;
+  grid-template-columns: 68px minmax(0, 1fr) 132px;
+  border-width: 2px;
+  border-radius: 14px;
+}
+
+body.large-text-mode .search-lens {
+  width: 68px;
+  height: 68px;
+}
+
+body.large-text-mode .search-icon {
+  width: 34px;
+  height: 34px;
+}
+
+body.large-text-mode .search-line input {
+  height: 66px;
+  font-size: 19px;
+}
+
+body.large-text-mode .search-line button {
+  height: 60px;
+  font-size: 20px;
+}
+
+body.large-text-mode .filter-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  padding-top: 28px;
+}
+
+body.large-text-mode .filter-grid label > span {
+  height: auto;
+  margin-bottom: 10px;
+  font-size: 19px;
+}
+
+body.large-text-mode .filter-grid select {
+  height: 62px;
+  border-width: 2px;
+  border-radius: 14px;
+  font-size: 19px;
+}
+
+body.large-text-mode .search-foot {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+body.large-text-mode .keyword-area strong {
+  font-size: 19px;
+}
+
+body.large-text-mode .keyword-list {
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+body.large-text-mode .keyword-list a {
+  min-height: 42px;
+  height: auto;
+  padding: 8px 12px;
+  border-width: 2px;
+  font-size: 15px;
+}
+
+body.large-text-mode .preset-area {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+body.large-text-mode .preset-area a {
+  min-width: 180px;
+  height: 58px;
+  border-width: 2px;
+  font-size: 18px;
+}
+
+body.large-text-mode .ai-card {
+  min-height: 0;
+  padding: 38px;
+  border-radius: 24px;
+}
+
+body.large-text-mode .ai-title > span {
+  width: 66px;
+  height: 66px;
+  flex-basis: 66px;
+  font-size: 30px;
+}
+
+body.large-text-mode .ai-title h2 {
+  margin-bottom: 14px;
+  font-size: 38px;
+}
+
+body.large-text-mode .ai-title p {
+  font-size: 21px;
+  line-height: 1.6;
+}
+
+body.large-text-mode .ai-list {
+  position: static;
+  margin-top: 30px;
+  padding: 22px;
+}
+
+body.large-text-mode .ai-list a {
+  min-height: 100px;
+  grid-template-columns: 62px 1fr 28px;
+}
+
+body.large-text-mode .ai-list em {
+  width: 58px;
+  height: 58px;
+}
+
+body.large-text-mode .ai-list b {
+  font-size: 21px;
+}
+
+body.large-text-mode .ai-list small {
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+body.large-text-mode .ai-list > p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+body.large-text-mode .policy-section {
+  padding: 48px 0 24px;
+}
+
+body.large-text-mode .policy-inner {
+  width: min(1180px, calc(100% - 56px));
+  grid-template-columns: 1fr;
+  gap: 26px;
+}
+
+body.large-text-mode .policy-board {
+  padding: 30px;
+  border-width: 2px;
+  border-radius: 22px;
+}
+
+body.large-text-mode .board-head h2 {
+  font-size: 30px;
+}
+
+body.large-text-mode .board-head a {
+  min-height: 46px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 17px;
+}
+
+body.large-text-mode .deadline-grid,
+body.large-text-mode .recent-grid {
+  gap: 18px;
+}
+
+body.large-text-mode .policy-card,
+body.large-text-mode .recent-card {
+  min-height: 150px;
+  border-width: 2px;
+  border-radius: 16px;
+}
+
+body.large-text-mode .policy-card {
+  padding: 22px;
+}
+
+body.large-text-mode .policy-title,
+body.large-text-mode .recent-card b {
+  font-size: 20px;
+  line-height: 1.5;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+body.large-text-mode .policy-meta {
+  grid-template-columns: auto 1fr;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+body.large-text-mode .policy-meta-divider {
+  display: none;
+}
+
+body.large-text-mode .policy-status,
+body.large-text-mode .policy-meta-label,
+body.large-text-mode .policy-date,
+body.large-text-mode .recent-card small {
+  font-size: 15px;
+}
+
+body.large-text-mode .policy-date {
+  white-space: normal;
+  overflow: visible;
+}
+
+/* =========================================================
+   로그인
+========================================================= */
+
+body.large-text-mode .login-page {
+  padding: 52px 24px 72px;
+}
+
+body.large-text-mode .login-wrap {
+  width: min(820px, 100%);
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .login-info-panel {
+  display: none;
+}
+
+body.large-text-mode .login-card {
+  min-height: 0;
+  padding: 50px;
+  border-width: 2px;
+}
+
+body.large-text-mode .login-title-box h2 {
+  font-size: 42px;
+}
+
+body.large-text-mode .login-title-box p {
+  font-size: 18px;
+}
+
+body.large-text-mode .login-field {
+  gap: 11px;
+}
+
+body.large-text-mode .login-field label {
+  font-size: 20px;
+}
+
+body.large-text-mode .login-field input {
+  height: 64px;
+  padding: 0 20px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .login-options,
+body.large-text-mode .remember-check,
+body.large-text-mode .login-links {
+  font-size: 18px;
+}
+
+body.large-text-mode .remember-check input {
+  width: 24px;
+  height: 24px;
+}
+
+body.large-text-mode .login-submit,
+body.large-text-mode .social-login {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+body.large-text-mode .login-error,
+body.large-text-mode .login-success {
+  padding: 13px 15px;
+  border-radius: 12px;
+  font-size: 17px;
+}
+
+/* =========================================================
+   회원가입
+========================================================= */
+
+body.large-text-mode .signup-page {
+  padding: 48px 24px 72px;
+}
+
+body.large-text-mode .signup-wrap {
+  width: min(900px, 100%);
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .signup-side-panel {
+  display: none;
+}
+
+body.large-text-mode .signup-card {
+  padding: 48px;
+  border-width: 2px;
+}
+
+body.large-text-mode .signup-title-box h1 {
+  font-size: 44px;
+}
+
+body.large-text-mode .signup-title-box p {
+  font-size: 18px;
+}
+
+body.large-text-mode .signup-row.two-col {
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+body.large-text-mode .signup-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .signup-field input,
+body.large-text-mode .signup-field select,
+body.large-text-mode .input-button-group button {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .input-button-group {
+  grid-template-columns: minmax(0, 1fr) 150px;
+}
+
+body.large-text-mode .signup-check,
+body.large-text-mode .all-check {
+  font-size: 18px;
+}
+
+body.large-text-mode .signup-check input {
+  width: 25px;
+  height: 25px;
+}
+
+body.large-text-mode .signup-submit {
+  min-height: 64px;
+  font-size: 20px;
+}
+
+body.large-text-mode .signup-login-link {
+  font-size: 18px;
+}
+
+/* =========================================================
+   비밀번호 찾기
+========================================================= */
+
+body.large-text-mode .password-page {
+  padding: 48px 24px 72px;
+}
+
+body.large-text-mode .password-layout {
+  width: min(820px, 100%);
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .password-guide-panel {
+  display: none;
+}
+
+body.large-text-mode .password-card {
+  padding: 48px;
+  border-width: 2px;
+}
+
+body.large-text-mode .password-title-box h2 {
+  font-size: 42px;
+}
+
+body.large-text-mode .password-title-box p,
+body.large-text-mode .step-heading p {
+  font-size: 18px;
+}
+
+body.large-text-mode .progress-item strong {
+  font-size: 15px;
+}
+
+body.large-text-mode .progress-item span {
+  width: 42px;
+  height: 42px;
+  font-size: 16px;
+}
+
+body.large-text-mode .step-heading h3 {
+  font-size: 27px;
+}
+
+body.large-text-mode .password-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .password-field input {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .primary-button,
+body.large-text-mode .secondary-button {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+body.large-text-mode .password-rule-box p,
+body.large-text-mode .reset-alert,
+body.large-text-mode .password-bottom-link {
+  font-size: 17px;
+}
+
+/* =========================================================
+   마이페이지
+========================================================= */
+
+body.large-text-mode .mypage-page {
+  padding: 44px 24px 72px;
+}
+
+body.large-text-mode .mypage-hero,
+body.large-text-mode .mypage-layout {
+  width: min(1120px, 100%);
+}
+
+body.large-text-mode .mypage-hero {
+  min-height: 220px;
+  padding: 42px;
+}
+
+body.large-text-mode .mypage-hero h1 {
+  font-size: 48px;
+}
+
+body.large-text-mode .mypage-hero p {
+  font-size: 19px;
+}
+
+body.large-text-mode .hero-status {
+  min-width: 250px;
+}
+
+body.large-text-mode .hero-status span {
+  font-size: 16px;
+}
+
+body.large-text-mode .hero-status strong {
+  font-size: 24px;
+}
+
+body.large-text-mode .mypage-layout {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .profile-summary-card {
+  position: static;
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 20px;
+  text-align: left;
+}
+
+body.large-text-mode .profile-avatar {
+  width: 92px;
+  height: 92px;
+  margin: 0;
+}
+
+body.large-text-mode .profile-summary-title h2 {
+  font-size: 30px;
+}
+
+body.large-text-mode .profile-summary-list,
+body.large-text-mode .mypage-side-nav {
+  grid-column: 1 / -1;
+}
+
+body.large-text-mode .profile-summary-list dt,
+body.large-text-mode .profile-summary-list dd {
+  font-size: 17px;
+}
+
+body.large-text-mode .mypage-side-nav {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.large-text-mode .mypage-side-nav a {
+  min-height: 58px;
+  justify-content: center;
+  font-size: 18px;
+}
+
+body.large-text-mode .mypage-card {
+  padding: 38px;
+  border-width: 2px;
+}
+
+body.large-text-mode .card-heading h2 {
+  font-size: 34px;
+}
+
+body.large-text-mode .card-heading p,
+body.large-text-mode .form-section-heading p {
+  font-size: 17px;
+}
+
+body.large-text-mode .form-section {
+  padding: 28px;
+  border-width: 2px;
+}
+
+body.large-text-mode .form-grid.two-col {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .mypage-field label,
+body.large-text-mode .ui-mode-section legend {
+  font-size: 19px;
+}
+
+body.large-text-mode .mypage-field input,
+body.large-text-mode .mypage-field select {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .ui-mode-grid {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .ui-mode-option {
+  min-height: 138px;
+  padding: 24px;
+  border-width: 2px;
+}
+
+body.large-text-mode .ui-mode-option strong {
+  font-size: 21px;
+}
+
+body.large-text-mode .ui-mode-option small {
+  font-size: 17px;
+}
+
+body.large-text-mode .button-primary,
+body.large-text-mode .button-secondary,
+body.large-text-mode .button-danger {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+body.large-text-mode .security-item summary,
+body.large-text-mode .social-notice-inner {
+  min-height: 104px;
+}
+
+body.large-text-mode .security-item summary strong,
+body.large-text-mode .social-notice strong {
+  font-size: 20px;
+}
+
+body.large-text-mode .security-item summary small,
+body.large-text-mode .social-notice small {
+  font-size: 16px;
+}
+
+/* =========================================================
+   정책 목록
+========================================================= */
+
+body.large-text-mode .policy-container {
+  width: min(1180px, calc(100% - 48px));
+}
+
+body.large-text-mode .policy-hero {
+  padding-top: 58px;
+}
+
+body.large-text-mode .policy-hero h1 {
+  font-size: 52px;
+  line-height: 1.22;
+}
+
+body.large-text-mode .policy-hero p {
+  font-size: 20px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .search-filter-card {
+  padding: 30px;
+  border-width: 2px;
+}
+
+body.large-text-mode .policy-search-row {
+  min-height: 70px;
+}
+
+body.large-text-mode .policy-search-row input {
+  font-size: 19px;
+}
+
+body.large-text-mode .policy-search-row button {
+  min-width: 132px;
+  font-size: 19px;
+}
+
+body.large-text-mode .search-filter-card .filter-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .filter-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .filter-field select {
+  height: 62px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .filter-actions button {
+  min-height: 60px;
+  font-size: 18px;
+}
+
+body.large-text-mode .quick-keywords strong,
+body.large-text-mode .quick-keywords a {
+  font-size: 17px;
+}
+
+body.large-text-mode .result-head h2 {
+  font-size: 34px;
+}
+
+body.large-text-mode .result-head p,
+body.large-text-mode .result-tabs a {
+  font-size: 18px;
+}
+
+body.large-text-mode .policy-result-card {
+  padding: 30px;
+  border-width: 2px;
+}
+
+body.large-text-mode .policy-result-card h3 {
+  font-size: 27px;
+  line-height: 1.45;
+}
+
+body.large-text-mode .agency,
+body.large-text-mode .summary,
+body.large-text-mode .info-grid dt,
+body.large-text-mode .info-grid dd {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+body.large-text-mode .info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .badge,
+body.large-text-mode .tags span {
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 15px;
+}
+
+body.large-text-mode .detail-btn,
+body.large-text-mode .bookmark-btn {
+  min-height: 58px;
+  font-size: 18px;
+}
+
+body.large-text-mode .pagination a {
+  min-width: 52px;
+  height: 52px;
+  font-size: 18px;
+}
+
+/* =========================================================
+   정책 상세
+========================================================= */
+
+body.large-text-mode .detail-container {
+  width: min(1180px, calc(100% - 48px));
+}
+
+body.large-text-mode .back-link {
+  min-height: 50px;
+  font-size: 18px;
+}
+
+body.large-text-mode .detail-title-card {
+  padding: 36px;
+  border-width: 2px;
+}
+
+body.large-text-mode .detail-title-card h1 {
+  font-size: 44px;
+  line-height: 1.3;
+}
+
+body.large-text-mode .lead-text {
+  font-size: 21px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .status-badge,
+body.large-text-mode .dday-badge,
+body.large-text-mode .source-badge,
+body.large-text-mode .mini-status {
+  min-height: 38px;
+  padding: 7px 13px;
+  font-size: 16px;
+}
+
+body.large-text-mode .summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .summary-grid dt,
+body.large-text-mode .summary-grid dd {
+  font-size: 18px;
+}
+
+body.large-text-mode .detail-action-box {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .primary-action,
+body.large-text-mode .outline-action,
+body.large-text-mode .ghost-action,
+body.large-text-mode .side-primary-link,
+body.large-text-mode .side-save-button {
+  min-height: 60px;
+  font-size: 18px;
+}
+
+body.large-text-mode .detail-layout {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .sticky-card {
+  position: static;
+}
+
+body.large-text-mode .info-card,
+body.large-text-mode .side-card {
+  padding: 30px;
+  border-width: 2px;
+}
+
+body.large-text-mode .info-card h2,
+body.large-text-mode .side-card h2 {
+  font-size: 30px;
+}
+
+body.large-text-mode .info-card > p,
+body.large-text-mode .easy-summary-box p,
+body.large-text-mode .dot-list li,
+body.large-text-mode .benefit-item span,
+body.large-text-mode .step-list p,
+body.large-text-mode .checklist label,
+body.large-text-mode .side-info-list dt,
+body.large-text-mode .side-info-list dd,
+body.large-text-mode .caution-card p {
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .benefit-item strong,
+body.large-text-mode .step-list strong {
+  font-size: 20px;
+}
+
+body.large-text-mode .checklist input {
+  width: 25px;
+  height: 25px;
+}
+
+/* =========================================================
+   오류·누락 신고
+========================================================= */
+
+body.large-text-mode .report-container {
+  width: min(1120px, calc(100% - 48px));
+}
+
+body.large-text-mode .report-hero {
+  padding: 54px 0;
+}
+
+body.large-text-mode .report-hero-grid {
+  grid-template-columns: 1fr;
+  gap: 26px;
+}
+
+body.large-text-mode .report-hero h1 {
+  font-size: 52px;
+}
+
+body.large-text-mode .report-hero p,
+body.large-text-mode .report-hero-card li {
+  font-size: 19px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .report-hero-card {
+  padding: 28px;
+  border-width: 2px;
+}
+
+body.large-text-mode .report-hero-card strong {
+  font-size: 22px;
+}
+
+body.large-text-mode .report-layout {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .report-card,
+body.large-text-mode .report-side-card {
+  padding: 32px;
+  border-width: 2px;
+}
+
+body.large-text-mode .report-card-head h2,
+body.large-text-mode .report-side-card h2 {
+  font-size: 31px;
+}
+
+body.large-text-mode .report-card-head p,
+body.large-text-mode .report-step p,
+body.large-text-mode .report-note-box p {
+  font-size: 17px;
+}
+
+body.large-text-mode .report-type-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .report-type-item span {
+  min-height: 100px;
+  padding: 20px;
+  border-width: 2px;
+}
+
+body.large-text-mode .report-type-item strong {
+  font-size: 20px;
+}
+
+body.large-text-mode .report-type-item em {
+  font-size: 16px;
+}
+
+body.large-text-mode .report-form-grid {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .report-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .report-field input,
+body.large-text-mode .report-field select {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .report-field textarea {
+  min-height: 190px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .report-agree-box label {
+  font-size: 18px;
+}
+
+body.large-text-mode .report-agree-box input {
+  width: 25px;
+  height: 25px;
+}
+
+body.large-text-mode .report-cancel,
+body.large-text-mode .report-submit,
+body.large-text-mode .report-file-box button {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+/* =========================================================
+   공통 푸터 - footer.html의 인라인 !important보다 높은 명시도
+========================================================= */
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__inner,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__bottom {
+  width: min(1180px, calc(100% - 56px)) !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__top {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  row-gap: 34px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__quick,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__help,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__notice {
+  padding-left: 30px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__title {
+  font-size: 27px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__slogan,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__quick-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__help-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__notice-text {
+  font-size: 19px !important;
+  line-height: 1.65 !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__legal,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__copy {
+  font-size: 17px !important;
+}
+
+/* =========================================================
+   소형 화면
+========================================================= */
+
+@media (max-width: 900px) {
+  body.large-text-mode .filter-grid,
+  body.large-text-mode .search-filter-card .filter-grid,
+  body.large-text-mode .deadline-grid,
+  body.large-text-mode .recent-grid,
+  body.large-text-mode .info-grid,
+  body.large-text-mode .summary-grid,
+  body.large-text-mode .detail-action-box,
+  body.large-text-mode .report-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .mypage-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body.large-text-mode .hero-status {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.large-text-mode .mypage-side-nav {
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__top {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__quick,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__help,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__notice {
+    padding-left: 0 !important;
+    border-left: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body.large-text-mode {
+    --senior-body: 18px;
+    --senior-small: 15px;
+    --senior-label: 18px;
+    --senior-control: 18px;
+  }
+
+  body.large-text-mode .hero-inner,
+  body.large-text-mode .policy-inner,
+  body.large-text-mode .policy-container,
+  body.large-text-mode .detail-container,
+  body.large-text-mode .report-container,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__inner,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__bottom {
+    width: calc(100% - 28px) !important;
+  }
+
+  body.large-text-mode .hero-copy h1,
+  body.large-text-mode .policy-hero h1,
+  body.large-text-mode .report-hero h1 {
+    font-size: 38px;
+  }
+
+  body.large-text-mode .search-line {
+    height: auto;
+    grid-template-columns: 58px 1fr;
+  }
+
+  body.large-text-mode .search-line button {
+    grid-column: 1 / -1;
+    width: calc(100% - 8px);
+    margin: 0 4px 4px;
+  }
+
+  body.large-text-mode .login-card,
+  body.large-text-mode .signup-card,
+  body.large-text-mode .password-card,
+  body.large-text-mode .mypage-card,
+  body.large-text-mode .report-card,
+  body.large-text-mode .report-side-card {
+    padding: 26px 20px;
+  }
+
+  body.large-text-mode .input-button-group {
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .form-actions,
+  body.large-text-mode .report-actions,
+  body.large-text-mode .button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .profile-summary-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  body.large-text-mode .profile-avatar {
+    margin: 0 auto;
+  }
+}

@@ -6,8 +6,12 @@
     <title th:text="${policy.title + ' | 서울 케어넥트'}">정책 상세 | 서울 케어넥트</title>
     <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
     <link rel="stylesheet" th:href="@{/css/policy-detail.css}" href="/css/policy-detail.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
 </head>
-<body>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
 <div th:replace="~{fragments/nav :: nav}"></div>
 
 <main class="policy-detail-page">
