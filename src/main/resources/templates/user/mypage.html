@@ -15,9 +15,13 @@
     <link rel="stylesheet"
           th:href="@{/css/mypage.css}"
           href="/css/mypage.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
 </head>
 
-<body th:classappend="${user.uiMode == 'LARGE_TEXT'} ? ' large-text-mode' : ''">
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
 
 <div th:replace="~{fragments/nav :: nav}"></div>
 
@@ -40,7 +44,7 @@
             <span>현재 화면 모드</span>
 
             <strong th:text="${user.uiMode == 'LARGE_TEXT'}
-                    ? '큰 글씨 모드'
+                    ? '고령친화 모드'
                     : '일반 모드'">
                 일반 모드
             </strong>
@@ -268,7 +272,7 @@
 
                             <div class="mypage-field">
                                 <label for="birthYear">
-                                    출생연도
+                                    출생연도 <em>*</em>
                                 </label>
 
                                 <input id="birthYear"
@@ -276,7 +280,12 @@
                                        inputmode="numeric"
                                        maxlength="4"
                                        th:field="*{birthYear}"
-                                       placeholder="예: 1972">
+                                       placeholder="예: 1972"
+                                       oninput="updateAgeGroup()">
+
+                                <small>
+                                    숫자 4자리로 입력해주세요.
+                                </small>
 
                                 <small class="field-error"
                                        th:if="${#fields.hasErrors('birthYear')}"
@@ -287,43 +296,19 @@
 
                             <div class="mypage-field">
                                 <label for="ageGroup">
-                                    연령대 <em>*</em>
+                                    연령대
                                 </label>
 
-                                <select id="ageGroup"
-                                        th:field="*{ageGroup}">
+                                <input id="ageGroup"
+                                       type="text"
+                                       th:field="*{ageGroup}"
+                                       readonly>
 
-                                    <option value="">
-                                        연령대를 선택하세요
-                                    </option>
-
-                                    <option value="20대 이하">
-                                        20대 이하
-                                    </option>
-
-                                    <option value="30대">
-                                        30대
-                                    </option>
-
-                                    <option value="40대">
-                                        40대
-                                    </option>
-
-                                    <option value="50대">
-                                        50대
-                                    </option>
-
-                                    <option value="60대 이상">
-                                        60대 이상
-                                    </option>
-                                </select>
-
-                                <small class="field-error"
-                                       th:if="${#fields.hasErrors('ageGroup')}"
-                                       th:errors="*{ageGroup}">
-                                    연령대 오류
+                                <small>
+                                    출생연도를 기준으로 자동 계산됩니다.
                                 </small>
                             </div>
+
                         </div>
 
                         <!-- 서비스 지역 / 관심 지역 -->
@@ -403,7 +388,7 @@
                         </legend>
 
                         <p>
-                            글씨 크기와 버튼 간격을 사용자에게 맞게
+                            글씨 크기, 버튼 간격과 화면 배치를 사용자에게 맞게
                             설정할 수 있습니다.
                         </p>
 
@@ -430,10 +415,10 @@
 
                                 <span class="mode-check"></span>
 
-                                <strong>큰 글씨 모드</strong>
+                                <strong>고령친화 모드</strong>
 
                                 <small>
-                                    글씨와 입력창, 버튼을 크게 표시합니다.
+                                    큰 글씨와 넓은 버튼을 사용하고 복잡한 화면을 단순하게 표시합니다.
                                 </small>
                             </label>
                         </div>
@@ -684,4 +669,50 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
+
+<script>
+    function updateAgeGroup() {
+        const birthYearInput =
+            document.getElementById("birthYear");
+
+        const ageGroupInput =
+            document.getElementById("ageGroup");
+
+        if (!birthYearInput || !ageGroupInput) {
+            return;
+        }
+
+        const birthYear = Number(birthYearInput.value);
+        const currentYear = new Date().getFullYear();
+
+        if (
+            !Number.isInteger(birthYear) ||
+            birthYear < 1900 ||
+            birthYear > currentYear
+        ) {
+            ageGroupInput.value = "";
+            return;
+        }
+
+        const age = currentYear - birthYear;
+
+        if (age <= 29) {
+            ageGroupInput.value = "20대 이하";
+        } else if (age <= 39) {
+            ageGroupInput.value = "30대";
+        } else if (age <= 49) {
+            ageGroupInput.value = "40대";
+        } else if (age <= 59) {
+            ageGroupInput.value = "50대";
+        } else {
+            ageGroupInput.value = "60대 이상";
+        }
+    }
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        updateAgeGroup
+    );
+</script>
+
 </html>

@@ -20,15 +20,12 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.time.Year;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
-
-    private static final Set<String> AGE_GROUPS = Set.of(
-            "20대 이하", "30대", "40대", "50대", "60대 이상"
-    );
 
     private static final Set<String> UI_MODES = Set.of(
             "DEFAULT", "LARGE_TEXT"
@@ -60,18 +57,21 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = new User();
-        user.setBirthYear(toNullIfBlank(request.getBirthYear()));
+        String birthYear = validateBirthYear(request.getBirthYear());
+        String ageGroup = calculateAgeGroup(birthYear);
+
+        user.setBirthYear(birthYear);
+        user.setAgeGroup(ageGroup);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName().trim());
         user.setPhone(toNullIfBlank(request.getPhone()));
-        user.setAgeGroup(request.getAgeGroup());
         user.setDistrict(request.getDistrict());
         user.setRole("USER");
         user.setRegion("서울");
         user.setProvider("LOCAL");
 
-        if ("60대 이상".equals(request.getAgeGroup())) {
+        if ("60대 이상".equals(ageGroup)) {
             user.setUiMode("LARGE_TEXT");
         } else {
             user.setUiMode("DEFAULT");
@@ -101,10 +101,6 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("이름을 입력해주세요.");
         }
 
-        if (!AGE_GROUPS.contains(request.getAgeGroup())) {
-            throw new IllegalArgumentException("올바른 연령대를 선택해주세요.");
-        }
-
         if (!SEOUL_DISTRICTS.contains(request.getDistrict())) {
             throw new IllegalArgumentException("올바른 관심 지역을 선택해주세요.");
         }
@@ -113,10 +109,13 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("올바른 화면 모드를 선택해주세요.");
         }
 
+        String birthYear = validateBirthYear(request.getBirthYear());
+        String ageGroup = calculateAgeGroup(birthYear);
+
         user.setName(name);
-        user.setBirthYear(toNullIfBlank(request.getBirthYear()));
+        user.setBirthYear(birthYear);
         user.setPhone(toNullIfBlank(request.getPhone()));
-        user.setAgeGroup(request.getAgeGroup());
+        user.setAgeGroup(ageGroup);
         user.setDistrict(request.getDistrict());
         user.setUiMode(request.getUiMode());
 
@@ -269,5 +268,55 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         return value.trim();
+    }
+
+    private String validateBirthYear(String value) {
+
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("출생연도를 입력해주세요.");
+        }
+
+        String birthYear = value.trim();
+
+        if (!birthYear.matches("\\d{4}")) {
+            throw new IllegalArgumentException(
+                    "출생연도는 숫자 4자리로 입력해주세요."
+            );
+        }
+
+        int year = Integer.parseInt(birthYear);
+        int currentYear = Year.now().getValue();
+
+        if (year < 1900 || year > currentYear) {
+            throw new IllegalArgumentException(
+                    "올바른 출생연도를 입력해주세요."
+            );
+        }
+
+        return birthYear;
+    }
+
+    private String calculateAgeGroup(String birthYear) {
+
+        int year = Integer.parseInt(birthYear);
+        int age = Year.now().getValue() - year;
+
+        if (age <= 29) {
+            return "20대 이하";
+        }
+
+        if (age <= 39) {
+            return "30대";
+        }
+
+        if (age <= 49) {
+            return "40대";
+        }
+
+        if (age <= 59) {
+            return "50대";
+        }
+
+        return "60대 이상";
     }
 }
