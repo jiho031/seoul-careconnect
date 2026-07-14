@@ -75,8 +75,9 @@ img {
   width: min(1480px, calc(100% - 72px));
   height: 100%;
   margin: 0 auto;
+
   display: grid;
-  grid-template-columns: 260px 1fr 216px;
+  grid-template-columns: 220px minmax(360px, 1fr) auto;
   align-items: center;
   gap: 24px;
 }
@@ -118,20 +119,29 @@ img {
 
 .nav-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 14px;
+  flex-wrap: nowrap;
+  gap: 12px;
+  white-space: nowrap;
 }
 
 .nav-actions a {
   height: 44px;
   min-width: 82px;
+  padding: 0 15px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   border-radius: 8px;
+
   font-size: 16px;
   font-weight: 900;
+  line-height: 1;
   letter-spacing: -.045em;
+  white-space: nowrap;
 }
 
 .btn-login {
@@ -272,13 +282,29 @@ img {
 
 @media (max-width: 1180px) {
   .nav-inner {
-    grid-template-columns: 220px 1fr 190px;
-    width: min(100% - 40px, 1080px);
+    width: min(100% - 40px, 1120px);
+    grid-template-columns: 190px minmax(300px, 1fr) auto;
+    gap: 16px;
   }
 
   .nav-menu {
-    gap: 28px;
+    gap: 24px;
     font-size: 16px;
+  }
+
+  .nav-actions {
+    gap: 8px;
+  }
+
+  .nav-actions a,
+  .nav-actions button {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 15px;
+  }
+
+  .admin-page-button {
+    min-width: 100px !important;
   }
 
   .footer-inner {
@@ -594,5 +620,11 @@ img {
   .session-extend-button {
     grid-row: 1;
   }
+}
+
+.admin-page-button {
+  min-width: 112px !important;
+  padding: 0 16px !important;
+  white-space: nowrap;
 }
 
