@@ -272,7 +272,7 @@
 
                             <div class="mypage-field">
                                 <label for="birthYear">
-                                    출생연도
+                                    출생연도 <em>*</em>
                                 </label>
 
                                 <input id="birthYear"
@@ -280,7 +280,12 @@
                                        inputmode="numeric"
                                        maxlength="4"
                                        th:field="*{birthYear}"
-                                       placeholder="예: 1972">
+                                       placeholder="예: 1972"
+                                       oninput="updateAgeGroup()">
+
+                                <small>
+                                    숫자 4자리로 입력해주세요.
+                                </small>
 
                                 <small class="field-error"
                                        th:if="${#fields.hasErrors('birthYear')}"
@@ -291,43 +296,19 @@
 
                             <div class="mypage-field">
                                 <label for="ageGroup">
-                                    연령대 <em>*</em>
+                                    연령대
                                 </label>
 
-                                <select id="ageGroup"
-                                        th:field="*{ageGroup}">
+                                <input id="ageGroup"
+                                       type="text"
+                                       th:field="*{ageGroup}"
+                                       readonly>
 
-                                    <option value="">
-                                        연령대를 선택하세요
-                                    </option>
-
-                                    <option value="20대 이하">
-                                        20대 이하
-                                    </option>
-
-                                    <option value="30대">
-                                        30대
-                                    </option>
-
-                                    <option value="40대">
-                                        40대
-                                    </option>
-
-                                    <option value="50대">
-                                        50대
-                                    </option>
-
-                                    <option value="60대 이상">
-                                        60대 이상
-                                    </option>
-                                </select>
-
-                                <small class="field-error"
-                                       th:if="${#fields.hasErrors('ageGroup')}"
-                                       th:errors="*{ageGroup}">
-                                    연령대 오류
+                                <small>
+                                    출생연도를 기준으로 자동 계산됩니다.
                                 </small>
                             </div>
+
                         </div>
 
                         <!-- 서비스 지역 / 관심 지역 -->
@@ -688,4 +669,50 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
+
+<script>
+    function updateAgeGroup() {
+        const birthYearInput =
+            document.getElementById("birthYear");
+
+        const ageGroupInput =
+            document.getElementById("ageGroup");
+
+        if (!birthYearInput || !ageGroupInput) {
+            return;
+        }
+
+        const birthYear = Number(birthYearInput.value);
+        const currentYear = new Date().getFullYear();
+
+        if (
+            !Number.isInteger(birthYear) ||
+            birthYear < 1900 ||
+            birthYear > currentYear
+        ) {
+            ageGroupInput.value = "";
+            return;
+        }
+
+        const age = currentYear - birthYear;
+
+        if (age <= 29) {
+            ageGroupInput.value = "20대 이하";
+        } else if (age <= 39) {
+            ageGroupInput.value = "30대";
+        } else if (age <= 49) {
+            ageGroupInput.value = "40대";
+        } else if (age <= 59) {
+            ageGroupInput.value = "50대";
+        } else {
+            ageGroupInput.value = "60대 이상";
+        }
+    }
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        updateAgeGroup
+    );
+</script>
+
 </html>
