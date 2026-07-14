@@ -1,4 +1,4 @@
-package com.seoulcareconnect.admin.controller;
+package com.seoulcareconnect.controller.admin;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,10 +16,6 @@ public class AdminPageController {
         return "admin/dashboard";
     }
 
-    @GetMapping("/admin/collection")
-    public String collection() {
-        return "admin/collection";
-    }
 
     @GetMapping("/admin/policy-errors")
     public String policyErrors() {
