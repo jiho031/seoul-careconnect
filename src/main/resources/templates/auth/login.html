@@ -7,7 +7,9 @@
     <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
     <link rel="stylesheet" th:href="@{/css/login.css}" href="/css/login.css">
 </head>
-<body>
+<body th:classappend="${currentUiMode == 'LARGE_TEXT'}
+        ? 'large-text-mode'
+        : ''">
 <div th:replace="~{fragments/nav :: nav}"></div>
 
 <main class="login-page">

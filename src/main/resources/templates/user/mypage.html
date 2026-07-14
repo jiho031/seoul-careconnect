@@ -17,7 +17,9 @@
           href="/css/mypage.css">
 </head>
 
-<body th:classappend="${user.uiMode == 'LARGE_TEXT'} ? ' large-text-mode' : ''">
+<body th:classappend="${currentUiMode == 'LARGE_TEXT'}
+        ? 'large-text-mode'
+        : ''">
 
 <div th:replace="~{fragments/nav :: nav}"></div>
 
