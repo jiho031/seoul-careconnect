@@ -873,3 +873,193 @@
     grid-template-columns: 58px 52px 1px minmax(90px, 1fr);
   }
 }
+
+.keyword-empty {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  color: #526989;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.policy-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px 4px;
+  color: #526989;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.6;
+}
+
+.policy-dday.red {
+  background: #ff424b;
+}
+
+.policy-dday.orange {
+  background: #ff7a38;
+}
+
+.policy-dday.teal {
+  background: #008b91;
+}
+
+.policy-dday.blue {
+  background: #277de0;
+}
+
+.recent-card > span {
+  min-width: 0;
+  flex: 1;
+}
+
+@media (min-width: 761px) {
+  .search-foot {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: end;
+  }
+
+  .keyword-area {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .keyword-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .keyword-list a {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 44px;
+    padding: 4px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal;
+    overflow: hidden;
+    word-break: keep-all;
+    line-height: 1.2;
+    text-align: center;
+    font-size: 9.5px;
+  }
+
+  .preset-area {
+    flex: 0 0 auto;
+  }
+
+  .preset-area a {
+    min-width: 105px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}
+
+.deadline-grid .policy-card {
+  min-width: 0;
+  min-height: 108px;
+  overflow: hidden;
+}
+
+.deadline-grid .policy-card-top {
+  grid-template-columns: 54px minmax(0, 1fr);
+  column-gap: 8px;
+  min-width: 0;
+}
+
+.deadline-grid .policy-title {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deadline-grid .policy-card .policy-meta {
+  display: grid;
+  grid-template-columns: 50px 48px 1px minmax(0, 1fr);
+  column-gap: 4px;
+  align-items: center;
+  min-width: 0;
+  margin-top: 12px;
+}
+
+.deadline-grid .policy-card .policy-status {
+  width: 50px;
+  min-width: 0;
+}
+
+.deadline-grid .policy-card .policy-meta-label {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.deadline-grid .policy-card .policy-meta-divider {
+  display: block;
+  width: 1px;
+}
+
+.deadline-grid .policy-card .policy-date {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 760px) {
+  .keyword-list {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .keyword-list a {
+    min-width: 145px;
+    height: 40px;
+  }
+
+  .deadline-grid .policy-card {
+    min-height: 126px;
+  }
+}
+
+.policy-inner {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.policy-board {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.deadline-grid,
+.recent-grid {
+  min-width: 0;
+}
+
+.policy-card,
+.recent-card {
+  min-width: 0;
+}
+
+.recent-card > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.recent-card b {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
