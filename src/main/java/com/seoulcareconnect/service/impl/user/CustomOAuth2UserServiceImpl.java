@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.oauth2.core.OAuth2Error;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +53,7 @@ public class CustomOAuth2UserServiceImpl implements CustomOAuth2UserService {
 
     private User findOrCreateUser(OAuthUserInfo info) {
 
+        // 동일한 카카오 계정으로 이미 가입된 회원
         Optional<User> existingByProvider =
                 userRepository.findByProviderAndProviderId(
                         info.provider(),
@@ -70,29 +68,69 @@ public class CustomOAuth2UserServiceImpl implements CustomOAuth2UserService {
             return user;
         }
 
+        // 카카오에서 이메일을 받은 경우 동일 이메일 확인
         if (info.email() != null && !info.email().isBlank()) {
 
+            String email = info.email()
+                    .trim()
+                    .toLowerCase(Locale.ROOT);
+
             Optional<User> existingByEmail =
-                    userRepository.findByEmail(
-                            info.email().trim().toLowerCase()
-                    );
+                    userRepository.findByEmail(email);
 
             if (existingByEmail.isPresent()) {
                 User user = existingByEmail.get();
 
-                // 탈퇴 계정이면 소셜 계정 연결 전에 차단
                 validateActiveUser(user);
 
-                user.setProvider(info.provider());
-                user.setProviderId(info.providerId());
+                String existingProvider =
+                        normalizeProvider(user.getProvider());
 
-                return userRepository.save(user);
+                /*
+                 * 기존 가입 방식이 카카오가 아니면
+                 * provider를 덮어쓰지 않고 로그인 차단
+                 */
+                if (!info.provider().equals(existingProvider)) {
+                    throw providerConflict(existingProvider);
+                }
+
+                /*
+                 * 과거 데이터에 카카오 providerId만 없는 경우
+                 * 한 번만 연결
+                 */
+                if (user.getProviderId() == null
+                        || user.getProviderId().isBlank()) {
+
+                    user.setProviderId(info.providerId());
+
+                    return userRepository.save(user);
+                }
+
+                /*
+                 * 같은 이메일이지만 카카오 사용자 ID가 다름
+                 */
+                throw providerConflict(existingProvider);
             }
         }
 
+        // 완전 신규 카카오 회원
         User user = new User();
 
-        user.setEmail(info.email());
+        String email = info.email();
+
+        /*
+         * 카카오 이메일을 받지 못했다면
+         * providerId를 이용해 내부 이메일 생성
+         */
+        if (email == null || email.isBlank()) {
+            email = "kakao_"
+                    + info.providerId()
+                    + "@oauth.local";
+        } else {
+            email = email.trim().toLowerCase(Locale.ROOT);
+        }
+
+        user.setEmail(email);
         user.setPassword(
                 passwordEncoder.encode(
                         UUID.randomUUID().toString()
@@ -107,6 +145,32 @@ public class CustomOAuth2UserServiceImpl implements CustomOAuth2UserService {
         user.setIsActive(true);
 
         return userRepository.save(user);
+    }
+
+    private String normalizeProvider(String provider) {
+
+        if (provider == null || provider.isBlank()) {
+            return "LOCAL";
+        }
+
+        return provider.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private OAuth2AuthenticationException providerConflict(
+            String existingProvider
+    ) {
+        String loginMethod = switch (existingProvider) {
+            case "GOOGLE" -> "구글 로그인";
+            case "KAKAO" -> "카카오 로그인";
+            default -> "이메일과 비밀번호 로그인";
+        };
+
+        return new OAuth2AuthenticationException(
+                new OAuth2Error("provider_conflict"),
+                "이미 " + loginMethod
+                        + " 방식으로 가입된 이메일입니다. "
+                        + "기존 로그인 방식을 이용해주세요."
+        );
     }
 
     private void validateActiveUser(User user) {
