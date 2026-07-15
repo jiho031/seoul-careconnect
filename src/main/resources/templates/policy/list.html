@@ -111,7 +111,7 @@
             <div class="result-head">
                 <div>
                     <h2>정책 검색 결과</h2>
-                    <p>총 <strong>128</strong>개의 정책이 검색되었습니다.</p>
+                    <p>총 <strong th:text="${policyList != null ? policyList.size() : 0}">128</strong>개의 정책이 검색되었습니다.</p>
                 </div>
                 <div class="result-tabs" aria-label="빠른 보기">
                     <a href="#" class="active">전체</a>
@@ -121,145 +121,43 @@
             </div>
 
             <div class="policy-card-list">
-                <article class="policy-result-card">
+                <!-- [수정] 카드 1개만 th:each로 반복. user.id -> user.userId로 수정, 괄호 누락 수정 -->
+                <article class="policy-result-card" th:each="policy : ${policyList}">
                     <div class="card-top">
                         <div class="policy-badges">
-                            <span class="badge status">신청가능</span>
-                            <span class="badge dday red">D-5</span>
+                            <span class="badge status" th:text="${policy.status != null ? policy.status : '신청가능'}">신청가능</span>
                         </div>
-                        <button class="bookmark-btn" type="button">관심 저장</button>
+                        <button class="bookmark-btn" type="button"
+                                th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.id}"
+                                onclick="handleFavoriteClick(this)">
+                            관심 저장
+                        </button>
                     </div>
-                    <h3><a href="#">중장년 직업역량 강화 교육</a></h3>
-                    <p class="agency">서울특별시 · 일자리정책과</p>
-                    <p class="summary">중장년층의 재취업과 직무 역량 강화를 돕기 위한 교육 지원 정책입니다.</p>
+                    <h3><a th:href="@{'/policies/detail/' + ${policy.id}}" th:text="${policy.title}">정책명</a></h3>
+                    <p class="agency" th:text="${policy.agency}">주관기관</p>
+                    <p class="summary" th:text="${policy.summary}">정책 요약 내용</p>
                     <dl class="info-grid">
                         <div>
-                            <dt>신청 기간</dt>
-                            <dd>2025.07.01 ~ 2025.07.10</dd>
-                        </div>
-                        <div>
-                            <dt>신청 방법</dt>
-                            <dd>온라인 신청</dd>
-                        </div>
-                        <div>
                             <dt>지역</dt>
-                            <dd>서울시 전체</dd>
+                            <dd th:text="${policy.region}">서울시 전체</dd>
+                        </div>
+                        <div>
+                            <dt>분야</dt>
+                            <dd th:text="${policy.category}">일자리</dd>
                         </div>
                     </dl>
                     <div class="card-bottom">
                         <div class="tags">
-                            <span>중장년</span>
-                            <span>일자리</span>
-                            <span>교육</span>
+                            <span th:if="${policy.category != null}" th:text="${policy.category}">분야</span>
+                            <span th:if="${policy.region != null}" th:text="${policy.region}">지역</span>
                         </div>
-                        <a class="detail-btn" href="/policies/detail">상세 보기</a>
+                        <a class="detail-btn" th:href="@{'/policies/detail/' + ${policy.id}}">상세 보기</a>
                     </div>
                 </article>
 
-                <article class="policy-result-card">
-                    <div class="card-top">
-                        <div class="policy-badges">
-                            <span class="badge status">신청가능</span>
-                            <span class="badge dday orange">D-9</span>
-                        </div>
-                        <button class="bookmark-btn" type="button">관심 저장</button>
-                    </div>
-                    <h3><a href="#">어르신 건강관리 지원</a></h3>
-                    <p class="agency">노원구 · 어르신복지과</p>
-                    <p class="summary">어르신의 건강 상담과 예방 관리를 지원하여 일상생활의 안정성을 높이는 정책입니다.</p>
-                    <dl class="info-grid">
-                        <div>
-                            <dt>신청 기간</dt>
-                            <dd>2025.07.03 ~ 2025.07.28</dd>
-                        </div>
-                        <div>
-                            <dt>신청 방법</dt>
-                            <dd>방문 신청</dd>
-                        </div>
-                        <div>
-                            <dt>지역</dt>
-                            <dd>노원구</dd>
-                        </div>
-                    </dl>
-                    <div class="card-bottom">
-                        <div class="tags">
-                            <span>어르신</span>
-                            <span>건강</span>
-                            <span>돌봄</span>
-                        </div>
-                        <a class="detail-btn" href="/policies/detail">상세 보기</a>
-                    </div>
-                </article>
-
-                <article class="policy-result-card">
-                    <div class="card-top">
-                        <div class="policy-badges">
-                            <span class="badge status">신청가능</span>
-                            <span class="badge dday teal">D-14</span>
-                        </div>
-                        <button class="bookmark-btn" type="button">관심 저장</button>
-                    </div>
-                    <h3><a href="#">1인가구 생활지원금</a></h3>
-                    <p class="agency">동대문구 · 복지정책과</p>
-                    <p class="summary">생활 안정이 필요한 1인가구를 대상으로 생활비 부담을 줄일 수 있도록 지원합니다.</p>
-                    <dl class="info-grid">
-                        <div>
-                            <dt>신청 기간</dt>
-                            <dd>2025.07.01 ~ 2025.07.30</dd>
-                        </div>
-                        <div>
-                            <dt>신청 방법</dt>
-                            <dd>온라인 · 방문</dd>
-                        </div>
-                        <div>
-                            <dt>지역</dt>
-                            <dd>동대문구</dd>
-                        </div>
-                    </dl>
-                    <div class="card-bottom">
-                        <div class="tags">
-                            <span>1인가구</span>
-                            <span>생활지원</span>
-                            <span>저소득</span>
-                        </div>
-                        <a class="detail-btn" href="/policies/detail">상세 보기</a>
-                    </div>
-                </article>
-
-                <article class="policy-result-card">
-                    <div class="card-top">
-                        <div class="policy-badges">
-                            <span class="badge status muted">최근등록</span>
-                            <span class="badge dday blue">NEW</span>
-                        </div>
-                        <button class="bookmark-btn" type="button">관심 저장</button>
-                    </div>
-                    <h3><a href="#">신혼부부 주거 지원</a></h3>
-                    <p class="agency">서울특별시 · 주거복지센터</p>
-                    <p class="summary">신혼부부의 주거비 부담을 완화하기 위해 주거 관련 상담과 지원 정보를 제공합니다.</p>
-                    <dl class="info-grid">
-                        <div>
-                            <dt>등록일</dt>
-                            <dd>2025.06.23</dd>
-                        </div>
-                        <div>
-                            <dt>신청 방법</dt>
-                            <dd>공식 사이트 확인</dd>
-                        </div>
-                        <div>
-                            <dt>지역</dt>
-                            <dd>서울시 전체</dd>
-                        </div>
-                    </dl>
-                    <div class="card-bottom">
-                        <div class="tags">
-                            <span>주거</span>
-                            <span>신혼부부</span>
-                            <span>서울시 전체</span>
-                        </div>
-                        <a class="detail-btn" href="/policies/detail">상세 보기</a>
-                    </div>
-                </article>
+                <p th:if="${policyList == null || policyList.isEmpty()}" style="padding:40px 0; color:#6b7b99; font-weight:700;">
+                    검색된 정책이 없습니다.
+                </p>
             </div>
 
             <nav class="pagination" aria-label="페이지 이동">
@@ -274,6 +172,37 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    function handleFavoriteClick(btn) {
+        const userId = btn.dataset.userId;
+        const policyId = btn.dataset.policyId;
+        addFavorite(userId, policyId, btn);
+    }
+
+    function addFavorite(userId, policyId, btn) {
+        if (!userId) {
+            alert("로그인 후 이용 가능합니다.");
+            return;
+        }
+
+        fetch(`/api/users/${userId}/favorites/${policyId}`, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert("관심 정책에 추가되었습니다!");
+                    btn.innerText = "찜 완료";
+                    btn.disabled = true;
+                } else if (response.status === 409) {
+                    alert("이미 관심 정책으로 등록된 정책입니다.");
+                } else {
+                    alert("오류가 발생했습니다.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
 <script th:src="@{/js/common.js}" src="/js/common.js"></script>
 </body>
 </html>

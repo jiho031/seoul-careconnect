@@ -936,7 +936,101 @@
 .large-text-mode .ui-mode-section legend {
     font-size: 17px;
 }
+/* 관심 정책 카드 */
+.policy-card-list {
+    display: grid;
+    gap: 14px;
+}
 
+.policy-card {
+    padding: 20px 22px;
+
+    border: 1px solid #dce8f1;
+    border-radius: 18px;
+    border-left: 4px solid #118c87;
+
+    background: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.policy-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(38, 95, 128, 0.10);
+}
+
+.policy-card-body {
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.policy-card-category {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+
+    height: 26px;
+    padding: 0 11px;
+
+    border-radius: 999px;
+
+    color: #087d78;
+    background: #e6f7f5;
+
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.policy-card-title {
+    margin: 0;
+
+    color: #071947;
+
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+.policy-card-remove {
+    flex-shrink: 0;
+
+    min-width: 76px;
+    height: 42px;
+    padding: 0 16px;
+
+    border: 1px solid #dc5c5c;
+    border-radius: 12px;
+
+    color: #d64747;
+    background: #ffffff;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    transition:
+            transform 0.2s ease,
+            filter 0.2s ease;
+}
+
+.policy-card-remove:hover {
+    color: #ffffff;
+    background: #dc5555;
+    transform: translateY(-1px);
+}
 
 @media (max-width: 960px) {
 
