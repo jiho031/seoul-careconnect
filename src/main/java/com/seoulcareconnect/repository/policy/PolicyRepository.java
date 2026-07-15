@@ -33,19 +33,19 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
 
     @EntityGraph(attributePaths = {"source", "detail"})
     @Query("""
-            select p
-            from Policy p
-            where p.status in :statuses
-              and p.applyStatus <> :expired
-              and (p.startDate is null or p.startDate <= :today)
-              and (p.endDate is null or p.endDate >= :today)
-              and p.endDate is not null
-            order by p.endDate asc, p.createdAt desc
-            """)
+        select p
+        from Policy p
+        where p.status in :statuses
+          and p.applyStatus <> :expired
+          and (p.startDate is null or p.startDate <= :today)
+          and p.endDate between :today and :closingDate
+        order by p.endDate asc, p.createdAt desc
+        """)
     List<Policy> findClosingSoon(
             @Param("statuses") Collection<PolicyStatus> statuses,
             @Param("expired") ApplyStatus expired,
             @Param("today") LocalDate today,
+            @Param("closingDate") LocalDate closingDate,
             Pageable pageable
     );
 

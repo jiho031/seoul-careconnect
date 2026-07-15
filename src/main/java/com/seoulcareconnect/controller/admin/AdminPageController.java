@@ -11,12 +11,6 @@ public class AdminPageController {
         return "redirect:/admin/dashboard";
     }
 
-    @GetMapping("/admin/dashboard")
-    public String dashboard() {
-        return "admin/dashboard";
-    }
-
-
     @GetMapping("/admin/policy-errors")
     public String policyErrors() {
         return "admin/policy-errors";
