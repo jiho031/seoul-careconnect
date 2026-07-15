@@ -48,6 +48,9 @@ public class PolicyServiceImpl implements PolicyService {
     @Value("${app.policy.query.new-days:14}")
     private int newDays;
 
+    @Value("${app.policy.query.closing-soon-days:7}")
+    private int closingSoonDays;
+
     @Override
     public Page<PolicyDTO> search(PolicySearchDTO search) {
         if ("recent".equals(search.safeQuick())) {
@@ -81,10 +84,16 @@ public class PolicyServiceImpl implements PolicyService {
 
     @Override
     public List<PolicyDTO> closingSoon(int limit) {
+        LocalDate today = today();
+        LocalDate closingDate = today.plusDays(
+                Math.max(closingSoonDays, 0)
+        );
+
         return policyRepository.findClosingSoon(
                         PUBLIC_STATUSES,
                         ApplyStatus.EXPIRED,
-                        today(),
+                        today,
+                        closingDate,
                         PageRequest.of(0, safeLimit(limit, 4))
                 ).stream()
                 .map(policyMapper::toDto)
