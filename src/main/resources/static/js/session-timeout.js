@@ -17,6 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const SESSION_SECONDS = 30 * 60;
     const WARNING_SECONDS = 5 * 60;
+    // 10초 후 팝업, 20초 카운트다운 후 자동 로그아웃
+    // const SESSION_SECONDS = 30;
+    // const WARNING_SECONDS = 20;
     const WARNING_START_SECONDS =
         SESSION_SECONDS - WARNING_SECONDS;
 

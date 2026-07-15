@@ -30,7 +30,7 @@
     <div class="nav-actions">
 
       <!-- 일반 회원에게만 누락 신고 표시 -->
-      <a sec:authorize="hasRole('USER') and !hasRole('ADMIN')"
+      <a sec:authorize="hasRole('USER') and !hasAnyRole('ADMIN', 'SUPER_ADMIN')"
          th:href="@{/reports}"
          href="/reports"
          class="nav-report-button">
@@ -38,7 +38,7 @@
       </a>
 
       <!-- 관리자에게만 관리자페이지 표시 -->
-      <a sec:authorize="hasRole('ADMIN')"
+      <a sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')"
          th:href="@{/admin/dashboard}"
          href="/admin/dashboard"
          class="nav-report-button admin-page-button">

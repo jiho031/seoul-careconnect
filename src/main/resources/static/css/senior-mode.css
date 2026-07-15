@@ -1,14 +1,10 @@
-/* =========================================================
-   고령친화 화면 모드
-   DB 값은 기존 LARGE_TEXT를 그대로 사용합니다.
-========================================================= */
 
 body.large-text-mode {
-  --senior-body: 19px;
-  --senior-small: 16px;
-  --senior-label: 19px;
-  --senior-control: 19px;
-  --senior-control-height: 62px;
+  --senior-body: 21px;
+  --senior-small: 17px;
+  --senior-label: 20px;
+  --senior-control: 20px;
+  --senior-control-height: 66px;
   --senior-radius: 16px;
   --senior-focus: 0 0 0 5px rgba(0, 127, 132, .20);
   color: #061846;
@@ -1265,3 +1261,442 @@ body.large-text-mode .scc-clean-footer .scc-clean-footer__copy {
     margin: 0 auto;
   }
 }
+
+/* =========================================================
+   고령친화 가독성 강화 최종 보정
+   반드시 senior-mode.css를 각 페이지 전용 CSS보다 나중에 불러오세요.
+========================================================= */
+
+body.large-text-mode {
+  font-size: 21px !important;
+  line-height: 1.8 !important;
+}
+
+/* 일반 본문 */
+body.large-text-mode main p,
+body.large-text-mode main li,
+body.large-text-mode main dt,
+body.large-text-mode main dd,
+body.large-text-mode main label,
+body.large-text-mode main td,
+body.large-text-mode main th {
+  font-size: 20px !important;
+  line-height: 1.8 !important;
+}
+
+/* 작은 안내 문구도 충분히 크게 */
+body.large-text-mode main small,
+body.large-text-mode main .field-help,
+body.large-text-mode main .field-error,
+body.large-text-mode main .helper-text,
+body.large-text-mode main .description {
+  font-size: 17px !important;
+  line-height: 1.7 !important;
+}
+
+/* 제목 내부 강조 글자는 부모 크기 유지 */
+body.large-text-mode h1 strong,
+body.large-text-mode h2 strong,
+body.large-text-mode h3 strong {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* 입력 요소 */
+body.large-text-mode input:not([type="checkbox"]):not([type="radio"]),
+body.large-text-mode select,
+body.large-text-mode textarea {
+  min-height: 66px !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+  font-size: 20px !important;
+  line-height: 1.7 !important;
+}
+
+body.large-text-mode textarea {
+  min-height: 210px !important;
+  padding-top: 18px !important;
+  padding-bottom: 18px !important;
+}
+
+/* 버튼 */
+body.large-text-mode button,
+body.large-text-mode .button-primary,
+body.large-text-mode .button-secondary,
+body.large-text-mode .button-danger,
+body.large-text-mode .login-submit,
+body.large-text-mode .signup-submit,
+body.large-text-mode .primary-button,
+body.large-text-mode .secondary-button,
+body.large-text-mode .detail-btn,
+body.large-text-mode .bookmark-btn,
+body.large-text-mode .report-submit,
+body.large-text-mode .report-cancel {
+  min-height: 62px !important;
+  padding-left: 22px !important;
+  padding-right: 22px !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+}
+
+/* 체크박스와 라디오 */
+body.large-text-mode input[type="checkbox"],
+body.large-text-mode input[type="radio"] {
+  width: 27px !important;
+  height: 27px !important;
+  min-height: 27px !important;
+}
+
+/* 상단 메뉴 */
+body.large-text-mode .nav-menu a {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .nav-actions a,
+body.large-text-mode .nav-actions button {
+  min-width: 112px !important;
+  min-height: 58px !important;
+  font-size: 19px !important;
+  white-space: nowrap !important;
+}
+
+/* 메인 화면 */
+body.large-text-mode .hero-copy h1 {
+  font-size: clamp(60px, 5.5vw, 72px) !important;
+  line-height: 1.18 !important;
+}
+
+body.large-text-mode .hero-copy > p {
+  font-size: 24px !important;
+  line-height: 1.8 !important;
+}
+
+body.large-text-mode .search-line {
+  min-height: 76px !important;
+}
+
+body.large-text-mode .search-line input {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .search-line button {
+  min-width: 138px !important;
+  font-size: 21px !important;
+}
+
+body.large-text-mode .filter-grid label > span {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .filter-grid select {
+  min-height: 66px !important;
+  font-size: 20px !important;
+}
+
+body.large-text-mode .keyword-area > strong {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .keyword-list {
+  flex-wrap: wrap !important;
+  gap: 9px !important;
+}
+
+body.large-text-mode .keyword-list a {
+  min-height: 42px !important;
+  padding: 8px 12px !important;
+  font-size: 16px !important;
+}
+
+body.large-text-mode .preset-area a {
+  min-height: 60px !important;
+  font-size: 19px !important;
+}
+
+/* AI 안내 */
+body.large-text-mode .ai-title h2 {
+  font-size: 42px !important;
+}
+
+body.large-text-mode .ai-title p {
+  font-size: 22px !important;
+  line-height: 1.7 !important;
+}
+
+body.large-text-mode .ai-list b {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .ai-list small {
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+}
+
+/* 정책 카드 */
+body.large-text-mode .board-head h2,
+body.large-text-mode .result-head h2 {
+  font-size: 34px !important;
+}
+
+body.large-text-mode .policy-title,
+body.large-text-mode .recent-card b,
+body.large-text-mode .policy-result-card h3 {
+  font-size: 22px !important;
+  line-height: 1.55 !important;
+}
+
+body.large-text-mode .policy-meta,
+body.large-text-mode .policy-date,
+body.large-text-mode .recent-card small,
+body.large-text-mode .agency,
+body.large-text-mode .summary {
+  font-size: 17px !important;
+  line-height: 1.7 !important;
+}
+
+body.large-text-mode .policy-status,
+body.large-text-mode .policy-dday,
+body.large-text-mode .badge,
+body.large-text-mode .tags span {
+  font-size: 16px !important;
+}
+
+/* 로그인 */
+body.large-text-mode .login-title-box h2 {
+  font-size: 46px !important;
+}
+
+body.large-text-mode .login-title-box p,
+body.large-text-mode .login-options,
+body.large-text-mode .remember-check,
+body.large-text-mode .login-links {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .login-field label {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .login-field input {
+  min-height: 68px !important;
+  font-size: 20px !important;
+}
+
+/* 회원가입 */
+body.large-text-mode .signup-title-box h1 {
+  font-size: 48px !important;
+}
+
+body.large-text-mode .signup-title-box p,
+body.large-text-mode .signup-check,
+body.large-text-mode .all-check,
+body.large-text-mode .signup-login-link {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .signup-field label {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .signup-field input,
+body.large-text-mode .signup-field select,
+body.large-text-mode .input-button-group button {
+  min-height: 68px !important;
+  font-size: 20px !important;
+}
+
+/* 비밀번호 찾기 */
+body.large-text-mode .password-title-box h2 {
+  font-size: 46px !important;
+}
+
+body.large-text-mode .password-title-box p,
+body.large-text-mode .step-heading p,
+body.large-text-mode .password-rule-box p,
+body.large-text-mode .reset-alert,
+body.large-text-mode .password-bottom-link {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .step-heading h3 {
+  font-size: 30px !important;
+}
+
+body.large-text-mode .password-field label {
+  font-size: 21px !important;
+}
+
+/* 마이페이지 */
+body.large-text-mode .mypage-hero h1 {
+  font-size: 52px !important;
+}
+
+body.large-text-mode .mypage-hero p {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .card-heading h2,
+body.large-text-mode .profile-summary-title h2 {
+  font-size: 38px !important;
+}
+
+body.large-text-mode .card-heading p,
+body.large-text-mode .form-section-heading p {
+  font-size: 19px !important;
+}
+
+body.large-text-mode .mypage-field label,
+body.large-text-mode .ui-mode-section legend {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .mypage-field input,
+body.large-text-mode .mypage-field select {
+  min-height: 68px !important;
+  font-size: 20px !important;
+}
+
+body.large-text-mode .ui-mode-option strong {
+  font-size: 23px !important;
+}
+
+body.large-text-mode .ui-mode-option small {
+  font-size: 18px !important;
+}
+
+body.large-text-mode .security-item summary strong,
+body.large-text-mode .social-notice strong {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .security-item summary small,
+body.large-text-mode .social-notice small {
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+}
+
+/* 정책 목록 */
+body.large-text-mode .policy-hero h1 {
+  font-size: 56px !important;
+}
+
+body.large-text-mode .policy-hero p {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .filter-field label,
+body.large-text-mode .result-tabs a {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .policy-result-card h3 {
+  font-size: 30px !important;
+}
+
+/* 정책 상세 */
+body.large-text-mode .detail-title-card h1 {
+  font-size: 48px !important;
+}
+
+body.large-text-mode .lead-text {
+  font-size: 23px !important;
+}
+
+body.large-text-mode .info-card h2,
+body.large-text-mode .side-card h2 {
+  font-size: 34px !important;
+}
+
+body.large-text-mode .info-card > p,
+body.large-text-mode .easy-summary-box p,
+body.large-text-mode .dot-list li,
+body.large-text-mode .benefit-item span,
+body.large-text-mode .step-list p,
+body.large-text-mode .checklist label,
+body.large-text-mode .side-info-list dt,
+body.large-text-mode .side-info-list dd,
+body.large-text-mode .caution-card p {
+  font-size: 20px !important;
+  line-height: 1.8 !important;
+}
+
+/* 신고 화면 */
+body.large-text-mode .report-hero h1 {
+  font-size: 56px !important;
+}
+
+body.large-text-mode .report-hero p,
+body.large-text-mode .report-hero-card li {
+  font-size: 21px !important;
+  line-height: 1.8 !important;
+}
+
+body.large-text-mode .report-card-head h2,
+body.large-text-mode .report-side-card h2 {
+  font-size: 34px !important;
+}
+
+body.large-text-mode .report-field label {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .report-field input,
+body.large-text-mode .report-field select {
+  min-height: 68px !important;
+  font-size: 20px !important;
+}
+
+/* 푸터 */
+body.large-text-mode .scc-clean-footer .scc-clean-footer__title,
+body.large-text-mode .footer-col h2,
+body.large-text-mode .footer-notice h2 {
+  font-size: 30px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__slogan,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__quick-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__help-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__notice-text,
+body.large-text-mode .footer-brand p,
+body.large-text-mode .footer-notice p,
+body.large-text-mode .footer-col a {
+  font-size: 20px !important;
+  line-height: 1.7 !important;
+}
+
+/* 모바일 */
+@media (max-width: 640px) {
+  body.large-text-mode {
+    font-size: 19px !important;
+  }
+
+  body.large-text-mode main p,
+  body.large-text-mode main li,
+  body.large-text-mode main dt,
+  body.large-text-mode main dd,
+  body.large-text-mode main label,
+  body.large-text-mode main td,
+  body.large-text-mode main th {
+    font-size: 19px !important;
+  }
+
+  body.large-text-mode main small,
+  body.large-text-mode main .field-help,
+  body.large-text-mode main .field-error {
+    font-size: 16px !important;
+  }
+
+  body.large-text-mode .hero-copy h1,
+  body.large-text-mode .policy-hero h1,
+  body.large-text-mode .report-hero h1 {
+    font-size: 42px !important;
+  }
+
+  body.large-text-mode input:not([type="checkbox"]):not([type="radio"]),
+  body.large-text-mode select,
+  body.large-text-mode textarea,
+  body.large-text-mode button {
+    font-size: 19px !important;
+  }
+}
+
