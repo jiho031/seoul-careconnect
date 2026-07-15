@@ -10,6 +10,8 @@ import com.seoulcareconnect.integration.policy.ExternalPolicyItem;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
 import com.seoulcareconnect.repository.policy.SyncLogRepository;
 import com.seoulcareconnect.service.policy.PolicyCollectService;
+import com.seoulcareconnect.integration.policy.SeoulPolicyFilter;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -24,21 +26,34 @@ import java.util.List;
 public class PolicyCollectServiceImpl
         implements PolicyCollectService {
 
-    private static final String LOCAL_WELFARE_SOURCE_NAME =
-            "공공데이터포털-지자체복지서비스";
-
     private final ObjectProvider<ExternalPolicyClient> clientProvider;
     private final PolicySourceRepository sourceRepository;
     private final SyncLogRepository syncLogRepository;
     private final PolicyUpsertService upsertService;
+    private final SeoulPolicyFilter seoulPolicyFilter;
+    private final AtomicBoolean collectionRunning = new AtomicBoolean(false);
 
     @Override
     public void collectAll(SyncType syncType) {
-        List<ExternalPolicyClient> clients =
-                clientProvider.orderedStream().toList();
 
-        for (ExternalPolicyClient client : clients) {
-            collectOne(client, syncType);
+        // 이미 다른 수집 작업이 실행 중이면 중복 실행하지 않는다.
+        if (!collectionRunning.compareAndSet(false, true)) {
+            throw new IllegalStateException(
+                    "정책 API 수집이 이미 진행 중입니다. 완료된 후 다시 시도해 주세요."
+            );
+        }
+
+        try {
+            List<ExternalPolicyClient> clients =
+                    clientProvider.orderedStream().toList();
+
+            for (ExternalPolicyClient client : clients) {
+                collectOne(client, syncType);
+            }
+
+        } finally {
+            // 성공하거나 오류가 발생해도 반드시 실행 상태를 해제한다.
+            collectionRunning.set(false);
         }
     }
 
@@ -90,7 +105,10 @@ public class PolicyCollectServiceImpl
 
             for (ExternalPolicyItem item : items) {
                 try {
-                    if (shouldSkipByRegion(client, item)) {
+                    if (!seoulPolicyFilter.shouldCollect(
+                            client.sourceName(),
+                            item
+                    )) {
                         skipped++;
                         continue;
                     }
@@ -145,7 +163,7 @@ public class PolicyCollectServiceImpl
 
                 log.warn(
                         "{} API 후보 {}건이 모두 "
-                                + "서울 지역 또는 신청기간 "
+                                + "서울·전국 대상 또는 신청기간 "
                                 + "조건에서 제외되었습니다.",
                         client.sourceName(),
                         items.size()
@@ -187,52 +205,6 @@ public class PolicyCollectServiceImpl
         syncLog.setEndedAt(LocalDateTime.now());
 
         syncLogRepository.save(syncLog);
-    }
-
-    // 서울특별시만 걸러내는 필터
-    private boolean shouldSkipByRegion(
-            ExternalPolicyClient client,
-            ExternalPolicyItem item
-    ) {
-        if (!LOCAL_WELFARE_SOURCE_NAME.equals(
-                client.sourceName()
-        )) {
-            return false;
-        }
-
-        return !isSeoulPolicy(item);
-    }
-
-    private boolean isSeoulPolicy(
-            ExternalPolicyItem item
-    ) {
-        if (item == null) {
-            return false;
-        }
-
-        String region =
-                normalizeRegion(item.getRegion());
-
-        return "서울".equals(region)
-                || "서울특별시".equals(region)
-                || (
-                region != null
-                        && region.startsWith("서울특별시")
-        );
-    }
-
-    private String normalizeRegion(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        String normalized = value
-                .replaceAll("\\s+", "")
-                .trim();
-
-        return normalized.isBlank()
-                ? null
-                : normalized;
     }
 
     private SyncStatus resolveSyncStatus(

@@ -13,11 +13,13 @@ import com.seoulcareconnect.integration.policy.ExternalPolicyClassifier;
 import com.seoulcareconnect.integration.policy.ExternalPolicyItem;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.RawCollectedItemRepository;
+import com.seoulcareconnect.integration.policy.SeoulPolicyFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -26,6 +28,7 @@ import java.time.ZoneId;
 import java.util.HexFormat;
 import java.util.Locale;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PolicyUpsertService {
@@ -34,6 +37,7 @@ public class PolicyUpsertService {
     private final RawCollectedItemRepository rawRepository;
     private final ExternalDateParser dateParser;
     private final ExternalPolicyClassifier classifier;
+    private final SeoulPolicyFilter seoulPolicyFilter;
 
     @Value("${app.policy.sync.zone-id:Asia/Seoul}")
     private String zoneId;
@@ -56,6 +60,8 @@ public class PolicyUpsertService {
         Policy existing = policyRepository
                 .findFirstBySource_SourceIdAndExternalId(source.getSourceId(), externalId)
                 .orElse(null);
+
+        boolean newPolicy = existing == null;
 
         RawCollectedItem rawItem = saveRawIfChanged(source, item, externalId);
 
@@ -103,7 +109,7 @@ public class PolicyUpsertService {
                 item.getContentText()
         );
         policy.setTarget(limit(normalizeSingleLine(searchableTarget), 300));
-        policy.setRegion(limit(normalizeSingleLine(item.getRegion()), 50));
+        policy.setRegion(limit(seoulPolicyFilter.resolveRegion(source.getSourceName(), item), 50));
         policy.setDistrict(limit(normalizeSingleLine(item.getDistrict()), 50));
         policy.setStartDate(item.getStartDate());
         policy.setEndDate(item.getEndDate());
@@ -129,6 +135,15 @@ public class PolicyUpsertService {
         policy.attachDetail(detail);
 
         policyRepository.save(policy);
+
+        log.info(
+                "{} 정책 처리 완료: source={}, externalId={}, title={}",
+                newPolicy ? "신규 저장" : "기존 갱신",
+                source.getSourceName(),
+                externalId,
+                policy.getTitle()
+        );
+
         return true;
     }
 
@@ -233,13 +248,23 @@ public class PolicyUpsertService {
     }
 
     private String generatedExternalId(ExternalPolicyItem item) {
-        return sha256(String.join("|",
-                valueOr(item.getSourceName(), ""),
-                valueOr(item.getTitle(), ""),
-                valueOr(item.getOfficialUrl(), ""),
-                String.valueOf(item.getStartDate()),
-                String.valueOf(item.getEndDate())
-        )).substring(0, 40);
+        String officialUrl = safeUrl(item.getOfficialUrl());
+        String stableValue;
+
+        if (officialUrl != null) {
+            stableValue = officialUrl;
+        } else {
+            stableValue = String.join("|",
+                    valueOr(normalizeSingleLine(item.getAgencyName()), ""),
+                    valueOr(normalizeSingleLine(item.getTitle()), "")
+            );
+        }
+
+        return sha256(
+                valueOr(item.getSourceName(), "")
+                        + "|"
+                        + stableValue
+        ).substring(0, 40);
     }
 
     private LocalDate today() {

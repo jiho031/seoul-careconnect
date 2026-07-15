@@ -131,6 +131,18 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                     continue;
                 }
 
+                // 목록 응답에 지역이 있으면 서울 정책만 상세 API를 호출한다.
+                String listRegion = reader.firstText(
+                        listItem,
+                        "ctpvNm",
+                        "sidoNm",
+                        "region"
+                );
+
+                if (listRegion != null && !isSeoulRegion(listRegion)) {
+                    continue;
+                }
+
                 String detailRaw = null;
                 JsonNode detailItem = null;
 
@@ -411,5 +423,19 @@ public class LocalWelfareClient implements ExternalPolicyClient {
         return normalized.length() <= maxLength
                 ? normalized
                 : normalized.substring(0, maxLength);
+    }
+
+    private boolean isSeoulRegion(String value) {
+        if (value == null) {
+            return false;
+        }
+
+        String normalized = value
+                .replaceAll("\\s+", "")
+                .trim();
+
+        return "서울".equals(normalized)
+                || "서울특별시".equals(normalized)
+                || normalized.startsWith("서울특별시");
     }
 }
