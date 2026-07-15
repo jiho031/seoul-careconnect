@@ -17,6 +17,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Table(
         name = "policies",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_policy_source_external",
+                        columnNames = {"source_id", "external_id"}
+                )
+        },
         indexes = {
                 @Index(name = "idx_policy_status", columnList = "status"),
                 @Index(name = "idx_policy_apply_status", columnList = "apply_status"),
@@ -34,15 +40,15 @@ public class Policy {
     @Column(name = "policy_id")
     private Long policyId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "source_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "source_id", nullable = false)
     private PolicySource source;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "raw_id")
     private RawCollectedItem rawItem;
 
-    @Column(name = "external_id", length = 100)
+    @Column(name = "external_id", nullable = false, length = 100)
     private String externalId;
 
     @Column(nullable = false, length = 300)

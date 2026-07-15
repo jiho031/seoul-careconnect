@@ -12,7 +12,12 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "policy_sources")
+@Table(name = "policy_sources", uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_policy_source_name",
+                        columnNames = "source_name"
+                )
+        })
 public class PolicySource {
 
     @Id

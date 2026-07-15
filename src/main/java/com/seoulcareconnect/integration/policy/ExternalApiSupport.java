@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,9 +35,33 @@ public class ExternalApiSupport {
                     .uri(uri)
                     .retrieve()
                     .body(String.class);
+
         } catch (RestClientResponseException e) {
+            String responseBody = preview(
+                    e.getResponseBodyAsString()
+            );
+
             throw new IllegalStateException(
-                    "외부 API 호출 실패: HTTP " + e.getStatusCode().value()
+                    "외부 API 호출 실패: HTTP "
+                            + e.getStatusCode().value()
+                            + ", 응답="
+                            + responseBody,
+                    e
+            );
+
+        } catch (ResourceAccessException e) {
+            Throwable cause = e.getMostSpecificCause();
+
+            String causeMessage =
+                    cause == null
+                            ? e.getMessage()
+                            : cause.getClass().getSimpleName()
+                            + ": "
+                            + cause.getMessage();
+
+            throw new IllegalStateException(
+                    "외부 API 연결 실패: " + causeMessage,
+                    e
             );
         }
     }
@@ -86,5 +111,20 @@ public class ExternalApiSupport {
         } catch (IllegalArgumentException ignored) {
             return key;
         }
+    }
+
+    private String preview(String value) {
+        if (value == null || value.isBlank()) {
+            return "(응답 내용 없음)";
+        }
+
+        String normalized = value
+                .replaceAll("\\s+", " ")
+                .trim();
+
+        return normalized.substring(
+                0,
+                Math.min(normalized.length(), 1000)
+        );
     }
 }
