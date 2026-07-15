@@ -207,9 +207,13 @@
                             <dt>지역</dt>
                             <dd th:text="${policy.regionDisplay}">서울시 전체</dd>
                         </div>
-                        <div th:if="${policy.contact != null and !#strings.isEmpty(policy.contact)}">
+                        <div>
                             <dt>문의처</dt>
-                            <dd th:text="${policy.contact}">문의처</dd>
+                            <dd th:text="${policy.contact != null and !#strings.isEmpty(policy.contact)
+                                    ? policy.contact
+                                    : '공식 공고에서 확인'}">
+                                공식 공고에서 확인
+                            </dd>
                         </div>
                     </dl>
 
@@ -218,12 +222,12 @@
                        th:href="${policy.officialUrl}"
                        target="_blank"
                        rel="noopener noreferrer">
-                        공식 사이트 확인
+                        정책 원문·공식 링크
                     </a>
                     <span th:unless="${policy.officialUrl != null}"
                           class="side-primary-link"
                           aria-disabled="true">
-                        공식 사이트 정보 없음
+                        정책 원문 링크 없음
                     </span>
 
                     <button type="button"

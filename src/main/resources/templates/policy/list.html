@@ -159,19 +159,27 @@
             <div class="policy-card-list" th:if="${!policyPage.empty}">
                 <article class="policy-result-card"
                          th:each="policy : ${policyPage.content}">
+
                     <div class="card-top">
                         <div class="policy-badges">
                             <span class="badge status"
-                                  th:classappend="${policy.newPolicy} ? ' muted' : ''"
                                   th:text="${policy.applyStatusLabel}">
                                 신청 가능
                             </span>
+
+                            <span class="badge dday blue"
+                                  th:if="${policy.newPolicy}">
+                                NEW
+                            </span>
+
                             <span class="badge dday"
-                                  th:classappend="${policy.newPolicy ? ' blue' : ' ' + policy.dDayCssClass}"
-                                  th:text="${policy.newPolicy ? 'NEW' : policy.dDayLabel}">
+                                  th:unless="${policy.newPolicy}"
+                                  th:classappend="${policy.dDayCssClass}"
+                                  th:text="${policy.dDayLabel}">
                                 D-5
                             </span>
                         </div>
+
                         <button class="bookmark-btn"
                                 type="button"
                                 title="관심 정책 기능은 추후 연결됩니다.">
@@ -181,26 +189,47 @@
 
                     <h3>
                         <a th:href="@{/policies/{policyId}(policyId=${policy.policyId})}"
-                           th:text="${policy.title}">
+                           th:text="${policy.title}"
+                           th:title="${policy.title}">
                             정책명
                         </a>
                     </h3>
 
-                    <p class="agency" th:text="${policy.agency}">담당 기관</p>
-                    <p class="summary" th:text="${policy.summary}">정책 요약</p>
+                    <p class="policy-subline">
+                        <span th:text="${policy.agency}">담당 기관</span>
+                        <i aria-hidden="true">|</i>
+                        <span th:text="${policy.categoryLabel}">분야</span>
+                    </p>
+
+                    <p class="summary"
+                       th:text="${policy.summary}"
+                       th:title="${policy.summary}">
+                        정책 요약
+                    </p>
 
                     <dl class="info-grid">
                         <div>
                             <dt>신청 기간</dt>
-                            <dd th:text="${policy.applyPeriod}">공고 확인</dd>
+                            <dd th:text="${policy.applyPeriod}"
+                                th:title="${policy.applyPeriod}">
+                                공고 확인
+                            </dd>
                         </div>
+
                         <div>
                             <dt>신청 방법</dt>
-                            <dd th:text="${policy.applyMethod}">공식 공고 확인</dd>
+                            <dd th:text="${policy.applyMethod}"
+                                th:title="${policy.applyMethod}">
+                                공식 공고 확인
+                            </dd>
                         </div>
+
                         <div>
                             <dt>지역</dt>
-                            <dd th:text="${policy.regionDisplay}">서울시 전체</dd>
+                            <dd th:text="${policy.regionDisplay}"
+                                th:title="${policy.regionDisplay}">
+                                서울시 전체
+                            </dd>
                         </div>
                     </dl>
 
@@ -211,12 +240,14 @@
                                 태그
                             </span>
                         </div>
+
                         <a class="detail-btn"
                            th:href="@{/policies/{policyId}(policyId=${policy.policyId})}">
                             상세 보기
                         </a>
                     </div>
                 </article>
+
             </div>
 
             <article class="policy-result-card"
