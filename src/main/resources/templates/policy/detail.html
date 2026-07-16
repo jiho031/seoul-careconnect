@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>정책 상세 | 서울 케어넥트</title>
+    <title th:text="${policy.title + ' | 서울 케어넥트'}">정책 상세 | 서울 케어넥트</title>
     <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
     <link rel="stylesheet" th:href="@{/css/policy-detail.css}" href="/css/policy-detail.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
 </head>
-<body>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
 <div th:replace="~{fragments/nav :: nav}"></div>
 
 <main class="policy-detail-page">
     <section class="detail-hero">
         <div class="detail-container">
-            <a class="back-link" href="/policies" aria-label="정책 찾기 화면으로 이동">
+            <a class="back-link" th:href="@{/policies}" aria-label="정책 찾기 화면으로 이동">
                 <span aria-hidden="true">‹</span>
                 정책 찾기로 돌아가기
             </a>
@@ -21,36 +25,53 @@
             <div class="detail-title-card">
                 <div class="detail-title-main">
                     <div class="badge-row">
-                        <span class="status-badge">신청가능</span>
-                        <span class="dday-badge">D-5</span>
-                        <span class="source-badge">서울특별시</span>
+                        <span class="status-badge" th:text="${policy.applyStatusLabel}">신청 가능</span>
+                        <span class="dday-badge" th:text="${policy.dDayLabel}">상시</span>
+                        <span class="source-badge" th:text="${policy.sourceName}">공식 제공기관</span>
                     </div>
-                    <h1>중장년 직업역량 강화 교육</h1>
-                    <p class="lead-text">중장년층의 재취업과 직무 역량 강화를 돕기 위한 교육 지원 정책입니다.</p>
+
+                    <h1 th:text="${policy.title}">정책명</h1>
+                    <p class="lead-text" th:text="${policy.summary}">정책 요약</p>
 
                     <dl class="summary-grid" aria-label="정책 핵심 정보">
                         <div>
                             <dt>담당 기관</dt>
-                            <dd>서울특별시 · 일자리정책과</dd>
+                            <dd th:text="${policy.agency}">공식 제공기관</dd>
                         </div>
                         <div>
                             <dt>지역</dt>
-                            <dd>서울시 전체</dd>
+                            <dd th:text="${policy.regionDisplay}">서울시 전체</dd>
                         </div>
                         <div>
                             <dt>분야</dt>
-                            <dd>일자리 · 교육</dd>
+                            <dd th:text="${policy.categoryLabel}">생활지원</dd>
                         </div>
                         <div>
                             <dt>생애주기</dt>
-                            <dd>중장년</dd>
+                            <dd th:text="${policy.ageGroupDisplay}">전 연령</dd>
                         </div>
                     </dl>
                 </div>
 
                 <div class="detail-action-box" aria-label="정책 바로가기 버튼">
-                    <button type="button" class="primary-action">관심 정책 저장</button>
-                    <a href="#" class="outline-action">공식 사이트 확인</a>
+                    <button type="button"
+                            class="primary-action"
+                            title="관심 정책 기능은 추후 연결됩니다.">
+                        관심 정책 저장
+                    </button>
+
+                    <a th:if="${policy.officialUrl != null}"
+                       th:href="${policy.officialUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="outline-action">
+                        공식 사이트 확인
+                    </a>
+                    <span th:unless="${policy.officialUrl != null}"
+                          class="outline-action"
+                          aria-disabled="true">
+                        공식 사이트 정보 없음
+                    </span>
                 </div>
             </div>
         </div>
@@ -61,70 +82,70 @@
             <div class="detail-main-column">
                 <article class="info-card ai-summary-card">
                     <div class="section-heading">
-                        <span class="section-icon ai-icon" aria-hidden="true">AI</span>
+                        <span class="section-icon ai-icon" aria-hidden="true">요약</span>
                         <div>
-                            <h2>AI 쉬운 요약</h2>
-                            <p>정책 내용을 쉽게 이해할 수 있도록 핵심만 정리했어요.</p>
+                            <h2>정책 쉬운 요약</h2>
+                            <p>공식 정책 내용을 바탕으로 핵심 내용을 정리했습니다.</p>
                         </div>
                     </div>
 
                     <div class="easy-summary-box">
-                        <p>이 정책은 재취업이나 직무 전환을 준비하는 중장년층을 위한 교육 지원입니다. 신청 기간 안에 온라인으로 신청할 수 있으며, 대상 조건과 제출 서류는 공식 안내에서 한 번 더 확인해야 합니다.</p>
+                        <p th:text="${policy.summary}">정책 요약</p>
                     </div>
 
-                    <p class="ai-notice">AI 요약은 참고용입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.</p>
+                    <p class="ai-notice">
+                        요약 내용은 참고용입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.
+                    </p>
                 </article>
 
                 <article class="info-card">
                     <h2>지원 대상</h2>
-                    <p>서울시에 거주하거나 서울시 관련 일자리 교육 참여를 희망하는 중장년층을 대상으로 합니다.</p>
-                    <ul class="dot-list">
-                        <li>중장년 구직자 또는 재취업 준비자</li>
-                        <li>직무 전환 및 역량 강화 교육이 필요한 시민</li>
-                        <li>세부 연령, 거주지, 신청 자격은 공식 공고 기준 적용</li>
-                    </ul>
-                </article>
+                    <p th:text="${policy.target}">지원 대상은 공식 공고에서 확인해 주세요.</p>
 
-                <article class="info-card">
-                    <h2>지원 내용</h2>
-                    <div class="benefit-list">
-                        <div class="benefit-item">
-                            <strong>직업역량 교육</strong>
-                            <span>재취업과 직무 전환에 필요한 교육 과정 제공</span>
-                        </div>
-                        <div class="benefit-item">
-                            <strong>취업 준비 지원</strong>
-                            <span>이력서, 면접, 직무 탐색 등 신청 준비 정보 안내</span>
-                        </div>
-                        <div class="benefit-item">
-                            <strong>연계 정보 제공</strong>
-                            <span>관련 일자리 정책 및 기관 안내</span>
-                        </div>
+                    <div th:if="${policy.selectionCriteria != null and !#strings.isEmpty(policy.selectionCriteria)}">
+                        <h3 style="margin: 24px 0 10px;">선정 기준</h3>
+                        <p style="white-space: pre-line;"
+                           th:text="${policy.selectionCriteria}">
+                            선정 기준
+                        </p>
                     </div>
                 </article>
 
                 <article class="info-card">
+                    <h2>지원 내용</h2>
+
+                    <ul class="dot-list" th:if="${!#lists.isEmpty(policy.benefitLines)}">
+                        <li th:each="line : ${policy.benefitLines}"
+                            th:text="${line}">
+                            지원 내용
+                        </li>
+                    </ul>
+
+                    <p th:if="${#lists.isEmpty(policy.benefitLines)}"
+                       th:text="${policy.benefit}">
+                        지원 내용은 공식 공고에서 확인해 주세요.
+                    </p>
+                </article>
+
+                <article class="info-card">
                     <h2>신청 방법</h2>
-                    <ol class="step-list">
+
+                    <ol class="step-list" th:if="${!#lists.isEmpty(policy.applicationLines)}">
+                        <li th:each="line, iter : ${policy.applicationLines}">
+                            <span th:text="${iter.index + 1}">1</span>
+                            <div>
+                                <strong>신청 안내</strong>
+                                <p th:text="${line}">신청 방법</p>
+                            </div>
+                        </li>
+                    </ol>
+
+                    <ol class="step-list" th:if="${#lists.isEmpty(policy.applicationLines)}">
                         <li>
                             <span>1</span>
                             <div>
                                 <strong>공식 안내 확인</strong>
-                                <p>정책 원문에서 신청 대상, 기간, 제출 서류를 확인합니다.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <span>2</span>
-                            <div>
-                                <strong>필요 서류 준비</strong>
-                                <p>신분증, 신청서, 자격 확인 자료 등 필요한 서류를 준비합니다.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <span>3</span>
-                            <div>
-                                <strong>온라인 신청</strong>
-                                <p>공식 신청 페이지에서 안내에 따라 신청을 완료합니다.</p>
+                                <p th:text="${policy.applyMethod}">공식 공고를 확인해 주세요.</p>
                             </div>
                         </li>
                     </ol>
@@ -133,15 +154,31 @@
                 <article class="info-card">
                     <div class="section-title-row">
                         <h2>필요 서류 체크리스트</h2>
-                        <span>예시 항목</span>
+                        <span>공식 공고 기준</span>
                     </div>
-                    <div class="checklist">
-                        <label><input type="checkbox"> 신분증</label>
-                        <label><input type="checkbox"> 신청서</label>
-                        <label><input type="checkbox"> 주민등록등본</label>
-                        <label><input type="checkbox"> 구직 또는 교육 참여 확인 자료</label>
-                        <label><input type="checkbox"> 기타 기관 요청 서류</label>
+
+                    <div class="checklist" th:if="${!#lists.isEmpty(policy.documentLines)}">
+                        <label th:each="document : ${policy.documentLines}">
+                            <input type="checkbox" disabled>
+                            <span th:text="${document}">필요 서류</span>
+                        </label>
                     </div>
+
+                    <div class="checklist" th:if="${#lists.isEmpty(policy.documentLines)}">
+                        <label>
+                            <input type="checkbox" disabled>
+                            공식 공고에서 제출 서류를 확인해 주세요.
+                        </label>
+                    </div>
+                </article>
+
+                <article class="info-card"
+                         th:if="${policy.contentText != null and !#strings.isEmpty(policy.contentText)}">
+                    <h2>상세 안내</h2>
+                    <p style="white-space: pre-line;"
+                       th:text="${policy.contentText}">
+                        상세 정책 내용
+                    </p>
                 </article>
             </div>
 
@@ -151,23 +188,61 @@
                     <dl class="side-info-list">
                         <div>
                             <dt>신청 기간</dt>
-                            <dd>2025.07.01 ~ 2025.07.10</dd>
+                            <dd th:text="${policy.applyPeriod}">공고 확인</dd>
                         </div>
                         <div>
                             <dt>신청 상태</dt>
-                            <dd><span class="mini-status">신청가능</span></dd>
+                            <dd>
+                                <span class="mini-status"
+                                      th:text="${policy.applyStatusLabel}">
+                                    신청 가능
+                                </span>
+                            </dd>
                         </div>
                         <div>
                             <dt>신청 방법</dt>
-                            <dd>온라인 신청</dd>
+                            <dd th:text="${policy.applyMethod}">공식 공고 확인</dd>
                         </div>
                         <div>
                             <dt>지역</dt>
-                            <dd>서울시 전체</dd>
+                            <dd th:text="${policy.regionDisplay}">서울시 전체</dd>
+                        </div>
+                        <div>
+                            <dt>문의처</dt>
+                            <dd th:text="${policy.contact != null and !#strings.isEmpty(policy.contact)
+                                    ? policy.contact
+                                    : '공식 공고에서 확인'}">
+                                공식 공고에서 확인
+                            </dd>
                         </div>
                     </dl>
-                    <a class="side-primary-link" href="#">공식 사이트 확인</a>
-                    <button type="button" class="side-save-button">관심 정책 저장</button>
+
+                    <a th:if="${policy.officialUrl != null}"
+                       class="side-primary-link"
+                       th:href="${policy.officialUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        정책 원문·공식 링크
+                    </a>
+                    <span th:unless="${policy.officialUrl != null}"
+                          class="side-primary-link"
+                          aria-disabled="true">
+                        정책 원문 링크 없음
+                    </span>
+
+                    <button type="button"
+                            class="side-save-button"
+                            title="관심 정책 기능은 추후 연결됩니다.">
+                        관심 정책 저장
+                    </button>
+                </div>
+
+                <div class="side-card caution-card">
+                    <h2>확인해 주세요</h2>
+                    <p>
+                        본 서비스는 정책 정보를 쉽게 이해할 수 있도록 돕는 참고 서비스입니다.
+                        최종 신청은 각 기관의 공식 페이지에서 진행해 주세요.
+                    </p>
                 </div>
             </aside>
         </div>

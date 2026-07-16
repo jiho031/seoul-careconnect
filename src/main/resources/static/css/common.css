@@ -75,8 +75,9 @@ img {
   width: min(1480px, calc(100% - 72px));
   height: 100%;
   margin: 0 auto;
+
   display: grid;
-  grid-template-columns: 260px 1fr 216px;
+  grid-template-columns: 220px minmax(360px, 1fr) auto;
   align-items: center;
   gap: 24px;
 }
@@ -118,20 +119,29 @@ img {
 
 .nav-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 14px;
+  flex-wrap: nowrap;
+  gap: 12px;
+  white-space: nowrap;
 }
 
 .nav-actions a {
   height: 44px;
   min-width: 82px;
+  padding: 0 15px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   border-radius: 8px;
+
   font-size: 16px;
   font-weight: 900;
+  line-height: 1;
   letter-spacing: -.045em;
+  white-space: nowrap;
 }
 
 .btn-login {
@@ -272,13 +282,29 @@ img {
 
 @media (max-width: 1180px) {
   .nav-inner {
-    grid-template-columns: 220px 1fr 190px;
-    width: min(100% - 40px, 1080px);
+    width: min(100% - 40px, 1120px);
+    grid-template-columns: 190px minmax(300px, 1fr) auto;
+    gap: 16px;
   }
 
   .nav-menu {
-    gap: 28px;
+    gap: 24px;
     font-size: 16px;
+  }
+
+  .nav-actions {
+    gap: 8px;
+  }
+
+  .nav-actions a,
+  .nav-actions button {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 15px;
+  }
+
+  .admin-page-button {
+    min-width: 100px !important;
   }
 
   .footer-inner {
@@ -318,7 +344,6 @@ img {
     left: 16px;
     right: 16px;
     z-index: 110;
-    display: flex;
     background: #fff;
     border: 1px solid #d7e4f0;
     box-shadow: var(--shadow);
@@ -326,6 +351,7 @@ img {
 
   body.nav-open .nav-menu {
     top: 84px;
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
@@ -334,16 +360,51 @@ img {
   }
 
   body.nav-open .nav-menu a {
+    min-height: 60px;
     padding: 18px 22px;
+    display: flex;
+    align-items: center;
     border-bottom: 1px solid #edf3f8;
   }
 
+  /* 메뉴 3개 × 60px + 시작 위치 84px */
   body.nav-open .nav-actions {
-    top: 355px;
-    justify-content: center;
+    top: 264px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
     padding: 16px;
     border-top: 0;
     border-radius: 0 0 16px 16px;
+  }
+
+  body.nav-open .nav-actions a,
+  body.nav-open .nav-actions button {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    margin: 0;
+  }
+
+  /* 누락 신고는 첫 줄 전체 사용 */
+  body.nav-open .nav-actions .nav-report-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0;
+  }
+
+  /* 로그아웃이 form 안에 있다면 */
+  body.nav-open .nav-actions form {
+    width: 100%;
+    margin: 0;
+  }
+
+  body.nav-open .nav-actions form button {
+    border: 1px solid #00777d;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #008e94 0%, #00757b 100%);
+    color: #fff;
+    font-weight: 900;
   }
 
   .footer-inner,
@@ -389,10 +450,181 @@ img {
   border-color: #137c79;
   transform: translateY(-1px);
 }
+
+.nav-logout-form {
+  margin: 0;
+  display: inline-flex;
+}
+
+.nav-logout-form button {
+  height: 44px;
+  min-width: 82px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #00777d;
+  color: #fff;
+  background: linear-gradient(180deg, #008e94 0%, #00757b 100%);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .nav-report-button {
     width: 100%;
     height: 44px;
-    margin-top: 8px;
+    margin: 0;
   }
 }
+
+/* =========================================================
+   세션 만료 안내 팝업
+========================================================= */
+
+.session-timeout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.session-timeout-modal.is-open {
+  display: flex;
+}
+
+.session-timeout-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 19, 48, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.session-timeout-dialog {
+  width: min(440px, 100%);
+  padding: 38px 34px 32px;
+  position: relative;
+  z-index: 1;
+  border: 1px solid #d4e5ee;
+  border-radius: 26px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 28px 70px rgba(4, 27, 57, 0.28);
+}
+
+.session-timeout-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: linear-gradient(135deg, #11938d 0%, #176da8 100%);
+  font-size: 30px;
+  font-weight: 950;
+  box-shadow: 0 12px 26px rgba(17, 130, 137, 0.25);
+}
+
+.session-timeout-dialog h2 {
+  margin: 0 0 14px;
+  color: #071947;
+  font-size: 25px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.session-timeout-dialog p {
+  margin: 0;
+  color: #5f708a;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.65;
+}
+
+.session-timeout-dialog p strong {
+  color: #087e79;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.session-timeout-question {
+  margin-top: 8px !important;
+  color: #14254f !important;
+  font-weight: 800 !important;
+}
+
+.session-timeout-actions {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.session-extend-button,
+.session-logout-button {
+  height: 52px;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          background-color 0.2s ease;
+}
+
+.session-extend-button {
+  border: 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, #118c87 0%, #176ca8 100%);
+  box-shadow: 0 12px 22px rgba(20, 119, 132, 0.22);
+}
+
+.session-logout-button {
+  border: 1px solid #ccdce8;
+  color: #425673;
+  background: #ffffff;
+}
+
+.session-extend-button:hover,
+.session-logout-button:hover {
+  transform: translateY(-1px);
+}
+
+.session-extend-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+
+@media (max-width: 520px) {
+  .session-timeout-dialog {
+    padding: 32px 22px 24px;
+    border-radius: 22px;
+  }
+
+  .session-timeout-dialog h2 {
+    font-size: 22px;
+  }
+
+  .session-timeout-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .session-extend-button {
+    grid-row: 1;
+  }
+}
+
+.admin-page-button {
+  min-width: 112px !important;
+  padding: 0 16px !important;
+  white-space: nowrap;
+}
+

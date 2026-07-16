@@ -1,0 +1,2219 @@
+body.large-text-mode {
+  --senior-body: 22px;
+  --senior-small: 18px;
+  --senior-label: 22px;
+  --senior-control: 21px;
+  --senior-control-height: 70px;
+  --senior-radius: 16px;
+  --senior-focus: 0 0 0 5px rgba(0, 127, 132, .20);
+  color: #061846;
+  font-size: var(--senior-body);
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+body.large-text-mode :focus-visible {
+  outline: 4px solid #ffbf47 !important;
+  outline-offset: 3px !important;
+}
+
+body.large-text-mode input,
+body.large-text-mode select,
+body.large-text-mode textarea,
+body.large-text-mode button {
+  font-size: var(--senior-control);
+}
+
+body.large-text-mode input,
+body.large-text-mode select,
+body.large-text-mode textarea {
+  border-width: 2px;
+}
+
+body.large-text-mode input:focus,
+body.large-text-mode select:focus,
+body.large-text-mode textarea:focus {
+  box-shadow: var(--senior-focus) !important;
+}
+
+body.large-text-mode small {
+  font-size: var(--senior-small);
+  line-height: 1.65;
+}
+
+body.large-text-mode .site-header {
+  height: 92px;
+}
+
+body.large-text-mode .nav-inner {
+  width: min(1560px, calc(100% - 48px));
+  grid-template-columns: 230px minmax(0, 1fr) auto;
+  gap: 28px;
+}
+
+body.large-text-mode .brand,
+body.large-text-mode .brand img {
+  width: 210px;
+  min-width: 210px;
+}
+
+body.large-text-mode .nav-menu {
+  gap: clamp(28px, 3vw, 48px);
+}
+
+body.large-text-mode .nav-menu a {
+  padding: 31px 0;
+  font-size: 21px;
+}
+
+body.large-text-mode .nav-actions {
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+body.large-text-mode .nav-actions a,
+body.large-text-mode .nav-actions button {
+  min-width: 108px;
+  height: 56px;
+  padding: 0 18px;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+body.large-text-mode .nav-logout-form {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1180px) {
+  body.large-text-mode .site-header {
+    height: 80px;
+  }
+
+  body.large-text-mode .nav-inner {
+    width: calc(100% - 32px);
+    grid-template-columns: 1fr 52px;
+    gap: 12px;
+  }
+
+  body.large-text-mode .brand,
+  body.large-text-mode .brand img {
+    width: 190px;
+    min-width: 190px;
+  }
+
+  body.large-text-mode .nav-toggle {
+    display: block;
+    width: 52px;
+    height: 52px;
+  }
+
+  body.large-text-mode .nav-menu,
+  body.large-text-mode .nav-actions {
+    display: none;
+  }
+
+  body.large-text-mode.nav-open .nav-menu,
+  body.large-text-mode.nav-open .nav-actions {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    z-index: 110;
+    background: #fff;
+    border: 2px solid #cbdbea;
+    box-shadow: var(--shadow);
+  }
+
+  body.large-text-mode.nav-open .nav-menu {
+    top: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    border-radius: 18px 18px 0 0;
+    overflow: hidden;
+  }
+
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 68px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    border-bottom: 1px solid #e5edf5;
+  }
+
+  body.large-text-mode.nav-open .nav-actions {
+    top: 296px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 18px;
+    border-top: 0;
+    border-radius: 0 0 18px 18px;
+  }
+
+  body.large-text-mode.nav-open .nav-actions .nav-report-button {
+    grid-column: 1 / -1;
+  }
+
+  body.large-text-mode.nav-open .nav-actions a,
+  body.large-text-mode.nav-open .nav-actions button,
+  body.large-text-mode.nav-open .nav-actions form {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+body.large-text-mode .hero {
+  min-height: 0;
+  padding: 54px 0 70px;
+}
+
+/* 고령친화 모드는 정보 가독성에 집중 */
+body.large-text-mode .hero-city {
+  display: none !important;
+}
+
+body.large-text-mode .hero-inner {
+  width: min(1180px, calc(100% - 56px));
+  grid-template-columns: 1fr;
+  justify-content: stretch;
+  gap: 34px;
+}
+
+body.large-text-mode .hero-copy {
+  padding-top: 0;
+}
+
+body.large-text-mode .hero-copy h1 {
+  font-size: clamp(52px, 5vw, 64px);
+  line-height: 1.2;
+  letter-spacing: -.065em;
+}
+
+body.large-text-mode .hero-copy h1 strong {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+body.large-text-mode .hero-copy > p {
+  margin: 22px 0 32px;
+  font-size: 22px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .search-card {
+  padding: 32px;
+  border-width: 2px;
+  border-radius: 24px;
+}
+
+body.large-text-mode .search-line {
+  height: 70px;
+  grid-template-columns: 68px minmax(0, 1fr) 132px;
+  border-width: 2px;
+  border-radius: 14px;
+}
+
+body.large-text-mode .search-lens {
+  width: 68px;
+  height: 68px;
+}
+
+body.large-text-mode .search-icon {
+  width: 34px;
+  height: 34px;
+}
+
+body.large-text-mode .search-line input {
+  height: 66px;
+  font-size: 19px;
+}
+
+body.large-text-mode .search-line button {
+  height: 60px;
+  font-size: 20px;
+}
+
+body.large-text-mode .filter-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  padding-top: 28px;
+}
+
+body.large-text-mode .filter-grid label > span {
+  height: auto;
+  margin-bottom: 10px;
+  font-size: 19px;
+}
+
+body.large-text-mode .filter-grid select {
+  height: 62px;
+  border-width: 2px;
+  border-radius: 14px;
+  font-size: 19px;
+}
+
+body.large-text-mode .search-foot {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+body.large-text-mode .keyword-area strong {
+  font-size: 19px;
+}
+
+body.large-text-mode .keyword-list {
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+body.large-text-mode .keyword-list a {
+  min-height: 42px;
+  height: auto;
+  padding: 8px 12px;
+  border-width: 2px;
+  font-size: 15px;
+}
+
+body.large-text-mode .preset-area {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+body.large-text-mode .preset-area a {
+  min-width: 180px;
+  height: 58px;
+  border-width: 2px;
+  font-size: 18px;
+}
+
+body.large-text-mode .ai-card {
+  min-height: 0;
+  padding: 38px;
+  border-radius: 24px;
+}
+
+body.large-text-mode .ai-title > span {
+  width: 66px;
+  height: 66px;
+  flex-basis: 66px;
+  font-size: 30px;
+}
+
+body.large-text-mode .ai-title h2 {
+  margin-bottom: 14px;
+  font-size: 38px;
+}
+
+body.large-text-mode .ai-title p {
+  font-size: 21px;
+  line-height: 1.6;
+}
+
+body.large-text-mode .ai-list {
+  position: static;
+  margin-top: 30px;
+  padding: 22px;
+}
+
+body.large-text-mode .ai-list a {
+  min-height: 100px;
+  grid-template-columns: 62px 1fr 28px;
+}
+
+body.large-text-mode .ai-list em {
+  width: 58px;
+  height: 58px;
+}
+
+body.large-text-mode .ai-list b {
+  font-size: 21px;
+}
+
+body.large-text-mode .ai-list small {
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+body.large-text-mode .ai-list > p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+body.large-text-mode .policy-section {
+  padding: 48px 0 24px;
+}
+
+body.large-text-mode .policy-inner {
+  width: min(1180px, calc(100% - 56px));
+  grid-template-columns: 1fr;
+  gap: 26px;
+}
+
+body.large-text-mode .policy-board {
+  padding: 30px;
+  border-width: 2px;
+  border-radius: 22px;
+}
+
+body.large-text-mode .board-head h2 {
+  font-size: 30px;
+}
+
+body.large-text-mode .board-head a {
+  min-height: 46px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 17px;
+}
+
+body.large-text-mode .deadline-grid,
+body.large-text-mode .recent-grid {
+  gap: 18px;
+}
+
+body.large-text-mode .policy-card,
+body.large-text-mode .recent-card {
+  min-height: 150px;
+  border-width: 2px;
+  border-radius: 16px;
+}
+
+body.large-text-mode .policy-card {
+  padding: 22px;
+}
+
+body.large-text-mode .policy-title,
+body.large-text-mode .recent-card b {
+  font-size: 20px;
+  line-height: 1.5;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+body.large-text-mode .policy-meta {
+  grid-template-columns: auto 1fr;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+body.large-text-mode .policy-meta-divider {
+  display: none;
+}
+
+body.large-text-mode .policy-status,
+body.large-text-mode .policy-meta-label,
+body.large-text-mode .policy-date,
+body.large-text-mode .recent-card small {
+  font-size: 15px;
+}
+
+body.large-text-mode .policy-date {
+  white-space: normal;
+  overflow: visible;
+}
+
+body.large-text-mode .login-page {
+  padding: 52px 24px 72px;
+}
+
+body.large-text-mode .login-wrap {
+  width: min(820px, 100%);
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .login-info-panel {
+  display: none;
+}
+
+body.large-text-mode .login-card {
+  min-height: 0;
+  padding: 50px;
+  border-width: 2px;
+}
+
+body.large-text-mode .login-title-box h2 {
+  font-size: 42px;
+}
+
+body.large-text-mode .login-title-box p {
+  font-size: 18px;
+}
+
+body.large-text-mode .login-field {
+  gap: 11px;
+}
+
+body.large-text-mode .login-field label {
+  font-size: 20px;
+}
+
+body.large-text-mode .login-field input {
+  height: 64px;
+  padding: 0 20px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .login-options,
+body.large-text-mode .remember-check,
+body.large-text-mode .login-links {
+  font-size: 18px;
+}
+
+body.large-text-mode .remember-check input {
+  width: 24px;
+  height: 24px;
+}
+
+body.large-text-mode .login-submit,
+body.large-text-mode .social-login {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+body.large-text-mode .login-error,
+body.large-text-mode .login-success {
+  padding: 13px 15px;
+  border-radius: 12px;
+  font-size: 17px;
+}
+
+body.large-text-mode .signup-page {
+  padding: 48px 24px 72px;
+}
+
+body.large-text-mode .signup-wrap {
+  width: min(900px, 100%);
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .signup-side-panel {
+  display: none;
+}
+
+body.large-text-mode .signup-card {
+  padding: 48px;
+  border-width: 2px;
+}
+
+body.large-text-mode .signup-title-box h1 {
+  font-size: 44px;
+}
+
+body.large-text-mode .signup-title-box p {
+  font-size: 18px;
+}
+
+body.large-text-mode .signup-row.two-col {
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+body.large-text-mode .signup-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .signup-field input,
+body.large-text-mode .signup-field select,
+body.large-text-mode .input-button-group button {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .input-button-group {
+  grid-template-columns: minmax(0, 1fr) 150px;
+}
+
+body.large-text-mode .signup-check,
+body.large-text-mode .all-check {
+  font-size: 18px;
+}
+
+body.large-text-mode .signup-check input {
+  width: 25px;
+  height: 25px;
+}
+
+body.large-text-mode .signup-submit {
+  min-height: 64px;
+  font-size: 20px;
+}
+
+body.large-text-mode .signup-login-link {
+  font-size: 18px;
+}
+
+body.large-text-mode .password-page {
+  padding: 48px 24px 72px;
+}
+
+body.large-text-mode .password-layout {
+  width: min(820px, 100%);
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .password-guide-panel {
+  display: none;
+}
+
+body.large-text-mode .password-card {
+  padding: 48px;
+  border-width: 2px;
+}
+
+body.large-text-mode .password-title-box h2 {
+  font-size: 42px;
+}
+
+body.large-text-mode .password-title-box p,
+body.large-text-mode .step-heading p {
+  font-size: 18px;
+}
+
+body.large-text-mode .progress-item strong {
+  font-size: 15px;
+}
+
+body.large-text-mode .progress-item span {
+  width: 42px;
+  height: 42px;
+  font-size: 16px;
+}
+
+body.large-text-mode .step-heading h3 {
+  font-size: 27px;
+}
+
+body.large-text-mode .password-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .password-field input {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .primary-button,
+body.large-text-mode .secondary-button {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+body.large-text-mode .password-rule-box p,
+body.large-text-mode .reset-alert,
+body.large-text-mode .password-bottom-link {
+  font-size: 17px;
+}
+
+body.large-text-mode .mypage-page {
+  padding: 44px 24px 72px;
+}
+
+body.large-text-mode .mypage-hero,
+body.large-text-mode .mypage-layout {
+  width: min(1120px, 100%);
+}
+
+body.large-text-mode .mypage-hero {
+  min-height: 220px;
+  padding: 42px;
+}
+
+body.large-text-mode .mypage-hero h1 {
+  font-size: 48px;
+}
+
+body.large-text-mode .mypage-hero p {
+  font-size: 19px;
+}
+
+body.large-text-mode .hero-status {
+  min-width: 250px;
+}
+
+body.large-text-mode .hero-status span {
+  font-size: 16px;
+}
+
+body.large-text-mode .hero-status strong {
+  font-size: 24px;
+}
+
+body.large-text-mode .mypage-layout {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .profile-summary-card {
+  position: static;
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 20px;
+  text-align: left;
+}
+
+body.large-text-mode .profile-avatar {
+  width: 92px;
+  height: 92px;
+  margin: 0;
+}
+
+body.large-text-mode .profile-summary-title h2 {
+  font-size: 30px;
+}
+
+body.large-text-mode .profile-summary-list,
+body.large-text-mode .mypage-side-nav {
+  grid-column: 1 / -1;
+}
+
+body.large-text-mode .profile-summary-list dt,
+body.large-text-mode .profile-summary-list dd {
+  font-size: 17px;
+}
+
+body.large-text-mode .mypage-side-nav {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.large-text-mode .mypage-side-nav a {
+  min-height: 58px;
+  justify-content: center;
+  font-size: 18px;
+}
+
+body.large-text-mode .mypage-card {
+  padding: 38px;
+  border-width: 2px;
+}
+
+body.large-text-mode .card-heading h2 {
+  font-size: 34px;
+}
+
+body.large-text-mode .card-heading p,
+body.large-text-mode .form-section-heading p {
+  font-size: 17px;
+}
+
+body.large-text-mode .form-section {
+  padding: 28px;
+  border-width: 2px;
+}
+
+body.large-text-mode .form-grid.two-col {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .mypage-field label,
+body.large-text-mode .ui-mode-section legend {
+  font-size: 19px;
+}
+
+body.large-text-mode .mypage-field input,
+body.large-text-mode .mypage-field select {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .ui-mode-grid {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .ui-mode-option {
+  min-height: 138px;
+  padding: 24px;
+  border-width: 2px;
+}
+
+body.large-text-mode .ui-mode-option strong {
+  font-size: 21px;
+}
+
+body.large-text-mode .ui-mode-option small {
+  font-size: 17px;
+}
+
+body.large-text-mode .button-primary,
+body.large-text-mode .button-secondary,
+body.large-text-mode .button-danger {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+body.large-text-mode .security-item summary,
+body.large-text-mode .social-notice-inner {
+  min-height: 104px;
+}
+
+body.large-text-mode .security-item summary strong,
+body.large-text-mode .social-notice strong {
+  font-size: 20px;
+}
+
+body.large-text-mode .security-item summary small,
+body.large-text-mode .social-notice small {
+  font-size: 16px;
+}
+
+body.large-text-mode .policy-container {
+  width: min(1180px, calc(100% - 48px));
+}
+
+body.large-text-mode .policy-hero {
+  padding-top: 58px;
+}
+
+body.large-text-mode .policy-hero h1 {
+  font-size: 52px;
+  line-height: 1.22;
+}
+
+body.large-text-mode .policy-hero p {
+  font-size: 20px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .search-filter-card {
+  padding: 30px;
+  border-width: 2px;
+}
+
+body.large-text-mode .policy-search-row {
+  min-height: 70px;
+}
+
+body.large-text-mode .policy-search-row input {
+  font-size: 19px;
+}
+
+body.large-text-mode .policy-search-row button {
+  min-width: 132px;
+  font-size: 19px;
+}
+
+body.large-text-mode .search-filter-card .filter-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .filter-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .filter-field select {
+  height: 62px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .filter-actions button {
+  min-height: 60px;
+  font-size: 18px;
+}
+
+body.large-text-mode .quick-keywords strong,
+body.large-text-mode .quick-keywords a {
+  font-size: 17px;
+}
+
+body.large-text-mode .result-head h2 {
+  font-size: 34px;
+}
+
+body.large-text-mode .result-head p,
+body.large-text-mode .result-tabs a {
+  font-size: 18px;
+}
+
+body.large-text-mode .policy-result-card {
+  padding: 30px;
+  border-width: 2px;
+}
+
+body.large-text-mode .policy-result-card h3 {
+  font-size: 27px;
+  line-height: 1.45;
+}
+
+body.large-text-mode .agency,
+body.large-text-mode .summary,
+body.large-text-mode .info-grid dt,
+body.large-text-mode .info-grid dd {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+body.large-text-mode .info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .badge,
+body.large-text-mode .tags span {
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 15px;
+}
+
+body.large-text-mode .detail-btn,
+body.large-text-mode .bookmark-btn {
+  min-height: 58px;
+  font-size: 18px;
+}
+
+body.large-text-mode .pagination a {
+  min-width: 52px;
+  height: 52px;
+  font-size: 18px;
+}
+
+body.large-text-mode .detail-container {
+  width: min(1180px, calc(100% - 48px));
+}
+
+body.large-text-mode .back-link {
+  min-height: 50px;
+  font-size: 18px;
+}
+
+body.large-text-mode .detail-title-card {
+  padding: 36px;
+  border-width: 2px;
+}
+
+body.large-text-mode .detail-title-card h1 {
+  font-size: 44px;
+  line-height: 1.3;
+}
+
+body.large-text-mode .lead-text {
+  font-size: 21px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .status-badge,
+body.large-text-mode .dday-badge,
+body.large-text-mode .source-badge,
+body.large-text-mode .mini-status {
+  min-height: 38px;
+  padding: 7px 13px;
+  font-size: 16px;
+}
+
+body.large-text-mode .summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .summary-grid dt,
+body.large-text-mode .summary-grid dd {
+  font-size: 18px;
+}
+
+body.large-text-mode .detail-action-box {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .primary-action,
+body.large-text-mode .outline-action,
+body.large-text-mode .ghost-action,
+body.large-text-mode .side-primary-link,
+body.large-text-mode .side-save-button {
+  min-height: 60px;
+  font-size: 18px;
+}
+
+body.large-text-mode .detail-layout {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .sticky-card {
+  position: static;
+}
+
+body.large-text-mode .info-card,
+body.large-text-mode .side-card {
+  padding: 30px;
+  border-width: 2px;
+}
+
+body.large-text-mode .info-card h2,
+body.large-text-mode .side-card h2 {
+  font-size: 30px;
+}
+
+body.large-text-mode .info-card > p,
+body.large-text-mode .easy-summary-box p,
+body.large-text-mode .dot-list li,
+body.large-text-mode .benefit-item span,
+body.large-text-mode .step-list p,
+body.large-text-mode .checklist label,
+body.large-text-mode .side-info-list dt,
+body.large-text-mode .side-info-list dd,
+body.large-text-mode .caution-card p {
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .benefit-item strong,
+body.large-text-mode .step-list strong {
+  font-size: 20px;
+}
+
+body.large-text-mode .checklist input {
+  width: 25px;
+  height: 25px;
+}
+
+body.large-text-mode .report-container {
+  width: min(1120px, calc(100% - 48px));
+}
+
+body.large-text-mode .report-hero {
+  padding: 54px 0;
+}
+
+body.large-text-mode .report-hero-grid {
+  grid-template-columns: 1fr;
+  gap: 26px;
+}
+
+body.large-text-mode .report-hero h1 {
+  font-size: 52px;
+}
+
+body.large-text-mode .report-hero p,
+body.large-text-mode .report-hero-card li {
+  font-size: 19px;
+  line-height: 1.75;
+}
+
+body.large-text-mode .report-hero-card {
+  padding: 28px;
+  border-width: 2px;
+}
+
+body.large-text-mode .report-hero-card strong {
+  font-size: 22px;
+}
+
+body.large-text-mode .report-layout {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .report-card,
+body.large-text-mode .report-side-card {
+  padding: 32px;
+  border-width: 2px;
+}
+
+body.large-text-mode .report-card-head h2,
+body.large-text-mode .report-side-card h2 {
+  font-size: 31px;
+}
+
+body.large-text-mode .report-card-head p,
+body.large-text-mode .report-step p,
+body.large-text-mode .report-note-box p {
+  font-size: 17px;
+}
+
+body.large-text-mode .report-type-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.large-text-mode .report-type-item span {
+  min-height: 100px;
+  padding: 20px;
+  border-width: 2px;
+}
+
+body.large-text-mode .report-type-item strong {
+  font-size: 20px;
+}
+
+body.large-text-mode .report-type-item em {
+  font-size: 16px;
+}
+
+body.large-text-mode .report-form-grid {
+  grid-template-columns: 1fr;
+}
+
+body.large-text-mode .report-field label {
+  font-size: 19px;
+}
+
+body.large-text-mode .report-field input,
+body.large-text-mode .report-field select {
+  height: 64px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .report-field textarea {
+  min-height: 190px;
+  border-width: 2px;
+  font-size: 19px;
+}
+
+body.large-text-mode .report-agree-box label {
+  font-size: 18px;
+}
+
+body.large-text-mode .report-agree-box input {
+  width: 25px;
+  height: 25px;
+}
+
+body.large-text-mode .report-cancel,
+body.large-text-mode .report-submit,
+body.large-text-mode .report-file-box button {
+  min-height: 62px;
+  font-size: 19px;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__inner,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__bottom {
+  width: min(1180px, calc(100% - 56px)) !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__top {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  row-gap: 34px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__quick,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__help,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__notice {
+  padding-left: 30px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__title {
+  font-size: 27px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__slogan,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__quick-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__help-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__notice-text {
+  font-size: 19px !important;
+  line-height: 1.65 !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__legal,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__copy {
+  font-size: 17px !important;
+}
+
+@media (max-width: 900px) {
+  body.large-text-mode .filter-grid,
+  body.large-text-mode .search-filter-card .filter-grid,
+  body.large-text-mode .deadline-grid,
+  body.large-text-mode .recent-grid,
+  body.large-text-mode .info-grid,
+  body.large-text-mode .summary-grid,
+  body.large-text-mode .detail-action-box,
+  body.large-text-mode .report-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .mypage-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body.large-text-mode .hero-status {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.large-text-mode .mypage-side-nav {
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__top {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__quick,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__help,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__notice {
+    padding-left: 0 !important;
+    border-left: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body.large-text-mode {
+    --senior-body: 18px;
+    --senior-small: 15px;
+    --senior-label: 18px;
+    --senior-control: 18px;
+  }
+
+  body.large-text-mode .hero-inner,
+  body.large-text-mode .policy-inner,
+  body.large-text-mode .policy-container,
+  body.large-text-mode .detail-container,
+  body.large-text-mode .report-container,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__inner,
+  body.large-text-mode .scc-clean-footer .scc-clean-footer__bottom {
+    width: calc(100% - 28px) !important;
+  }
+
+  body.large-text-mode .hero-copy h1,
+  body.large-text-mode .policy-hero h1,
+  body.large-text-mode .report-hero h1 {
+    font-size: 38px;
+  }
+
+  body.large-text-mode .search-line {
+    height: auto;
+    grid-template-columns: 58px 1fr;
+  }
+
+  body.large-text-mode .search-line button {
+    grid-column: 1 / -1;
+    width: calc(100% - 8px);
+    margin: 0 4px 4px;
+  }
+
+  body.large-text-mode .login-card,
+  body.large-text-mode .signup-card,
+  body.large-text-mode .password-card,
+  body.large-text-mode .mypage-card,
+  body.large-text-mode .report-card,
+  body.large-text-mode .report-side-card {
+    padding: 26px 20px;
+  }
+
+  body.large-text-mode .input-button-group {
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .form-actions,
+  body.large-text-mode .report-actions,
+  body.large-text-mode .button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .profile-summary-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  body.large-text-mode .profile-avatar {
+    margin: 0 auto;
+  }
+}
+
+body.large-text-mode {
+  font-size: 22px !important;
+  line-height: 1.8 !important;
+  letter-spacing: -0.015em;
+}
+
+body.large-text-mode h1 strong,
+body.large-text-mode h2 strong,
+body.large-text-mode h3 strong {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+body.large-text-mode main p,
+body.large-text-mode main li,
+body.large-text-mode main dt,
+body.large-text-mode main dd,
+body.large-text-mode main label,
+body.large-text-mode main td,
+body.large-text-mode main th {
+  font-size: 22px !important;
+  line-height: 1.8 !important;
+}
+
+body.large-text-mode main small,
+body.large-text-mode main .field-help,
+body.large-text-mode main .field-error,
+body.large-text-mode main .helper-text,
+body.large-text-mode main .description {
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+}
+
+body.large-text-mode input:not([type="checkbox"]):not([type="radio"]),
+body.large-text-mode select,
+body.large-text-mode textarea {
+  min-height: 70px !important;
+  padding-left: 22px !important;
+  padding-right: 22px !important;
+  border-width: 2px !important;
+  font-size: 21px !important;
+  line-height: 1.7 !important;
+}
+
+body.large-text-mode textarea {
+  min-height: 220px !important;
+  padding-top: 18px !important;
+  padding-bottom: 18px !important;
+}
+
+/* 버튼 */
+body.large-text-mode button,
+body.large-text-mode .button-primary,
+body.large-text-mode .button-secondary,
+body.large-text-mode .button-danger,
+body.large-text-mode .login-submit,
+body.large-text-mode .signup-submit,
+body.large-text-mode .primary-button,
+body.large-text-mode .secondary-button,
+body.large-text-mode .detail-btn,
+body.large-text-mode .bookmark-btn,
+body.large-text-mode .report-submit,
+body.large-text-mode .report-cancel {
+  min-height: 68px !important;
+  padding-left: 26px !important;
+  padding-right: 26px !important;
+  font-size: 21px !important;
+  font-weight: 900 !important;
+}
+
+/* 체크박스·라디오 */
+body.large-text-mode input[type="checkbox"],
+body.large-text-mode input[type="radio"] {
+  width: 30px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+}
+
+body.large-text-mode .site-header {
+  min-height: 96px;
+}
+
+body.large-text-mode .nav-inner {
+  grid-template-columns: 230px minmax(420px, 1fr) auto;
+}
+
+body.large-text-mode .nav-menu a {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .nav-actions a,
+body.large-text-mode .nav-actions button {
+  min-width: 116px !important;
+  min-height: 60px !important;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  font-size: 19px !important;
+  white-space: nowrap !important;
+}
+
+body.large-text-mode .hero-copy h1 {
+  font-size: clamp(64px, 5.8vw, 78px) !important;
+  line-height: 1.16 !important;
+}
+
+body.large-text-mode .hero-copy > p {
+  font-size: 25px !important;
+  line-height: 1.8 !important;
+}
+
+body.large-text-mode .search-line {
+  min-height: 80px !important;
+}
+
+body.large-text-mode .search-line input {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .search-line button {
+  min-width: 145px !important;
+  font-size: 22px !important;
+}
+
+body.large-text-mode .filter-grid label > span {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .filter-grid select {
+  min-height: 70px !important;
+  font-size: 21px !important;
+}
+
+body.large-text-mode .keyword-area > strong {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .keyword-list {
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+body.large-text-mode .keyword-list a {
+  min-height: 44px !important;
+  padding: 9px 13px !important;
+  font-size: 17px !important;
+}
+
+body.large-text-mode .preset-area a {
+  min-height: 64px !important;
+  font-size: 20px !important;
+}
+
+/* AI 안내 */
+body.large-text-mode .ai-title h2 {
+  font-size: 46px !important;
+}
+
+body.large-text-mode .ai-title p {
+  font-size: 24px !important;
+  line-height: 1.75 !important;
+}
+
+body.large-text-mode .ai-list b {
+  font-size: 24px !important;
+}
+
+body.large-text-mode .ai-list small {
+  font-size: 19px !important;
+  line-height: 1.75 !important;
+}
+
+/* 정책 카드 */
+body.large-text-mode .board-head h2,
+body.large-text-mode .result-head h2 {
+  font-size: 38px !important;
+}
+
+body.large-text-mode .policy-title,
+body.large-text-mode .recent-card b,
+body.large-text-mode .policy-result-card h3 {
+  font-size: 24px !important;
+  line-height: 1.6 !important;
+}
+
+body.large-text-mode .policy-meta,
+body.large-text-mode .policy-date,
+body.large-text-mode .recent-card small,
+body.large-text-mode .agency,
+body.large-text-mode .summary {
+  font-size: 18px !important;
+  line-height: 1.75 !important;
+}
+
+body.large-text-mode .policy-status,
+body.large-text-mode .policy-dday,
+body.large-text-mode .badge,
+body.large-text-mode .tags span {
+  font-size: 17px !important;
+}
+
+body.large-text-mode .login-title-box h2 {
+  font-size: 50px !important;
+}
+
+body.large-text-mode .login-title-box p,
+body.large-text-mode .login-options,
+body.large-text-mode .remember-check,
+body.large-text-mode .login-links {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .login-field label {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .login-field input {
+  min-height: 72px !important;
+  font-size: 21px !important;
+}
+
+body.large-text-mode .signup-title-box h1 {
+  font-size: 52px !important;
+}
+
+body.large-text-mode .signup-title-box p,
+body.large-text-mode .signup-check,
+body.large-text-mode .all-check,
+body.large-text-mode .signup-login-link {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .signup-field label {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .signup-field input,
+body.large-text-mode .signup-field select,
+body.large-text-mode .input-button-group button {
+  min-height: 72px !important;
+  font-size: 21px !important;
+}
+
+body.large-text-mode .password-title-box h2 {
+  font-size: 50px !important;
+}
+
+body.large-text-mode .password-title-box p,
+body.large-text-mode .step-heading p,
+body.large-text-mode .password-rule-box p,
+body.large-text-mode .reset-alert,
+body.large-text-mode .password-bottom-link {
+  font-size: 21px !important;
+}
+
+body.large-text-mode .step-heading h3 {
+  font-size: 33px !important;
+}
+
+body.large-text-mode .password-field label {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .mypage-hero h1 {
+  font-size: 58px !important;
+}
+
+body.large-text-mode .mypage-hero p {
+  font-size: 23px !important;
+}
+
+body.large-text-mode .card-heading h2,
+body.large-text-mode .profile-summary-title h2 {
+  font-size: 42px !important;
+}
+
+body.large-text-mode .card-heading p,
+body.large-text-mode .form-section-heading p {
+  font-size: 20px !important;
+}
+
+body.large-text-mode .mypage-field label,
+body.large-text-mode .ui-mode-section legend {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .mypage-field input,
+body.large-text-mode .mypage-field select {
+  min-height: 72px !important;
+  font-size: 21px !important;
+}
+
+body.large-text-mode .ui-mode-option strong {
+  font-size: 25px !important;
+}
+
+body.large-text-mode .ui-mode-option small {
+  font-size: 19px !important;
+}
+
+body.large-text-mode .security-item summary strong,
+body.large-text-mode .social-notice strong {
+  font-size: 24px !important;
+}
+
+body.large-text-mode .security-item summary small,
+body.large-text-mode .social-notice small {
+  font-size: 19px !important;
+  line-height: 1.75 !important;
+}
+
+body.large-text-mode .policy-hero h1 {
+  font-size: 62px !important;
+}
+
+body.large-text-mode .policy-hero p {
+  font-size: 24px !important;
+}
+
+body.large-text-mode .filter-field label,
+body.large-text-mode .result-tabs a {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .policy-result-card h3 {
+  font-size: 33px !important;
+}
+
+body.large-text-mode .detail-title-card h1 {
+  font-size: 54px !important;
+}
+
+body.large-text-mode .lead-text {
+  font-size: 25px !important;
+}
+
+body.large-text-mode .info-card h2,
+body.large-text-mode .side-card h2 {
+  font-size: 38px !important;
+}
+
+body.large-text-mode .info-card > p,
+body.large-text-mode .easy-summary-box p,
+body.large-text-mode .dot-list li,
+body.large-text-mode .benefit-item span,
+body.large-text-mode .step-list p,
+body.large-text-mode .checklist label,
+body.large-text-mode .side-info-list dt,
+body.large-text-mode .side-info-list dd,
+body.large-text-mode .caution-card p {
+  font-size: 22px !important;
+  line-height: 1.8 !important;
+}
+
+body.large-text-mode .report-hero h1 {
+  font-size: 62px !important;
+}
+
+body.large-text-mode .report-hero p,
+body.large-text-mode .report-hero-card li {
+  font-size: 23px !important;
+  line-height: 1.8 !important;
+}
+
+body.large-text-mode .report-card-head h2,
+body.large-text-mode .report-side-card h2 {
+  font-size: 38px !important;
+}
+
+body.large-text-mode .report-field label {
+  font-size: 22px !important;
+}
+
+body.large-text-mode .report-field input,
+body.large-text-mode .report-field select {
+  min-height: 72px !important;
+  font-size: 21px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__title,
+body.large-text-mode .footer-col h2,
+body.large-text-mode .footer-notice h2 {
+  font-size: 32px !important;
+}
+
+body.large-text-mode .scc-clean-footer .scc-clean-footer__slogan,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__quick-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__help-link,
+body.large-text-mode .scc-clean-footer .scc-clean-footer__notice-text,
+body.large-text-mode .footer-brand p,
+body.large-text-mode .footer-notice p,
+body.large-text-mode .footer-col a {
+  font-size: 21px !important;
+  line-height: 1.75 !important;
+}
+
+@media (max-width: 1280px) {
+  body.large-text-mode .site-header {
+    height: 82px;
+  }
+
+  body.large-text-mode .nav-inner {
+    width: calc(100% - 32px);
+    grid-template-columns: 1fr 54px;
+  }
+
+  body.large-text-mode .nav-toggle {
+    display: block;
+    width: 54px;
+    height: 54px;
+  }
+
+  body.large-text-mode .nav-menu,
+  body.large-text-mode .nav-actions {
+    display: none;
+  }
+
+  body.large-text-mode.nav-open .nav-menu {
+    display: flex;
+  }
+
+  body.large-text-mode.nav-open .nav-actions {
+    display: grid;
+  }
+}
+
+@media (max-width: 640px) {
+  body.large-text-mode {
+    font-size: 20px !important;
+  }
+
+  body.large-text-mode main p,
+  body.large-text-mode main li,
+  body.large-text-mode main dt,
+  body.large-text-mode main dd,
+  body.large-text-mode main label,
+  body.large-text-mode main td,
+  body.large-text-mode main th {
+    font-size: 20px !important;
+  }
+
+  body.large-text-mode main small,
+  body.large-text-mode main .field-help,
+  body.large-text-mode main .field-error {
+    font-size: 17px !important;
+  }
+
+  body.large-text-mode .hero-copy h1,
+  body.large-text-mode .policy-hero h1,
+  body.large-text-mode .report-hero h1 {
+    font-size: 46px !important;
+  }
+
+  body.large-text-mode input:not([type="checkbox"]):not([type="radio"]),
+  body.large-text-mode select,
+  body.large-text-mode textarea,
+  body.large-text-mode button {
+    font-size: 20px !important;
+  }
+}
+
+body.large-text-mode .search-foot {
+  gap: 28px !important;
+  padding-top: 28px !important;
+}
+
+/* 인기 정책 제목 */
+body.large-text-mode .keyword-area > strong {
+  display: block;
+  margin-bottom: 16px;
+
+  font-size: 25px !important;
+  line-height: 1.4 !important;
+}
+
+/* 인기 정책: 4개 한 줄 대신 2열 배치 */
+body.large-text-mode .keyword-list {
+  width: 100%;
+
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px !important;
+}
+
+/* 인기 정책 버튼 */
+body.large-text-mode .keyword-list a {
+  width: 100%;
+  min-height: 68px !important;
+  height: auto !important;
+
+  padding: 14px 18px !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #c7dbea !important;
+  border-radius: 14px !important;
+
+  background: #ffffff;
+
+  color: #071947;
+  font-size: 21px !important;
+  font-weight: 900 !important;
+  line-height: 1.45 !important;
+  text-align: center;
+
+  white-space: normal !important;
+  word-break: keep-all;
+}
+
+body.large-text-mode .keyword-list a:hover,
+body.large-text-mode .keyword-list a:focus-visible {
+  border-color: #087f83 !important;
+  background: #eefafa;
+}
+
+/* 내 맞춤 검색·불러오기 */
+body.large-text-mode .preset-area {
+  width: 100%;
+
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px !important;
+}
+
+body.large-text-mode .preset-area a {
+  width: 100%;
+  min-width: 0 !important;
+  min-height: 70px !important;
+  height: auto !important;
+
+  padding: 14px 20px !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  border: 2px solid #c7dbea !important;
+  border-radius: 14px !important;
+
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  line-height: 1.4 !important;
+
+  white-space: nowrap !important;
+}
+
+body.large-text-mode .preset-area a span {
+  font-size: 25px !important;
+}
+
+/* 모바일에서는 한 줄에 하나 */
+@media (max-width: 640px) {
+  body.large-text-mode .keyword-list,
+  body.large-text-mode .preset-area {
+    grid-template-columns: 1fr;
+  }
+
+  body.large-text-mode .keyword-list a,
+  body.large-text-mode .preset-area a {
+    min-height: 66px !important;
+    font-size: 20px !important;
+  }
+}
+
+@media (max-width: 640px) {
+
+  body.large-text-mode .site-header {
+    height: 82px;
+  }
+
+  body.large-text-mode .nav-inner {
+    width: calc(100% - 28px);
+    grid-template-columns: minmax(0, 1fr) 54px;
+    gap: 10px;
+  }
+
+  body.large-text-mode .brand,
+  body.large-text-mode .brand img {
+    width: 170px;
+    min-width: 170px;
+  }
+
+  body.large-text-mode .nav-toggle {
+    width: 54px;
+    height: 54px;
+  }
+
+  body.large-text-mode.nav-open .nav-menu {
+    top: 94px;
+    left: 14px;
+    right: 14px;
+
+    max-height: none;
+
+    border-radius: 18px 18px 0 0;
+    overflow: hidden;
+  }
+
+  body.large-text-mode.nav-open .nav-menu a {
+    width: 100%;
+    min-height: 72px;
+    height: 72px;
+
+    padding: 0 22px;
+
+    display: flex;
+    align-items: center;
+
+    font-size: 21px !important;
+    line-height: 1.3 !important;
+
+    white-space: nowrap;
+  }
+
+  body.large-text-mode.nav-open .nav-actions {
+    top: 310px;
+    left: 14px;
+    right: 14px;
+
+    padding: 16px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    border-radius: 0 0 18px 18px;
+  }
+
+  body.large-text-mode.nav-open
+  .nav-actions .nav-report-button {
+    grid-column: 1 / -1;
+  }
+
+  body.large-text-mode.nav-open .nav-actions a,
+  body.large-text-mode.nav-open .nav-actions button,
+  body.large-text-mode.nav-open .nav-actions form {
+    width: 100%;
+    min-width: 0 !important;
+    margin: 0;
+  }
+
+  body.large-text-mode.nav-open .nav-actions a,
+  body.large-text-mode.nav-open .nav-actions button {
+    min-height: 58px !important;
+
+    padding: 0 10px !important;
+
+    font-size: 18px !important;
+    line-height: 1.25 !important;
+
+    white-space: nowrap !important;
+  }
+
+  body.large-text-mode .hero {
+    padding: 46px 0 54px;
+  }
+
+  body.large-text-mode .hero-inner {
+    width: calc(100% - 28px) !important;
+  }
+
+  body.large-text-mode .hero-copy h1 {
+    font-size: 40px !important;
+    line-height: 1.22 !important;
+    letter-spacing: -0.055em !important;
+  }
+
+  body.large-text-mode .hero-copy > p {
+    font-size: 19px !important;
+    line-height: 1.75 !important;
+  }
+
+  body.large-text-mode .search-card {
+    width: 100%;
+    padding: 20px 18px;
+
+    border-radius: 20px;
+  }
+
+  body.large-text-mode .search-line {
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+
+    padding: 8px;
+
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 0;
+
+    border-radius: 16px;
+  }
+
+  body.large-text-mode .search-lens {
+    width: 54px;
+    height: 62px;
+  }
+
+  body.large-text-mode .search-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  body.large-text-mode .search-line input {
+    width: 100%;
+    min-width: 0;
+    height: 62px;
+    min-height: 62px !important;
+
+    padding: 0 10px !important;
+
+    font-size: 18px !important;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.large-text-mode .search-line input::placeholder {
+    font-size: 18px;
+  }
+
+  body.large-text-mode .search-line button {
+    grid-column: 1 / -1;
+
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 64px !important;
+
+    margin: 6px 0 0;
+    padding: 0 16px !important;
+
+    font-size: 21px !important;
+
+    border-radius: 12px;
+  }
+
+  body.large-text-mode .filter-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+
+    padding-top: 28px;
+  }
+
+  body.large-text-mode .filter-grid label > span {
+    margin-bottom: 10px;
+
+    font-size: 20px !important;
+  }
+
+  body.large-text-mode .filter-grid select {
+    width: 100%;
+    min-height: 66px !important;
+
+    padding: 0 18px !important;
+
+    font-size: 20px !important;
+  }
+
+  body.large-text-mode .search-foot {
+    display: block;
+  }
+
+  body.large-text-mode .keyword-list,
+  body.large-text-mode .preset-area {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.large-text-mode .keyword-list a,
+  body.large-text-mode .preset-area a {
+    width: 100%;
+    min-height: 66px !important;
+
+    font-size: 20px !important;
+
+    white-space: normal !important;
+  }
+}
+
+@media (max-width: 760px) {
+
+  body.large-text-mode .hero-inner {
+    width: calc(100% - 28px) !important;
+  }
+
+  body.large-text-mode .search-card {
+    width: 100%;
+    height: auto !important;
+    padding: 20px 16px 24px !important;
+    overflow: visible !important;
+  }
+
+  body.large-text-mode .search-line {
+    width: 100%;
+    height: 154px !important;
+    min-height: 154px !important;
+
+    display: grid !important;
+    grid-template-columns: 56px minmax(0, 1fr) !important;
+    grid-template-rows: 72px 66px !important;
+    gap: 6px 0 !important;
+
+    padding: 6px !important;
+
+    overflow: hidden !important;
+    border: 2px solid #cbdbea !important;
+    border-radius: 16px !important;
+    background: #ffffff;
+  }
+
+  body.large-text-mode .search-lens {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 56px !important;
+    height: 72px !important;
+  }
+
+  body.large-text-mode .search-icon {
+    width: 31px !important;
+    height: 31px !important;
+  }
+
+  body.large-text-mode .search-line input {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 100%;
+    min-width: 0;
+    height: 72px !important;
+    min-height: 72px !important;
+
+    padding: 0 10px !important;
+
+    border: 0 !important;
+    font-size: 18px !important;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.large-text-mode .search-line input::placeholder {
+    font-size: 18px !important;
+  }
+
+  body.large-text-mode .search-line button {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    position: static !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 66px !important;
+    min-height: 66px !important;
+
+    margin: 0 !important;
+    padding: 0 16px !important;
+
+    border-radius: 11px !important;
+
+    font-size: 21px !important;
+  }
+
+  body.large-text-mode .filter-grid {
+    clear: both;
+    grid-template-columns: 1fr !important;
+
+    margin-top: 0 !important;
+    padding-top: 34px !important;
+
+    gap: 26px !important;
+  }
+
+  body.large-text-mode .filter-grid label {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.large-text-mode .filter-grid label > span {
+    min-height: 30px;
+    margin-bottom: 10px !important;
+
+    font-size: 20px !important;
+  }
+
+  body.large-text-mode .filter-grid select {
+    width: 100%;
+    height: 68px !important;
+    min-height: 68px !important;
+
+    padding: 0 18px !important;
+
+    font-size: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+
+  body.large-text-mode .hero-copy h1 {
+    font-size: 38px !important;
+    line-height: 1.22 !important;
+  }
+
+  body.large-text-mode .hero-copy > p {
+    font-size: 19px !important;
+  }
+
+  body.large-text-mode .search-card {
+    padding: 18px 14px 22px !important;
+  }
+
+  body.large-text-mode .search-line input,
+  body.large-text-mode .search-line input::placeholder {
+    font-size: 17px !important;
+  }
+}
+
+body.large-text-mode .hero-city {
+  display: block !important;
+
+  top: 0 !important;
+  bottom: 0 !important;
+  left: -80px !important;
+
+  width: 620px !important;
+  height: 100% !important;
+
+  object-fit: cover !important;
+  object-position: center center !important;
+
+  opacity: 0.4 !important;
+  filter: blur(0.6px) !important;
+
+  /* 오른쪽과 아래쪽이 배경에 자연스럽게 섞이도록 처리 */
+  -webkit-mask-image:
+          linear-gradient(
+                  to right,
+                  #000 0%,
+                  #000 65%,
+                  rgba(0, 0, 0, 0.7) 78%,
+                  rgba(0, 0, 0, 0.25) 92%,
+                  transparent 100%
+          ),
+          linear-gradient(
+                  to bottom,
+                  #000 0%,
+                  #000 70%,
+                  rgba(0, 0, 0, 0.7) 82%,
+                  rgba(0, 0, 0, 0.2) 94%,
+                  transparent 100%
+          );
+
+  -webkit-mask-composite: source-in;
+
+  mask-image:
+          linear-gradient(
+                  to right,
+                  #000 0%,
+                  #000 65%,
+                  rgba(0, 0, 0, 0.7) 78%,
+                  rgba(0, 0, 0, 0.25) 92%,
+                  transparent 100%
+          ),
+          linear-gradient(
+                  to bottom,
+                  #000 0%,
+                  #000 70%,
+                  rgba(0, 0, 0, 0.7) 82%,
+                  rgba(0, 0, 0, 0.2) 94%,
+                  transparent 100%
+          );
+
+  mask-composite: intersect;
+
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 1180px) {
+  body.large-text-mode .hero-city {
+    display: none !important;
+  }
+}
+
+body.large-text-mode .policy-inner {
+  align-items: start !important;
+}
+
+body.large-text-mode .policy-board {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+body.large-text-mode .policy-empty {
+  margin: 0 !important;
+  padding: 18px 4px 8px !important;
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+}
