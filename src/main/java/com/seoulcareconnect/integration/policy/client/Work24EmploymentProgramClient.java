@@ -122,6 +122,7 @@ public class Work24EmploymentProgramClient implements ExternalPolicyClient {
                 .contact(reader.stripHtml(agencyName))
                 .benefit(reader.stripHtml(summary))
                 .contentText(reader.stripHtml(summary))
+                .applicationInfoAvailable(false)
                 .rawXml(rawXml).httpStatus(200)
                 .build();
     }
