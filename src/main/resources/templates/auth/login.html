@@ -6,8 +6,12 @@
     <title>로그인 | 서울 케어넥트</title>
     <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
     <link rel="stylesheet" th:href="@{/css/login.css}" href="/css/login.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
 </head>
-<body>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
 <div th:replace="~{fragments/nav :: nav}"></div>
 
 <main class="login-page">
@@ -85,12 +89,23 @@
                     로그아웃되었습니다.
                 </div>
 
+
+                <div class="login-error" th:if="${param.expired}">
+                    로그인 시간이 만료되었습니다. 다시 로그인해주세요.
+                </div>
+
+                <div class="login-success" th:if="${param.reset}">
+                    비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.
+                </div>
+
                 <div class="login-options">
                     <label class="remember-check">
                         <input type="checkbox" name="remember-me">
                         <span>로그인 상태 유지</span>
                     </label>
-                    <a href="#">비밀번호 찾기</a>
+                    <a th:href="@{/password/find}" href="/password/find">
+                        비밀번호 찾기
+                    </a>
                 </div>
 
                 <button class="login-submit" type="submit">로그인</button>
@@ -112,7 +127,8 @@
                 </div>
 
                 <div class="login-error" th:if="${param.oauthError}">
-                    소셜 로그인 처리 중 오류가 발생했습니다.
+                    소셜 로그인에 실패했습니다.<br>
+                    이미 다른 방식으로 가입한 이메일이라면 기존 로그인 방식을 이용해주세요.
                 </div>
 
             </form>
@@ -129,25 +145,23 @@
 
 <script>
     const loginForm = document.querySelector(".login-form");
-    const loginBtn = document.querySelector(".login-submit");
 
-    loginBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-
+    loginForm.addEventListener("submit", function (event) {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
 
         if (!email) {
+            event.preventDefault();
             alert("이메일을 입력해주세요.");
+            document.getElementById("email").focus();
             return;
         }
 
         if (!password) {
+            event.preventDefault();
             alert("비밀번호를 입력해주세요.");
-            return;
+            document.getElementById("password").focus();
         }
-
-        loginForm.submit();
     });
 </script>
 

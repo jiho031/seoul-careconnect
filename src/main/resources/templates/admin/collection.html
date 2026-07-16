@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울 케어넥트 관리자 - API 수집 현황</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}" href="/css/admin.css">
+    <link rel="stylesheet" th:href="@{/css/admin_collection.css}" href="/css/admin_collection.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <aside class="admin-side">
+            <p class="admin-side-title">관리자 메뉴</p>
+
+            <nav class="admin-menu">
+                <a th:href="@{/admin/dashboard}" href="/admin/dashboard">📊 대시보드</a>
+                <a class="active" th:href="@{/admin/collection}" href="/admin/collection">🔗 API 수집 현황</a>
+                <a th:href="@{/admin/policy-errors}" href="/admin/policy-errors">⚠️ 정책 오류 관리</a>
+                <a th:href="@{/admin/ai-review}" href="/admin/ai-review">🤖 AI 요약 오류 관리</a>
+                <a th:href="@{/admin/reports}" href="/admin/reports">🚨 사용자 신고 관리</a>
+                <a th:href="@{/admin/policies}" href="/admin/policies">📌 정책 목록</a>
+                <a th:href="@{/admin/policies/new}" href="/admin/policies/new">📝 수동 등록/수정</a>
+                <a th:href="@{/admin/users}" href="/admin/users">👥 회원 관리</a>
+                <a th:href="@{/admin/super}" href="/admin/super">👑 최고 관리자</a>
+            </nav>
+        </aside>
+
+        <section class="admin-content">
+            <div class="admin-head">
+                <div>
+                    <h1>API 수집 현황</h1>
+                    <p>외부 정책 API의 자동 수집 상태, 성공/실패 내역, 재수집 필요 항목을 관리합니다.</p>
+                </div>
+
+                <div class="admin-actions">
+                    <button class="admin-btn" type="button">
+                        수집 로그 다운로드
+                    </button>
+
+                    <form th:action="@{/admin/collection/run}"
+                          method="post"
+                          style="display: inline;">
+                        <button class="admin-btn primary"
+                                type="submit"
+                                onclick="return confirm('전체 정책 API를 수동으로 재수집하시겠습니까?');">
+                            수동 재수집 실행
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="result-message success"
+                 th:if="${collectionSuccess}"
+                 th:text="${collectionSuccess}">
+                수동 재수집이 완료되었습니다.
+            </div>
+
+            <div class="result-message error"
+                 th:if="${collectionError}"
+                 th:text="${collectionError}">
+                수동 재수집 중 오류가 발생했습니다.
+            </div>
+
+            <div class="admin-stat-grid">
+                <article class="admin-stat-card">
+                    <span>최근 수집 처리</span>
+                    <strong th:text="${summary.latestProcessedCount + '건'}">
+                        0건
+                    </strong>
+                    <small>가장 최근 수집 1회 기준</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>최근 수집 성공</span>
+                    <strong th:text="${summary.latestSuccessCount + '건'}">
+                        0건
+                    </strong>
+                    <small>정상 저장 또는 갱신 완료</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>오늘 수집 실행</span>
+                    <strong th:text="${summary.todayRunCount + '회'}">
+                        0회
+                    </strong>
+                    <small>오늘 생성된 수집 로그 수</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>최근 수집 실패</span>
+                    <strong th:text="${summary.latestFailCount + '건'}">
+                        0건
+                    </strong>
+                    <small>가장 최근 수집 1회 기준</small>
+                </article>
+            </div>
+
+            <div class="admin-grid-2 collection-top">
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>API 연동 상태</h2>
+                        <span class="admin-list-count"
+                              th:text="${'총 ' + summary.totalSourceCount + '개 연동'}">  총 0개 연동
+                        </span>
+                        <button type="button" class="icon-refresh-btn" id="refreshApiStatusBtn" aria-label="API 연동 상태 새로고침">
+                            ↻
+                        </button>
+                    </div>
+
+                    <div class="api-status-list">
+
+                        <div class="api-status-item"
+                             th:each="source : ${sourceStatuses}">
+
+                            <div class="api-status-info">
+                                <strong th:text="${source.sourceName}">
+                                    API 출처명
+                                </strong>
+
+                                <span class="api-status-meta">
+                                    마지막 수집:
+                                    <b th:text="${source.latestStartedAt != null
+                                        ? #temporals.format(source.latestStartedAt, 'yyyy.MM.dd HH:mm')
+                                        : '수집 이력 없음'}">
+                                        수집 이력 없음
+                                    </b>
+                                </span>
+                            </div>
+
+                            <span class="admin-tag"
+                                  th:classappend="${source.statusCssClass}"
+                                  th:text="${source.statusLabel}">
+                                    정상
+                            </span>
+
+                        </div>
+
+                        <div class="admin-empty"
+                             th:if="${#lists.isEmpty(sourceStatuses)}">
+                            등록된 API 수집처가 없습니다.
+                        </div>
+
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>수집 처리 기준</h2>
+                        <a class="admin-link" href="#">기준 수정 ›</a>
+                    </div>
+
+                    <div class="collection-rule-list">
+                        <article class="collection-rule-item">
+                            <strong>자동 등록</strong>
+                            <p>정책명, 기관, 신청기간, 대상, 공식 URL이 정상 수집된 경우 자동 등록합니다.</p>
+                        </article>
+
+                        <article class="collection-rule-item">
+                            <strong>확인 필요</strong>
+                            <p>필수값 누락, 기간 오류, 대상 불명확, 중복 가능성이 있는 경우 관리자 확인 대상으로 분류합니다.</p>
+                        </article>
+
+                        <article class="collection-rule-item">
+                            <strong>수집 실패</strong>
+                            <p>API 응답 실패, JSON 파싱 오류, 서버 오류 발생 시 실패 로그에 기록합니다.</p>
+                        </article>
+                    </div>
+                </section>
+            </div>
+
+            <section class="admin-card">
+                <div class="admin-card-head">
+                    <h2>최근 API 수집 로그</h2>
+                    <span class="admin-list-count"
+                          th:text="${'최근 ' + #lists.size(syncLogs) + '건'}">
+                        최근 0건
+                    </span>
+                    <button type="button" class="icon-refresh-btn" id="refreshApiLogBtn" aria-label="최근 API 수집 로그 새로고침">
+                        ↻
+                    </button>
+                </div>
+
+                <table class="admin-table collection-table" id="apiLogTable">
+                    <thead>
+                    <tr>
+                        <th>수집 시간</th>
+                        <th>API 출처</th>
+                        <th>수집 결과</th>
+                        <th>수집 성공</th>
+                        <th>수집 실패</th>
+                        <th>실패 사유</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${syncLogs}">
+                        <td th:text="${log.startedAtText}">
+                            2026.07.14 10:17:00
+                        </td>
+
+                        <td th:text="${log.sourceName}">
+                            API 출처
+                        </td>
+
+                        <td>
+        <span class="admin-tag"
+              th:classappend="${log.statusCssClass}"
+              th:text="${log.statusLabel}">
+            성공
+        </span>
+                        </td>
+
+                        <td th:text="${log.successCount + '건'}">
+                            0건
+                        </td>
+
+                        <td>
+        <span th:text="${log.failCount + '건'}">
+            0건
+        </span>
+                        </td>
+
+                        <td th:text="${log.safeErrorMessage}">
+                            -
+                        </td>
+
+                        <td>
+                            <button type="button"
+                                    class="table-action"
+                                    th:attr="data-log-id=${log.logId}">
+                                상세
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(syncLogs)}">
+                        <td colspan="7" class="admin-empty-row">
+                            저장된 API 수집 로그가 없습니다.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <div class="admin-bottom-grid collection-bottom">
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>확인 필요 항목</h2>
+                        <a class="admin-link" th:href="@{/admin/policy-errors}" href="/admin/policy-errors">오류 관리로 이동 ›</a>
+                    </div>
+
+                    <div class="collection-issue-list">
+
+                        <div class="collection-empty-state">
+                            <strong>현재 확인이 필요한 수집 항목이 없습니다.</strong>
+                            <p>
+                                필수값 누락, 중복 후보 등 예외가 발견되면
+                                정책 예외 관리에서 확인할 수 있습니다.
+                            </p>
+                        </div>
+
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>자동 수집 일정</h2>
+                        <span class="admin-list-count"
+                              th:text="${'활성 ' + summary.activeSourceCount + '개'}">
+                            활성 0개
+                        </span>
+                    </div>
+
+                    <div class="schedule-list">
+
+                        <article class="schedule-item">
+                            <strong>전체 활성 API 자동 수집</strong>
+                            <p>
+                                등록된 활성 API를 대상으로 설정된 스케줄에 따라
+                                일괄 수집합니다.
+                            </p>
+                        </article>
+
+                        <article class="schedule-item"
+                                 th:each="source : ${sourceStatuses}"
+                                 th:if="${source.active}">
+                            <strong th:text="${source.sourceName}">
+                                API 출처
+                            </strong>
+
+                            <p>
+                                <span>현재 상태: </span>
+                                <b th:text="${source.statusLabel}">정상</b>
+                            </p>
+                        </article>
+
+                        <div class="collection-empty-state"
+                             th:if="${summary.activeSourceCount == 0}">
+                            <strong>활성화된 API가 없습니다.</strong>
+                            <p>API 수집처 활성 상태를 확인해주세요.</p>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/common.js}" src="/js/common.js"></script>
+
+<script>
+    const refreshApiStatusBtn = document.getElementById('refreshApiStatusBtn');
+    const refreshApiLogBtn = document.getElementById('refreshApiLogBtn');
+
+    refreshApiStatusBtn?.addEventListener('click', function () {
+        this.classList.add('loading');
+
+        setTimeout(() => {
+            this.classList.remove('loading');
+            alert('API 연동 상태 영역만 새로고침 예정');
+        }, 700);
+    });
+
+    refreshApiLogBtn?.addEventListener('click', function () {
+        this.classList.add('loading');
+
+        setTimeout(() => {
+            this.classList.remove('loading');
+            alert('최근 API 수집 로그 영역만 새로고침 예정');
+        }, 700);
+    });
+</script>
+</body>
+</html>

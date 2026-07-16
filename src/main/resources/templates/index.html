@@ -6,8 +6,12 @@
   <title>서울 케어넥트</title>
   <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
   <link rel="stylesheet" th:href="@{/css/index.css}" href="/css/index.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
 </head>
-<body>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
   <div th:replace="~{fragments/nav :: nav}"></div>
 
   <main>
@@ -19,7 +23,8 @@
           <h1>복잡한 정책 정보,<br><strong>쉽게 찾고 바로 준비하세요</strong></h1>
           <p>서울시의 복지·주거·건강·일자리·교육 등 다양한 정책을<br>내 상황에 맞게 검색하고, 신청까지 한 번에 지원받을 수 있습니다.</p>
 
-          <form class="search-card" action="#" method="get" onsubmit="return false;">
+          <form class="search-card" th:action="@{/policies}" method="get">
+            <input type="hidden" name="page" value="0">
             <div class="search-line">
               <label class="sr-only" for="keyword">정책 검색어</label>
               <span class="search-lens" aria-hidden="true">
@@ -29,28 +34,51 @@
                 </svg>
               </span>
               <input id="keyword" name="keyword" type="search" placeholder="찾고 싶은 정책을 검색하세요. (예: 청년 월세, 출산 지원, 주거 지원)">
-              <button type="button">검색</button>
+              <button type="submit">검색</button>
             </div>
 
             <div class="filter-grid">
               <label>
                 <span><i class="ico-pin"></i>지역</span>
-                <select name="region">
+                <select name="district">
                   <option value="">전체</option>
-                  <option value="seoul">서울시 전체</option>
-                  <option value="gangnam">강남구</option>
-                  <option value="nowon">노원구</option>
-                  <option value="dongdaemun">동대문구</option>
+                  <option value="서울시 전체">서울시 전체</option>
+                  <option value="강남구">강남구</option>
+                  <option value="강동구">강동구</option>
+                  <option value="강북구">강북구</option>
+                  <option value="강서구">강서구</option>
+                  <option value="관악구">관악구</option>
+                  <option value="광진구">광진구</option>
+                  <option value="구로구">구로구</option>
+                  <option value="금천구">금천구</option>
+                  <option value="노원구">노원구</option>
+                  <option value="도봉구">도봉구</option>
+                  <option value="동대문구">동대문구</option>
+                  <option value="동작구">동작구</option>
+                  <option value="마포구">마포구</option>
+                  <option value="서대문구">서대문구</option>
+                  <option value="서초구">서초구</option>
+                  <option value="성동구">성동구</option>
+                  <option value="성북구">성북구</option>
+                  <option value="송파구">송파구</option>
+                  <option value="양천구">양천구</option>
+                  <option value="영등포구">영등포구</option>
+                  <option value="용산구">용산구</option>
+                  <option value="은평구">은평구</option>
+                  <option value="종로구">종로구</option>
+                  <option value="중구">중구</option>
+                  <option value="중랑구">중랑구</option>
                 </select>
               </label>
 
               <label>
                 <span><i class="ico-people"></i>생애주기</span>
-                <select name="lifeCycle">
+                <select name="ageGroup">
                   <option value="">전체</option>
-                  <option value="youth">청년</option>
-                  <option value="middle">중장년</option>
-                  <option value="senior">노년</option>
+                  <option value="UNDER_40">30대 이하</option>
+                  <option value="FORTIES">40대</option>
+                  <option value="FIFTIES">50대</option>
+                  <option value="SIXTIES_PLUS">60대 이상</option>
                 </select>
               </label>
 
@@ -58,33 +86,45 @@
                 <span><i class="ico-grid"></i>분야</span>
                 <select name="category">
                   <option value="">전체</option>
-                  <option value="job">일자리</option>
-                  <option value="housing">주거</option>
-                  <option value="care">돌봄</option>
-                  <option value="health">건강</option>
+                  <option value="EDUCATION">교육</option>
+                  <option value="JOB">일자리</option>
+                  <option value="HOUSING">주거</option>
+                  <option value="LIVING_SUPPORT">생활지원</option>
+                  <option value="CARE">돌봄</option>
+                  <option value="CULTURE_LIFE">문화·생활</option>
                 </select>
               </label>
 
               <label>
                 <span><i class="ico-bag"></i>지원 대상</span>
-                <select name="target">
+                <select name="targetKeyword">
                   <option value="">전체</option>
-                  <option value="self">본인</option>
-                  <option value="parent">부모님</option>
-                  <option value="family">가족</option>
+                  <option value="구직자">구직자</option>
+                  <option value="1인가구">1인가구</option>
+                  <option value="저소득층">저소득층</option>
+                  <option value="소상공인">소상공인</option>
+                  <option value="장애인">장애인</option>
+                  <option value="돌봄가구">돌봄가구</option>
                 </select>
               </label>
             </div>
 
             <div class="search-foot">
               <div class="keyword-area">
-                <strong>인기 검색어</strong>
+                <strong>인기 정책</strong>
+
                 <div class="keyword-list">
-                  <a href="#">청년 월세 지원</a>
-                  <a href="#">출산 가구 지원</a>
-                  <a href="#">전세보증금</a>
-                  <a href="#">어르신 일자리</a>
-                  <a href="#">기초생활수급자</a>
+                  <a th:each="policy : ${popularPolicies}"
+                     th:href="@{|/policies/${policy.policyId}|}"
+                     th:text="${policy.title}"
+                     th:title="${policy.title}">
+                    인기 정책
+                  </a>
+
+                  <span class="keyword-empty"
+                        th:if="${popularPolicies == null or #lists.isEmpty(popularPolicies)}">
+                    아직 인기 정책이 없습니다.
+                  </span>
                 </div>
               </div>
 
@@ -132,85 +172,83 @@
         <section class="policy-board">
           <div class="board-head">
             <h2>마감이 가까운 정책</h2>
-            <a href="#">전체 보기 ›</a>
+            <a th:href="@{/policies(sort='deadline', page=0)}">전체 보기 ›</a>
           </div>
           <div class="deadline-grid">
-            <a class="policy-card" href="#">
+            <a class="policy-card"
+               th:each="policy : ${closingSoonPolicies}"
+               th:href="@{|/policies/${policy.policyId}|}">
+
               <div class="policy-card-top">
-                <span class="policy-dday">D-5</span>
-                <strong class="policy-title">중장년 직업역량 강화 교육</strong>
+                <span class="policy-dday"
+                      th:classappend="${policy.dDayCssClass}"
+                      th:text="${policy.dDayLabel}">
+                  D-5
+                </span>
+
+                <strong class="policy-title"
+                        th:text="${policy.title}"
+                        th:title="${policy.title}">
+                  정책명
+                </strong>
               </div>
+
               <div class="policy-meta">
-                <span class="policy-status">신청가능</span>
+                <span class="policy-status"
+                      th:text="${policy.applyStatusLabel}">
+                  신청 가능
+                </span>
+
                 <span class="policy-meta-label">신청 기간</span>
                 <span class="policy-meta-divider"></span>
-                <span class="policy-date">2025.07.01 ~ 2025.07.10</span>
+
+                <span class="policy-date"
+                      th:text="${policy.applyPeriod}"
+                      th:title="${policy.applyPeriod}">
+                  공고 확인
+                </span>
               </div>
             </a>
 
-            <a class="policy-card" href="#">
-              <div class="policy-card-top">
-                <span class="policy-dday">D-7</span>
-                <strong class="policy-title">1인가구 생활지원금</strong>
-              </div>
-              <div class="policy-meta">
-                <span class="policy-status">신청가능</span>
-                <span class="policy-meta-label">신청 기간</span>
-                <span class="policy-meta-divider"></span>
-                <span class="policy-date">2025.07.01 ~ 2025.07.22</span>
-              </div>
-            </a>
-
-            <a class="policy-card" href="#">
-              <div class="policy-card-top">
-                <span class="policy-dday orange">D-9</span>
-                <strong class="policy-title">어르신 건강관리 지원</strong>
-              </div>
-              <div class="policy-meta">
-                <span class="policy-status">신청가능</span>
-                <span class="policy-meta-label">신청 기간</span>
-                <span class="policy-meta-divider"></span>
-                <span class="policy-date">2025.07.03 ~ 2025.07.28</span>
-              </div>
-            </a>
-
-            <a class="policy-card" href="#">
-              <div class="policy-card-top">
-                <span class="policy-dday orange">D-12</span>
-                <strong class="policy-title">소상공인 긴급 경영지원</strong>
-              </div>
-              <div class="policy-meta">
-                <span class="policy-status">신청가능</span>
-                <span class="policy-meta-label">신청 기간</span>
-                <span class="policy-meta-divider"></span>
-                <span class="policy-date">2025.07.05 ~ 2025.08.02</span>
-              </div>
-            </a>
+            <p class="policy-empty"
+               th:if="${closingSoonPolicies == null or #lists.isEmpty(closingSoonPolicies)}">
+              현재 마감이 가까운 정책이 없습니다.
+            </p>
           </div>
+
         </section>
 
         <section class="policy-board">
           <div class="board-head">
             <h2>최근 등록 정책</h2>
-            <a href="#">전체 보기 ›</a>
+            <a th:href="@{/policies(sort='latest', quick='new', page=0)}">
+              전체 보기 ›
+            </a>
           </div>
           <div class="recent-grid">
-            <a class="recent-card" href="#">
+            <a class="recent-card"
+               th:each="policy : ${recentPolicies}"
+               th:href="@{|/policies/${policy.policyId}|}">
+
               <em class="teal">▣</em>
-              <span><b>중장년 일자리 지원사업</b><small>등록일 <i>|</i> 2025.06.24</small></span>
+
+              <span>
+                <b th:text="${policy.title}"
+                   th:title="${policy.title}">
+                  정책명
+                </b>
+
+                <small>
+                  등록일 <i>|</i>
+                  <span th:text="${policy.createdDate}">-</span>
+                </small>
+              </span>
             </a>
-            <a class="recent-card" href="#">
-              <em class="violet">⌂</em>
-              <span><b>신혼부부 주거 지원</b><small>등록일 <i>|</i> 2025.06.23</small></span>
-            </a>
-            <a class="recent-card" href="#">
-              <em class="blue">▤</em>
-              <span><b>청년 금융교육 프로그램</b><small>등록일 <i>|</i> 2025.06.21</small></span>
-            </a>
-            <a class="recent-card" href="#">
-              <em class="green">✓</em>
-              <span><b>돌봄가족 생활 안정 지원</b><small>등록일 <i>|</i> 2025.06.20</small></span>
-            </a>
+
+            <p class="policy-empty"
+               th:if="${recentPolicies == null or #lists.isEmpty(recentPolicies)}">
+              현재 등록된 정책이 없습니다.
+            </p>
           </div>
         </section>
       </div>

@@ -1,35 +1,302 @@
-<header class="site-header" th:fragment="nav" xmlns:sec="http://www.w3.org/1999/xhtml">
+<header class="site-header"
+        th:fragment="nav"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
   <div class="nav-inner">
-    <a class="brand" href="/" aria-label="서울 케어넥트 홈">
-      <img th:src="@{/images/logo-cropped.png}" src="/images/logo-cropped.png" alt="서울 케어넥트" onerror="this.onerror=null;this.src='/images/logo.png';">
+    <a class="brand" th:href="@{/}" href="/" aria-label="서울 케어넥트 홈">
+      <img th:src="@{/images/logo-cropped.png}"
+           src="/images/logo-cropped.png"
+           alt="서울 케어넥트"
+           onerror="this.onerror=null;this.src='/images/logo.png';">
     </a>
 
-    <button class="nav-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="globalNav">
+    <button class="nav-toggle"
+            type="button"
+            aria-label="메뉴 열기"
+            aria-expanded="false"
+            aria-controls="globalNav">
       <span></span>
       <span></span>
       <span></span>
     </button>
 
     <nav class="nav-menu" id="globalNav" aria-label="주요 메뉴">
-      <a th:href="@{/policy/list}" href="/policy/list">정책 찾기</a>
+<<<<<<< HEAD
+      <a th:href="@{/policies}" href="/policies">정책 찾기</a>
       <a th:href="@{/mypage#favorites}" href="/mypage#favorites" sec:authorize="isAuthenticated()">관심 정책</a>
       <a href="/login" sec:authorize="isAnonymous()">관심 정책</a>
+>>>>>>> origin/develop
       <a href="#">신청 가이드</a>
     </nav>
 
     <div class="nav-actions">
-      <a href="/reports" class="nav-report-button">누락 신고</a>
 
-      <a sec:authorize="isAnonymous()" class="btn-login" href="/login">로그인</a>
-      <a sec:authorize="isAnonymous()" class="btn-join" href="/signup">회원가입</a>
+      <!-- 일반 회원에게만 누락 신고 표시 -->
+      <a sec:authorize="hasRole('USER') and !hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+         th:href="@{/reports}"
+         href="/reports"
+         class="nav-report-button">
+        누락 신고
+      </a>
 
-      <a sec:authorize="isAuthenticated()" class="btn-login" href="/mypage">마이페이지</a>
+      <!-- 일반 회원만 관리자 권한 신청 가능 -->
+      <button type="button"
+              sec:authorize="hasRole('USER')
+                       and !hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+              class="nav-report-button admin-request-button"
+              data-admin-request-open>
+        관리자 신청
+      </button>
 
+      <!-- 관리자에게만 관리자페이지 표시 -->
+      <a sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+         th:href="@{/admin/dashboard}"
+         href="/admin/dashboard"
+         class="nav-report-button admin-page-button">
+        관리자페이지
+      </a>
+
+      <!-- 비로그인 사용자 -->
+      <a sec:authorize="isAnonymous()"
+         class="btn-login"
+         th:href="@{/login}"
+         href="/login">
+        로그인
+      </a>
+
+      <a sec:authorize="isAnonymous()"
+         class="btn-join"
+         th:href="@{/signup}"
+         href="/signup">
+        회원가입
+      </a>
+
+      <!-- 일반 회원과 관리자 모두 마이페이지 표시 -->
+      <a sec:authorize="isAuthenticated()"
+         class="btn-login"
+         th:href="@{/mypage}"
+         href="/mypage">
+        마이페이지
+      </a>
+
+      <!-- 로그인 사용자 공통 로그아웃 -->
       <form sec:authorize="isAuthenticated()"
             th:action="@{/logout}"
+            action="/logout"
             method="post"
             class="nav-logout-form">
-        <button type="submit" class="btn-join">로그아웃</button>
+
+        <button type="submit" class="btn-join">
+          로그아웃
+        </button>
       </form>
+
+    </div>
+
+  <!-- 로그인 세션 만료 안내 -->
+  <div class="session-timeout-modal"
+       id="sessionTimeoutModal"
+       sec:authorize="isAuthenticated()"
+       aria-hidden="true">
+
+    <div class="session-timeout-backdrop"></div>
+
+    <section class="session-timeout-dialog"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="sessionTimeoutTitle">
+
+      <div class="session-timeout-icon" aria-hidden="true">!</div>
+
+      <h2 id="sessionTimeoutTitle">로그인 시간이 곧 만료됩니다</h2>
+
+      <p>
+        보안을 위해
+        <strong id="sessionRemainingText">5분 00초</strong>
+        후 자동으로 로그아웃됩니다.
+      </p>
+
+      <p class="session-timeout-question">
+        서비스를 계속 이용하시겠습니까?
+      </p>
+
+      <div class="session-timeout-actions">
+        <button type="button"
+                id="sessionExtendButton"
+                class="session-extend-button">
+          로그인 연장
+        </button>
+
+        <button type="button"
+                id="sessionLogoutButton"
+                class="session-logout-button">
+          로그아웃
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script sec:authorize="isAuthenticated()"
+          th:src="@{/js/session-timeout.js}"
+          src="/js/session-timeout.js"
+          defer></script>
+
+    <!-- 관리자 권한 신청 모달 -->
+    <div id="adminRequestModal"
+         class="admin-request-modal"
+         hidden>
+
+      <!-- 바깥 영역 클릭 시 닫기 -->
+      <div class="admin-request-backdrop"
+           data-admin-request-close></div>
+
+      <section class="admin-request-dialog"
+               role="dialog"
+               aria-modal="true"
+               aria-labelledby="adminRequestTitle">
+
+        <div class="admin-request-header">
+          <div>
+                <span class="admin-request-eyebrow">
+                    관리자 권한 신청
+                </span>
+
+            <h2 id="adminRequestTitle">
+              관리자 신청서 작성
+            </h2>
+
+            <p>
+              신청 내용은 최고관리자가 확인한 후 승인합니다.
+            </p>
+          </div>
+
+          <button type="button"
+                  class="admin-request-close"
+                  data-admin-request-close
+                  aria-label="관리자 신청 창 닫기">
+            ×
+          </button>
+        </div>
+
+        <!--
+          백엔드 연결 시:
+          th:action="@{/admin/requests}"
+          action="/admin/requests"
+        -->
+        <form id="adminRequestForm"
+              class="admin-request-form"
+              method="post"
+              enctype="multipart/form-data">
+
+          <div class="admin-request-grid">
+
+            <div class="admin-request-field">
+              <label for="adminApplicantEmail">
+                신청 계정
+              </label>
+
+              <input id="adminApplicantEmail"
+                     name="email"
+                     type="email"
+                     th:value="${#authentication.name}"
+                     readonly>
+            </div>
+
+            <div class="admin-request-field">
+              <label for="adminManageArea">
+                관리 희망 분야 <em>*</em>
+              </label>
+
+              <select id="adminManageArea"
+                      name="manageArea"
+                      required>
+                <option value="">선택해주세요</option>
+                <option value="POLICY">복지 정책 관리</option>
+                <option value="REPORT">누락 신고 관리</option>
+                <option value="USER_SUPPORT">회원 문의 관리</option>
+                <option value="CONTENT">게시물·콘텐츠 관리</option>
+                <option value="OTHER">기타</option>
+              </select>
+            </div>
+
+            <div class="admin-request-field full-width">
+              <label for="adminRequestReason">
+                관리자 권한 신청 사유 <em>*</em>
+              </label>
+
+              <textarea id="adminRequestReason"
+                        name="reason"
+                        maxlength="1000"
+                        placeholder="관리자 권한이 필요한 이유와 수행하고 싶은 업무를 입력해주세요."
+                        required></textarea>
+
+              <small>
+                최대 1,000자까지 입력할 수 있습니다.
+              </small>
+            </div>
+
+            <div class="admin-request-field full-width">
+              <label for="adminExperience">
+                관련 경험 및 보유 역량
+              </label>
+
+              <textarea id="adminExperience"
+                        name="experience"
+                        maxlength="1000"
+                        placeholder="복지 정책, 공공데이터, 사이트 운영 등 관련 경험이 있다면 입력해주세요."></textarea>
+            </div>
+
+            <div class="admin-request-field full-width">
+              <label for="adminRequestFile">
+                증빙 자료 첨부
+              </label>
+
+              <div class="admin-request-file-box">
+                <input id="adminRequestFile"
+                       name="attachment"
+                       type="file"
+                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+
+                <span id="adminRequestFileName"
+                      class="admin-request-file-name">
+                            선택된 파일이 없습니다.
+                        </span>
+              </div>
+
+              <small>
+                PDF, JPG, PNG, DOC, DOCX 파일을 첨부할 수 있습니다.
+                최대 용량은 10MB입니다.
+              </small>
+            </div>
+
+          </div>
+
+          <label class="admin-request-agree">
+            <input type="checkbox"
+                   name="agreement"
+                   required>
+
+            <span>
+                    입력한 정보가 관리자 권한 심사에 이용되는 것에
+                    동의합니다.
+                </span>
+          </label>
+
+          <div class="admin-request-actions">
+            <button type="button"
+                    class="admin-request-cancel"
+                    data-admin-request-close>
+              취소
+            </button>
+
+            <button type="submit"
+                    class="admin-request-submit">
+              관리자 권한 신청
+            </button>
+          </div>
+
+        </form>
+      </section>
     </div>
  </header>

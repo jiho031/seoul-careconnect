@@ -6,19 +6,28 @@ import com.seoulcareconnect.service.user.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOidcUserService customOidcUserService;
+    private final ClientRegistrationRepository clientRegistrationRepository;
+
+    @Value("${app.security.remember-me-key}")
+    private String rememberMeKey;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,12 +39,16 @@ public class SecurityConfig {
                                 "/login",
                                 "/signup",
                                 "/email/**",
+                                "/password/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
                                 "/favicon.ico"
                         ).permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
@@ -50,15 +63,31 @@ public class SecurityConfig {
 
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
-                        .userInfoEndpoint(userInfo -> userInfo
-                                // 카카오 등 일반 OAuth2
-                                .userService(customOAuth2UserService)
 
-                                // 구글 OpenID Connect
+                        .authorizationEndpoint(authorization ->
+                                authorization.authorizationRequestResolver(
+                                        new CustomAuthorizationRequestResolver(
+                                                clientRegistrationRepository
+                                        )
+                                )
+                        )
+
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
                                 .oidcUserService(customOidcUserService)
                         )
+
                         .defaultSuccessUrl("/", true)
                         .failureUrl("/login?oauthError=true")
+                )
+
+                .rememberMe(remember -> remember
+                        .userDetailsService(customUserDetailsService)
+                        .key(rememberMeKey)
+                        .rememberMeParameter("remember-me")
+                        .rememberMeCookieName("seoul-careconnect-remember-me")
+                        .tokenValiditySeconds(60 * 60 * 24 * 14)
+                        .alwaysRemember(false)
                 )
 
                 .logout(logout -> logout

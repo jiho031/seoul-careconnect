@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울 케어넥트 관리자 - 정책 관리</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}" href="/css/admin.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <aside class="admin-side">
+            <p class="admin-side-title">관리자 메뉴</p>
+            <nav class="admin-menu">
+                <a th:href="@{/admin/dashboard}" href="/admin/dashboard">📊 대시보드</a>
+                <a th:href="@{/admin/collection}" href="/admin/collection">🔗 API 수집 현황</a>
+                <a th:href="@{/admin/policy-errors}" href="/admin/policy-errors">⚠️ 정책 오류 관리</a>
+                <a th:href="@{/admin/ai-review}" href="/admin/ai-review">🤖 AI 요약 오류 관리</a>
+                <a th:href="@{/admin/reports}" href="/admin/reports">🚨 사용자 신고 관리</a>
+                <a class="active" th:href="@{/admin/policies}" href="/admin/policies">📌 정책 목록</a>
+                <a th:href="@{/admin/policies/new}" href="/admin/policies/new">📝 수동 등록/수정</a>
+                <a th:href="@{/admin/users}" href="/admin/users">👥 회원 관리</a>
+                <a th:href="@{/admin/super}" href="/admin/super">👑 최고 관리자</a>
+            </nav>
+        </aside>
+
+        <section class="admin-content">
+            <div class="admin-head">
+                <div>
+                    <h1>정책 관리</h1>
+                    <p>등록된 정책을 검색하고 공개 상태, 검수 상태, 출처 정보를 관리합니다.</p>
+                </div>
+
+                <div class="admin-actions">
+                    <a class="admin-btn" href="#">정책 내역 다운로드</a>
+                    <a class="admin-btn primary" th:href="@{/admin/policies/new}" href="/admin/policies/new">+ 정책 등록</a>
+                </div>
+            </div>
+
+            <div class="admin-stat-grid">
+                <article class="admin-stat-card">
+                    <span>전체 정책</span>
+                    <strong>128</strong>
+                    <small>수동 18 · API 87 · 크롤링 23</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>공개 중</span>
+                    <strong>92</strong>
+                    <small>사용자 화면에 노출 중</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>검수 대기</span>
+                    <strong>14</strong>
+                    <small>승인 전 관리자 확인 필요</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>숨김 / 마감</span>
+                    <strong>22</strong>
+                    <small>숨김 12 · 마감 10</small>
+                </article>
+            </div>
+
+            <section class="admin-card">
+                <div class="admin-card-head">
+                    <h2>정책 검색</h2>
+                    <a class="admin-link" href="#">필터 초기화</a>
+                </div>
+
+                <form class="admin-filter policy-filter" action="#" method="get" onsubmit="return false;">
+                    <input class="admin-input" type="search" name="keyword" placeholder="정책명 / 기관명 / 키워드 검색">
+
+                    <select class="admin-select" name="category">
+                        <option value="">분야 전체</option>
+                        <option value="job">일자리</option>
+                        <option value="housing">주거</option>
+                        <option value="health">건강</option>
+                        <option value="care">돌봄</option>
+                        <option value="education">교육</option>
+                        <option value="welfare">복지</option>
+                    </select>
+
+                    <select class="admin-select" name="status">
+                        <option value="">상태 전체</option>
+                        <option value="published">공개</option>
+                        <option value="pending">검수대기</option>
+                        <option value="hidden">숨김</option>
+                        <option value="closed">마감</option>
+                        <option value="rejected">반려</option>
+                    </select>
+
+                    <select class="admin-select" name="source">
+                        <option value="">출처 전체</option>
+                        <option value="manual">수동등록</option>
+                        <option value="api">API</option>
+                        <option value="crawl">크롤링</option>
+                    </select>
+
+                    <select class="admin-select" name="region">
+                        <option value="">지역 전체</option>
+                        <option value="seoul">서울시 전체</option>
+                        <option value="gangseo">강서구</option>
+                        <option value="nowon">노원구</option>
+                        <option value="dongdaemun">동대문구</option>
+                    </select>
+
+                    <button class="admin-btn primary" type="submit">검색</button>
+                </form>
+            </section>
+
+            <section class="admin-card">
+                <div class="admin-card-head">
+                    <h2>정책 목록</h2>
+                    <span class="admin-list-count">총 128건</span>
+                </div>
+
+                <table class="admin-table policy-table">
+                    <thead>
+                    <tr>
+                        <th>정책명</th>
+                        <th>기관</th>
+                        <th>분야</th>
+                        <th>지원대상</th>
+                        <th>신청기간</th>
+                        <th>상태</th>
+                        <th>출처</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>
+                            <strong class="policy-name">중장년 직업역량 강화 교육</strong>
+                            <small class="policy-sub">직무교육 · 취업상담 · 이력서 컨설팅</small>
+                        </td>
+                        <td>서울시50+</td>
+                        <td>일자리</td>
+                        <td>중장년</td>
+                        <td>2025.07.01 ~ 2025.07.10</td>
+                        <td><span class="admin-tag ok">공개</span></td>
+                        <td><span class="source-badge api">API</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">수정</a>
+                                <a href="#">숨김</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong class="policy-name">1인가구 생활지원금</strong>
+                            <small class="policy-sub">생활 안정 지원 · 신청서류 확인 필요</small>
+                        </td>
+                        <td>서울시</td>
+                        <td>복지</td>
+                        <td>1인가구</td>
+                        <td>2025.07.01 ~ 2025.07.22</td>
+                        <td><span class="admin-tag wait">검수대기</span></td>
+                        <td><span class="source-badge manual">수동</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <a th:href="@{/admin/review}" href="/admin/review">검수</a>
+                                <a href="#">반려</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong class="policy-name">소상공인 긴급 경영지원</strong>
+                            <small class="policy-sub">경영 안정 자금 · 자격 조건 확인 필요</small>
+                        </td>
+                        <td>자치구</td>
+                        <td>경제</td>
+                        <td>소상공인</td>
+                        <td>2025.07.05 ~ 2025.08.02</td>
+                        <td><span class="admin-tag bad">중복후보</span></td>
+                        <td><span class="source-badge crawl">크롤링</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">확인</a>
+                                <a href="#">병합</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong class="policy-name">어르신 건강관리 지원</strong>
+                            <small class="policy-sub">건강상담 · 방문관리 · 예방 프로그램</small>
+                        </td>
+                        <td>보건소</td>
+                        <td>건강</td>
+                        <td>노년</td>
+                        <td>2025.07.03 ~ 2025.07.28</td>
+                        <td><span class="admin-tag ok">공개</span></td>
+                        <td><span class="source-badge api">API</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">수정</a>
+                                <a href="#">숨김</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong class="policy-name">청년 금융교육 프로그램</strong>
+                            <small class="policy-sub">금융교육 · 자산관리 기초 과정</small>
+                        </td>
+                        <td>서울금융복지센터</td>
+                        <td>교육</td>
+                        <td>청년</td>
+                        <td>상시</td>
+                        <td><span class="admin-tag hide">숨김</span></td>
+                        <td><span class="source-badge manual">수동</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="#">복구</a>
+                                <a href="#">수정</a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="admin-pagination">
+                    <button type="button">‹</button>
+                    <a class="active" href="#">1</a>
+                    <a href="#">2</a>
+                    <a href="#">3</a>
+                    <a href="#">4</a>
+                    <button type="button">›</button>
+                </div>
+            </section>
+
+            <div class="admin-bottom-grid policy-bottom">
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>중복 후보 정책</h2>
+                        <a class="admin-link" href="#">전체 보기 ›</a>
+                    </div>
+
+                    <div class="admin-queue">
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>소상공인 긴급 경영지원</span>
+                                <span class="admin-tag bad">중복후보</span>
+                            </div>
+                            <p>정책명과 신청기간이 유사한 수집 데이터 2건이 발견되었습니다.</p>
+                        </article>
+
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>중장년 재취업 교육</span>
+                                <span class="admin-tag wait">확인필요</span>
+                            </div>
+                            <p>서울시50+ API와 자치구 게시판에서 유사 정책이 수집되었습니다.</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>정책 상태 안내</h2>
+                        <a class="admin-link" href="#">관리 기준 ›</a>
+                    </div>
+
+                    <div class="notice-list">
+                        <article class="notice-item important">
+                            <strong>검수대기</strong>
+                            <p>수집 또는 등록 후 사용자 공개 전 관리자 확인이 필요한 상태입니다.</p>
+                        </article>
+
+                        <article class="notice-item">
+                            <strong>숨김</strong>
+                            <p>사용자 화면에는 노출되지 않지만 관리자 화면에서는 확인할 수 있습니다.</p>
+                        </article>
+
+                        <article class="notice-item">
+                            <strong>중복후보</strong>
+                            <p>정책명, 기관, 신청기간이 유사한 데이터로 병합 여부 확인이 필요합니다.</p>
+                        </article>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/common.js}" src="/js/common.js"></script>
+</body>
+</html>

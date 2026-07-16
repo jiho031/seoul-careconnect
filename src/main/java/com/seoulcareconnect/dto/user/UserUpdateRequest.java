@@ -17,8 +17,8 @@ public class UserUpdateRequest {
     private String name;
 
     @Pattern(
-            regexp = "^$|^(19|20)\\d{2}$",
-            message = "출생연도는 4자리 숫자로 입력해주세요."
+            regexp = "\\d{4}",
+            message = "출생연도는 숫자 4자리로 입력해주세요."
     )
     private String birthYear;
 
@@ -28,7 +28,6 @@ public class UserUpdateRequest {
     )
     private String phone;
 
-    @NotBlank(message = "연령대를 선택해주세요.")
     private String ageGroup;
 
     @NotBlank(message = "관심 지역을 선택해주세요.")

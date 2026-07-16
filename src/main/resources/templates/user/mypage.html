@@ -1,6 +1,3 @@
-<!-- 이 파일은 수정 사항 없습니다. 기존 그대로 두시면 됩니다. -->
-<!-- 아래는 참고용으로 다시 붙여넣은 원본입니다. -->
-
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
@@ -9,11 +6,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마이페이지 | 서울 케어넥트</title>
-    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
-    <link rel="stylesheet" th:href="@{/css/mypage.css}" href="/css/mypage.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/mypage.css}"
+          href="/css/mypage.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
 </head>
 
-<body th:classappend="${user.uiMode == 'LARGE_TEXT'} ? ' large-text-mode' : ''">
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
 
 <div th:replace="~{fragments/nav :: nav}"></div>
 
@@ -28,7 +35,12 @@
 
         <div class="hero-status">
             <span>현재 화면 모드</span>
-            <strong th:text="${user.uiMode == 'LARGE_TEXT'} ? '큰 글씨 모드' : '일반 모드'">일반 모드</strong>
+
+            <strong th:text="${user.uiMode == 'LARGE_TEXT'}
+                    ? '고령친화 모드'
+                    : '일반 모드'">
+                일반 모드
+            </strong>
         </div>
     </section>
 
@@ -100,30 +112,198 @@
                                 <input id="name" type="text" th:field="*{name}" maxlength="50">
                             </div>
                             <div class="mypage-field">
-                                <label for="phone">연락처</label>
-                                <input id="phone" type="tel" th:field="*{phone}" placeholder="010-0000-0000">
+                                <label for="phone">
+                                    연락처
+                                </label>
+
+                                <input id="phone"
+                                       type="tel"
+                                       th:field="*{phone}"
+                                       placeholder="010-0000-0000">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('phone')}"
+                                       th:errors="*{phone}">
+                                    연락처 오류
+                                </small>
                             </div>
                         </div>
+
+                        <!-- 출생연도 / 연령대 -->
                         <div class="form-grid two-col">
+
                             <div class="mypage-field">
-                                <label for="birthYear">출생연도</label>
-                                <input id="birthYear" type="text" th:field="*{birthYear}" placeholder="예: 1972">
+                                <label for="birthYear">
+                                    출생연도 <em>*</em>
+                                </label>
+
+                                <input id="birthYear"
+                                       type="text"
+                                       inputmode="numeric"
+                                       maxlength="4"
+                                       th:field="*{birthYear}"
+                                       placeholder="예: 1972"
+                                       oninput="updateAgeGroup()">
+
+                                <small>
+                                    숫자 4자리로 입력해주세요.
+                                </small>
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('birthYear')}"
+                                       th:errors="*{birthYear}">
+                                    출생연도 오류
+                                </small>
                             </div>
+
                             <div class="mypage-field">
-                                <label for="ageGroup">연령대 <em>*</em></label>
-                                <select id="ageGroup" th:field="*{ageGroup}">
-                                    <option value="">연령대를 선택하세요</option>
-                                    <option value="20대 이하">20대 이하</option>
-                                    <option value="30대">30대</option>
-                                    <option value="40대">40대</option>
-                                    <option value="50대">50대</option>
-                                    <option value="60대 이상">60대 이상</option>
+                                <label for="ageGroup">
+                                    연령대
+                                </label>
+
+                                <input id="ageGroup"
+                                       type="text"
+                                       th:field="*{ageGroup}"
+                                       readonly>
+
+                                <small>
+                                    출생연도를 기준으로 자동 계산됩니다.
+                                </small>
+                            </div>
+
+                        </div>
+
+                        <!-- 서비스 지역 / 관심 지역 -->
+                        <div class="form-grid two-col">
+
+                            <div class="mypage-field">
+                                <label for="region">
+                                    서비스 지역
+                                </label>
+
+                                <input id="region"
+                                       type="text"
+                                       th:value="${user.region != null
+                                               ? user.region
+                                               : '서울'}"
+                                       readonly>
+
+                                <small>
+                                    현재 서울시 정책을 제공합니다.
+                                </small>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="district">
+                                    관심 지역 <em>*</em>
+                                </label>
+
+                                <select id="district"
+                                        th:field="*{district}">
+
+                                    <option value="">
+                                        자치구를 선택하세요
+                                    </option>
+
+                                    <option value="강남구">강남구</option>
+                                    <option value="강동구">강동구</option>
+                                    <option value="강북구">강북구</option>
+                                    <option value="강서구">강서구</option>
+                                    <option value="관악구">관악구</option>
+                                    <option value="광진구">광진구</option>
+                                    <option value="구로구">구로구</option>
+                                    <option value="금천구">금천구</option>
+                                    <option value="노원구">노원구</option>
+                                    <option value="도봉구">도봉구</option>
+                                    <option value="동대문구">동대문구</option>
+                                    <option value="동작구">동작구</option>
+                                    <option value="마포구">마포구</option>
+                                    <option value="서대문구">서대문구</option>
+                                    <option value="서초구">서초구</option>
+                                    <option value="성동구">성동구</option>
+                                    <option value="성북구">성북구</option>
+                                    <option value="송파구">송파구</option>
+                                    <option value="양천구">양천구</option>
+                                    <option value="영등포구">영등포구</option>
+                                    <option value="용산구">용산구</option>
+                                    <option value="은평구">은평구</option>
+                                    <option value="종로구">종로구</option>
+                                    <option value="중구">중구</option>
+                                    <option value="중랑구">중랑구</option>
                                 </select>
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('district')}"
+                                       th:errors="*{district}">
+                                    관심 지역 오류
+                                </small>
                             </div>
                         </div>
                     </section>
 
-                    <button type="submit" class="button-primary">변경사항 저장</button>
+                    <!-- 화면 표시 방식 -->
+                    <fieldset class="ui-mode-section"
+                              id="accessibility-setting">
+
+                        <legend>
+                            화면 표시 방식 <em>*</em>
+                        </legend>
+
+                        <p>
+                            글씨 크기, 버튼 간격과 화면 배치를 사용자에게 맞게
+                            설정할 수 있습니다.
+                        </p>
+
+                        <div class="ui-mode-grid">
+
+                            <label class="ui-mode-option">
+                                <input type="radio"
+                                       th:field="*{uiMode}"
+                                       value="DEFAULT">
+
+                                <span class="mode-check"></span>
+
+                                <strong>일반 모드</strong>
+
+                                <small>
+                                    기본 글씨 크기와 일반 간격으로 표시합니다.
+                                </small>
+                            </label>
+
+                            <label class="ui-mode-option">
+                                <input type="radio"
+                                       th:field="*{uiMode}"
+                                       value="LARGE_TEXT">
+
+                                <span class="mode-check"></span>
+
+                                <strong>고령친화 모드</strong>
+
+                                <small>
+                                    큰 글씨와 넓은 버튼을 사용하고 복잡한 화면을 단순하게 표시합니다.
+                                </small>
+                            </label>
+                        </div>
+
+                        <small class="field-error"
+                               th:if="${#fields.hasErrors('uiMode')}"
+                               th:errors="*{uiMode}">
+                            화면 모드 오류
+                        </small>
+                    </fieldset>
+
+                    <div class="form-actions">
+                        <a th:href="@{/}"
+                           href="/"
+                           class="button-secondary">
+                            취소
+                        </a>
+
+                        <button type="submit"
+                                class="button-primary">
+                            변경사항 저장
+                        </button>
+                    </div>
                 </form>
             </section>
 
@@ -204,4 +384,50 @@
 </script>
 
 </body>
+
+<script>
+    function updateAgeGroup() {
+        const birthYearInput =
+            document.getElementById("birthYear");
+
+        const ageGroupInput =
+            document.getElementById("ageGroup");
+
+        if (!birthYearInput || !ageGroupInput) {
+            return;
+        }
+
+        const birthYear = Number(birthYearInput.value);
+        const currentYear = new Date().getFullYear();
+
+        if (
+            !Number.isInteger(birthYear) ||
+            birthYear < 1900 ||
+            birthYear > currentYear
+        ) {
+            ageGroupInput.value = "";
+            return;
+        }
+
+        const age = currentYear - birthYear;
+
+        if (age <= 29) {
+            ageGroupInput.value = "20대 이하";
+        } else if (age <= 39) {
+            ageGroupInput.value = "30대";
+        } else if (age <= 49) {
+            ageGroupInput.value = "40대";
+        } else if (age <= 59) {
+            ageGroupInput.value = "50대";
+        } else {
+            ageGroupInput.value = "60대 이상";
+        }
+    }
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        updateAgeGroup
+    );
+</script>
+
 </html>

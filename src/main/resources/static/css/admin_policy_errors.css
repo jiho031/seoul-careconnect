@@ -1,0 +1,305 @@
+
+.error-filter {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(130px, 1fr)) 90px;
+    gap: 10px;
+}
+
+/* 오류 목록 카드 */
+.error-list-card {
+    margin-top: 16px;
+    min-height: 660px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 카드 헤더 오른쪽 영역 */
+.error-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 새로고침 아이콘 버튼 */
+.icon-refresh-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #041b4d;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-refresh-btn:hover {
+    color: #167b7e;
+}
+
+.icon-refresh-btn.loading {
+    pointer-events: none;
+    animation: refreshSpin 0.8s linear infinite;
+}
+
+@keyframes refreshSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 오류 정책 목록 테이블 */
+.error-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* 테이블 헤더 */
+.error-table th {
+    vertical-align: middle;
+    white-space: nowrap;
+    padding-bottom: 8px;
+}
+
+/* 테이블 셀 높이 확장 */
+.error-table td {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    vertical-align: middle;
+}
+
+/* 컬럼 너비 재정리 */
+.error-table th:nth-child(1),
+.error-table td:nth-child(1) {
+    width: 22%;
+}
+
+.error-table th:nth-child(2),
+.error-table td:nth-child(2) {
+    width: 15%;
+}
+
+.error-table th:nth-child(3),
+.error-table td:nth-child(3) {
+    width: 10%;
+    text-align: center;
+}
+
+.error-table th:nth-child(4),
+.error-table td:nth-child(4) {
+    width: 23%;
+}
+
+.error-table th:nth-child(5),
+.error-table td:nth-child(5) {
+    width: 10%;
+    text-align: center;
+}
+
+.error-table th:nth-child(6),
+.error-table td:nth-child(6) {
+    width: 10%;
+}
+
+.error-table th:nth-child(7),
+.error-table td:nth-child(7) {
+    width: 10%;
+    text-align: center;
+}
+
+/* 정책명 칸 */
+.error-table td:nth-child(1) {
+    white-space: normal;
+    line-height: 1.45;
+}
+
+/* API 출처 칸 */
+.error-table td:nth-child(2) {
+    white-space: normal;
+    line-height: 1.45;
+    word-break: keep-all;
+}
+
+/* 오류 유형 칸 */
+.error-table td:nth-child(3) {
+    white-space: nowrap;
+}
+
+/* 오류 내용 칸 */
+.error-table td:nth-child(4) {
+    white-space: normal;
+    line-height: 1.5;
+    word-break: keep-all;
+}
+
+/* 상태 칸 */
+.error-table td:nth-child(5) {
+    white-space: nowrap;
+}
+
+/* 수집 시간 칸 */
+.error-table td:nth-child(6) {
+    white-space: normal;
+    line-height: 1.4;
+}
+
+/* 관리 칸 */
+.error-table td:nth-child(7) {
+    white-space: nowrap;
+}
+
+/* 정책명 */
+.error-policy-name {
+    display: block;
+    color: #041b4d;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 7px;
+    line-height: 1.35;
+}
+
+/* 정책 ID */
+.error-policy-sub {
+    display: block;
+    color: #66758f;
+    font-size: 10.5px;
+    line-height: 1.35;
+    word-break: break-all;
+}
+
+/* 오류 유형 배지 */
+.error-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.error-badge.missing {
+    background: #fff0db;
+    color: #c67510;
+}
+
+.error-badge.date {
+    background: #e6f0ff;
+    color: #2b66c7;
+}
+
+.error-badge.url {
+    background: #ffe8e4;
+    color: #c34733;
+}
+
+.error-badge.format {
+    background: #efe7ff;
+    color: #7651d1;
+}
+
+/* 관리 버튼 */
+.error-table .table-actions {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.error-table .table-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: #f4f8fb;
+    color: #248c8f;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+/* 페이지네이션을 오류 목록 카드 하단 쪽으로 내림 */
+.error-list-card .admin-pagination {
+    margin-top: auto;
+    padding-top: 28px;
+}
+
+/* 하단 영역 */
+.error-bottom {
+    margin-top: 16px;
+}
+
+/* 오류 처리 기준 / 처리 후 동작 */
+.error-rule-list,
+.after-process-list {
+    display: grid;
+    gap: 10px;
+}
+
+/* 하단 카드 내부 아이템 */
+.error-rule-item,
+.after-process-item {
+    padding: 14px;
+    border: 1px solid #edf2f7;
+    border-radius: 14px;
+    background: #fbfdff;
+}
+
+.error-rule-item strong {
+    display: block;
+    color: #041b4d;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.error-rule-item p,
+.after-process-item p {
+    margin: 0;
+    color: #66758f;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* 처리 후 동작 */
+.after-process-item {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+/* 반응형 */
+@media (max-width: 1100px) {
+    .error-filter {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .error-list-card {
+        overflow-x: auto;
+    }
+
+    .error-table {
+        min-width: 1020px;
+    }
+}
+
+@media (max-width: 900px) {
+    .after-process-item {
+        grid-template-columns: 1fr;
+    }
+}
