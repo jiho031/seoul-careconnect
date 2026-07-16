@@ -996,3 +996,42 @@
     line-height: 1.7;
     white-space: pre-wrap;
 }
+
+.activity-log-modal-content {
+    max-width: 900px;
+}
+
+.activity-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 560px;
+    margin-top: 18px;
+    overflow-y: auto;
+}
+
+.activity-modal-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-modal-body p {
+    margin: 0;
+}
+
+.activity-modal-body small {
+    display: block;
+    margin-top: 5px;
+    color: #718096;
+    font-size: 12px;
+}
+
+button.admin-link {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: #248c8f;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}

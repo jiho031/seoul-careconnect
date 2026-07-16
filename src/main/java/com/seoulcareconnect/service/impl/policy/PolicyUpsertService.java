@@ -144,7 +144,7 @@ public class PolicyUpsertService {
                 policy.getTitle()
         );
 
-        return true;
+        return newPolicy;
     }
 
     private boolean isExpired(ExternalPolicyItem item) {

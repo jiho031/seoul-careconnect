@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 public class AdminSyncLogDTO {
 
     private Long logId;
+    private int duplicateCount;
 
     // 수집처 정보
     private Long sourceId;
@@ -117,6 +118,15 @@ public class AdminSyncLogDTO {
 
         return dateTime.format(
                 DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss")
+        );
+    }
+
+    public String getProcessingSummary() {
+        return String.format(
+                "저장 %d건 · 실패 %d건 · 중복 %d건",
+                successCount,
+                failCount,
+                duplicateCount
         );
     }
 }
