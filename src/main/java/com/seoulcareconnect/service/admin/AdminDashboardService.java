@@ -2,6 +2,7 @@ package com.seoulcareconnect.service.admin;
 
 import com.seoulcareconnect.dto.admin.AdminDashboardSummaryDTO;
 import com.seoulcareconnect.dto.admin.AdminRecentUserDTO;
+import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.entity.policy.PolicySource;
 import com.seoulcareconnect.entity.policy.SyncLog;
 import com.seoulcareconnect.entity.user.User;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 
 import java.util.Comparator;
 import java.util.List;
+
 
 import com.seoulcareconnect.dto.admin.AdminNoticeDTO;
 import com.seoulcareconnect.entity.admin.AdminNotice;
@@ -109,6 +111,7 @@ public class AdminDashboardService {
 
         LocalDate today = LocalDate.now();
 
+        List<Policy> allPolicies = policyRepository.findAll();
         List<SyncLog> allLogs = syncLogRepository.findAll();
 
         List<AdminDailyStatusDTO> result = new ArrayList<>();
@@ -117,17 +120,16 @@ public class AdminDashboardService {
 
             LocalDate targetDate = today.minusDays(i);
 
-            long successCount = allLogs.stream()
-                    .filter(log -> log.getStartedAt() != null)
-                    .filter(log ->
-                            log.getStartedAt()
+            long successCount = allPolicies.stream()
+                    .filter(policy -> policy.getCreatedAt() != null)
+                    .filter(policy ->
+                            policy.getCreatedAt()
                                     .toLocalDate()
                                     .equals(targetDate)
                     )
-                    .mapToLong(log ->
-                            safeCount(log.getSuccessCount())
-                    )
-                    .sum();
+                    .map(Policy::getPolicyId)
+                    .distinct()
+                    .count();
 
             long failCount = allLogs.stream()
                     .filter(log -> log.getStartedAt() != null)

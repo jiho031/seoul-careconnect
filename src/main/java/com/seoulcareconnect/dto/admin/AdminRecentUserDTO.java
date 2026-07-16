@@ -18,9 +18,15 @@ public class AdminRecentUserDTO {
     private LocalDateTime createdAt;
 
     public String getRoleLabel() {
-        return "ADMIN".equalsIgnoreCase(role)
-                ? "관리자"
-                : "일반 회원";
+        if (role == null) {
+            return "일반 회원";
+        }
+
+        return switch (role.toUpperCase()) {
+            case "SUPER_ADMIN" -> "최고 관리자";
+            case "ADMIN" -> "관리자";
+            default -> "일반 회원";
+        };
     }
 
     public String getStatusLabel() {

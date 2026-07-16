@@ -37,6 +37,6 @@ public class AdminDailyStatusDTO {
     }
 
     public long getTotalCount() {
-        return successCount + failCount;
+        return successCount;
     }
 }
