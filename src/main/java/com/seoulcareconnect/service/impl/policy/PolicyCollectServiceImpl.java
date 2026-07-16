@@ -1,5 +1,6 @@
 package com.seoulcareconnect.service.impl.policy;
 
+
 import com.seoulcareconnect.entity.policy.PolicySource;
 import com.seoulcareconnect.entity.policy.SyncLog;
 import com.seoulcareconnect.entity.policy.enums.SourceType;
@@ -7,18 +8,20 @@ import com.seoulcareconnect.entity.policy.enums.SyncStatus;
 import com.seoulcareconnect.entity.policy.enums.SyncType;
 import com.seoulcareconnect.integration.policy.ExternalPolicyClient;
 import com.seoulcareconnect.integration.policy.ExternalPolicyItem;
+import com.seoulcareconnect.integration.policy.SeoulPolicyFilter;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
 import com.seoulcareconnect.repository.policy.SyncLogRepository;
 import com.seoulcareconnect.service.policy.PolicyCollectService;
-import com.seoulcareconnect.integration.policy.SeoulPolicyFilter;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.seoulcareconnect.service.policy.PolicyCollectionSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -34,8 +37,9 @@ public class PolicyCollectServiceImpl
     private final AtomicBoolean collectionRunning = new AtomicBoolean(false);
 
     @Override
-    public void collectAll(SyncType syncType) {
-
+    public PolicyCollectionSummary collectAll(
+            SyncType syncType
+    ) {
         // 이미 다른 수집 작업이 실행 중이면 중복 실행하지 않는다.
         if (!collectionRunning.compareAndSet(false, true)) {
             throw new IllegalStateException(
@@ -43,13 +47,21 @@ public class PolicyCollectServiceImpl
             );
         }
 
+        List<PolicyCollectionSummary.SourceResult> results =
+                new ArrayList<>();
+
         try {
             List<ExternalPolicyClient> clients =
                     clientProvider.orderedStream().toList();
 
             for (ExternalPolicyClient client : clients) {
-                collectOne(client, syncType);
+                PolicyCollectionSummary.SourceResult result =
+                        collectOne(client, syncType);
+
+                results.add(result);
             }
+
+            return new PolicyCollectionSummary(results);
 
         } finally {
             // 성공하거나 오류가 발생해도 반드시 실행 상태를 해제한다.
@@ -57,7 +69,7 @@ public class PolicyCollectServiceImpl
         }
     }
 
-    private void collectOne(
+    private PolicyCollectionSummary.SourceResult collectOne(
             ExternalPolicyClient client,
             SyncType syncType
     ) {
@@ -69,7 +81,14 @@ public class PolicyCollectServiceImpl
                     client.sourceName()
             );
 
-            return;
+            return new PolicyCollectionSummary.SourceResult(
+                    client.sourceName(),
+                    0,
+                    0,
+                    0,
+                    0,
+                    false
+            );
         }
 
         SyncLog syncLog = new SyncLog();
@@ -80,6 +99,7 @@ public class PolicyCollectServiceImpl
 
         syncLog = syncLogRepository.save(syncLog);
 
+        int candidateCount = 0;
         int success = 0;
         int skipped = 0;
         int fail = 0;
@@ -90,10 +110,12 @@ public class PolicyCollectServiceImpl
             List<ExternalPolicyItem> items =
                     client.fetch();
 
+            candidateCount = items.size();
+
             log.info(
                     "{} API 수집 결과: 후보 정책 {}건",
                     client.sourceName(),
-                    items.size()
+                    candidateCount
             );
 
             if (items.isEmpty()) {
@@ -205,6 +227,15 @@ public class PolicyCollectServiceImpl
         syncLog.setEndedAt(LocalDateTime.now());
 
         syncLogRepository.save(syncLog);
+
+        return new PolicyCollectionSummary.SourceResult(
+                client.sourceName(),
+                candidateCount,
+                success,
+                skipped,
+                fail,
+                true
+        );
     }
 
     private SyncStatus resolveSyncStatus(

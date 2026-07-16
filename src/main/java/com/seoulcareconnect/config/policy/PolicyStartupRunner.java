@@ -4,6 +4,7 @@ import com.seoulcareconnect.entity.policy.enums.SyncType;
 import com.seoulcareconnect.service.impl.policy.PolicyCleanupService;
 import com.seoulcareconnect.service.impl.policy.PolicyExpirationService;
 import com.seoulcareconnect.service.policy.PolicyCollectService;
+import com.seoulcareconnect.service.policy.PolicyCollectionSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -29,12 +30,19 @@ public class PolicyStartupRunner implements ApplicationRunner {
 
         log.info("서버 시작 정책 API 전체 수집을 실행합니다.");
 
-        policyCollectService.collectAll(SyncType.MANUAL);
+        PolicyCollectionSummary summary =
+                policyCollectService.collectAll(
+                        SyncType.MANUAL
+                );
 
         expirationService.refreshStatuses();
 
         cleanupService.hideOldExpiredPolicies();
 
-        log.info("서버 시작 정책 API 전체 수집을 완료했습니다.");
+        log.info("{}", summary.toLogText());
+
+        log.info(
+                "서버 시작 정책 API 전체 수집을 완료했습니다."
+        );
     }
 }
