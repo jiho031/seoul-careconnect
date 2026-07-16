@@ -36,4 +36,7 @@ public class ExternalPolicyItem {
     private String rawJson;
     private String rawXml;
     private Integer httpStatus;
+
+    @Builder.Default
+    private boolean applicationInfoAvailable = true;
 }

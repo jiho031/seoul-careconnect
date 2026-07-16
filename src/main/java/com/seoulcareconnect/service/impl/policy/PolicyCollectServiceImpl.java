@@ -35,29 +35,37 @@ public class PolicyCollectServiceImpl
 
     @Override
     public void collectAll(SyncType syncType) {
-
-        // 이미 다른 수집 작업이 실행 중이면 중복 실행하지 않는다.
-        if (!collectionRunning.compareAndSet(false, true)) {
-            throw new IllegalStateException(
-                    "정책 API 수집이 이미 진행 중입니다. 완료된 후 다시 시도해 주세요."
-            );
-        }
-
-        try {
+        runExclusively(() -> {
             List<ExternalPolicyClient> clients =
                     clientProvider.orderedStream().toList();
 
             for (ExternalPolicyClient client : clients) {
-                collectOne(client, syncType);
+                collectClient(client, syncType);
             }
-
-        } finally {
-            // 성공하거나 오류가 발생해도 반드시 실행 상태를 해제한다.
-            collectionRunning.set(false);
-        }
+        });
     }
 
-    private void collectOne(
+    @Override
+    public void collectOne(String sourceName, SyncType syncType) {
+        ExternalPolicyClient client = clientProvider.orderedStream()
+                .filter(candidate -> candidate.sourceName().equals(sourceName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "활성화된 API 수집기를 찾을 수 없습니다: " + sourceName
+                ));
+
+        runExclusively(() -> collectClient(client, syncType));
+    }
+
+    @Override
+    public List<String> availableSourceNames() {
+        return clientProvider.orderedStream()
+                .map(ExternalPolicyClient::sourceName)
+                .sorted()
+                .toList();
+    }
+
+    private void collectClient(
             ExternalPolicyClient client,
             SyncType syncType
     ) {
@@ -207,6 +215,20 @@ public class PolicyCollectServiceImpl
         syncLogRepository.save(syncLog);
     }
 
+    private void runExclusively(Runnable collection) {
+        if (!collectionRunning.compareAndSet(false, true)) {
+            throw new IllegalStateException(
+                    "정책 API 수집이 이미 진행 중입니다. 완료된 후 다시 시도해 주세요."
+            );
+        }
+
+        try {
+            collection.run();
+        } finally {
+            collectionRunning.set(false);
+        }
+    }
+
     private SyncStatus resolveSyncStatus(
             int success,
             int fail
@@ -246,7 +268,7 @@ public class PolicyCollectServiceImpl
                     );
 
                     source.setApiKeyType(
-                            "application.properties"
+                            "environment-variable"
                     );
 
                     source.setCategory(

@@ -153,6 +153,7 @@ public class PolicyMapper {
     }
 
     private String applyPeriod(LocalDate start, LocalDate end, ApplyStatus status) {
+        if (status == ApplyStatus.INFORMATION_ONLY) return "공식 안내 확인";
         if (status == ApplyStatus.ALWAYS && start == null && end == null) return "상시 신청";
         if (start == null && end == null) return "공고 확인";
         if (start == null) return "~ " + end.format(DATE_FORMAT);
@@ -161,6 +162,7 @@ public class PolicyMapper {
     }
 
     private String dDayLabel(LocalDate endDate, ApplyStatus status, LocalDate today) {
+        if (status == ApplyStatus.INFORMATION_ONLY) return "안내";
         if (status == ApplyStatus.ALWAYS) return "상시";
         if (endDate == null) return "공고 확인";
         long days = ChronoUnit.DAYS.between(today, endDate);

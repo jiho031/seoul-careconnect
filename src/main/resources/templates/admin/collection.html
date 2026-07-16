@@ -116,6 +116,29 @@
                     <div class="api-status-list">
 
                         <div class="api-status-item"
+                             th:each="sourceName : ${availableSources}">
+
+                            <div class="api-status-info">
+                                <strong th:text="${sourceName}">
+                                    API 출처명
+                                </strong>
+                                <span class="api-status-meta">개별 수집 가능</span>
+                            </div>
+
+                            <form th:action="@{/admin/collection/run-source}"
+                                  method="post">
+                                <input type="hidden"
+                                       name="sourceName"
+                                       th:value="${sourceName}">
+                                <button class="table-action"
+                                        type="submit"
+                                        onclick="return confirm('선택한 API만 재수집하시겠습니까?');">
+                                    이 API 수집
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="api-status-item"
                              th:each="source : ${sourceStatuses}">
 
                             <div class="api-status-info">
