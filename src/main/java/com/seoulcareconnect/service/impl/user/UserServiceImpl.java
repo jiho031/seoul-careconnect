@@ -46,30 +46,62 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void signup(SignupRequest request) {
+
         String email = normalizeEmail(request.getEmail());
 
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new IllegalArgumentException(
+                    "이미 사용 중인 이메일입니다."
+            );
         }
 
         if (!emailVerifyService.isEmailVerified(email)) {
-            throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
+            throw new IllegalArgumentException(
+                    "이메일 인증을 완료해주세요."
+            );
+        }
+
+        validatePasswordPolicy(request.getPassword());
+
+        if (!request.getPassword()
+                .equals(request.getPasswordConfirm())) {
+            throw new IllegalArgumentException(
+                    "비밀번호와 비밀번호 확인이 일치하지 않습니다."
+            );
+        }
+
+        String birthYear =
+                validateBirthYear(request.getBirthYear());
+
+        String ageGroup =
+                calculateAgeGroup(birthYear);
+
+        String name = request.getName() == null
+                ? ""
+                : request.getName().trim();
+
+        if (name.isBlank()) {
+            throw new IllegalArgumentException(
+                    "이름을 입력해주세요."
+            );
         }
 
         User user = new User();
-        String birthYear = validateBirthYear(request.getBirthYear());
-        String ageGroup = calculateAgeGroup(birthYear);
 
+        user.setEmail(email);
+        user.setPassword(
+                passwordEncoder.encode(request.getPassword())
+        );
+        user.setName(name);
+        user.setPhone(toNullIfBlank(request.getPhone()));
         user.setBirthYear(birthYear);
         user.setAgeGroup(ageGroup);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setName(request.getName().trim());
-        user.setPhone(toNullIfBlank(request.getPhone()));
-        user.setDistrict(request.getDistrict());
-        user.setRole("USER");
+        user.setDistrict(toNullIfBlank(request.getDistrict()));
         user.setRegion("서울");
+        user.setRole("USER");
         user.setProvider("LOCAL");
+        user.setProviderId(null);
+        user.setIsActive(true);
 
         if ("60대 이상".equals(ageGroup)) {
             user.setUiMode("LARGE_TEXT");
@@ -78,6 +110,22 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
+    }
+
+    private void validatePasswordPolicy(String password) {
+
+        if (password == null ||
+                !password.matches(
+                        "^(?=\\S{8,20}$)"
+                                + "(?=.*[A-Za-z])"
+                                + "(?=.*\\d)"
+                                + "(?=.*[!@#$%^&*]).*$"
+                )) {
+            throw new IllegalArgumentException(
+                    "비밀번호는 8~20자이며 영문, 숫자, "
+                            + "특수문자(!@#$%^&*)를 각각 1개 이상 포함해야 합니다."
+            );
+        }
     }
 
     @Override
@@ -146,8 +194,12 @@ public class UserServiceImpl implements UserService {
 
         if (!request.getNewPassword()
                 .equals(request.getNewPasswordConfirm())) {
-            throw new IllegalArgumentException("새 비밀번호 확인이 일치하지 않습니다.");
+            throw new IllegalArgumentException(
+                    "새 비밀번호 확인이 일치하지 않습니다."
+            );
         }
+
+        validatePasswordPolicy(request.getNewPassword());
 
         if (passwordEncoder.matches(
                 request.getNewPassword(),

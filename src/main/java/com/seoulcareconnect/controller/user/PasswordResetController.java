@@ -6,14 +6,13 @@ import com.seoulcareconnect.dto.user.PasswordResetRequest;
 import com.seoulcareconnect.service.user.EmailVerifyService;
 import com.seoulcareconnect.service.user.PasswordResetService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
@@ -100,22 +99,51 @@ public class PasswordResetController {
 
     @PostMapping("/password/reset")
     public String resetPassword(
+            @Valid
+            @ModelAttribute
             PasswordResetRequest request,
+            BindingResult bindingResult,
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
-        try {
-            String verifiedEmail = (String) session.getAttribute(SESSION_RESET_EMAIL);
+        if (bindingResult.hasErrors()) {
 
-            if (verifiedEmail == null
-                    || !emailVerifyService.isPasswordResetVerified(verifiedEmail)) {
-                throw new IllegalArgumentException("이메일 인증이 만료되었습니다. 다시 인증해주세요.");
+            String message = bindingResult
+                    .getFieldErrors()
+                    .stream()
+                    .findFirst()
+                    .map(error -> error.getDefaultMessage())
+                    .orElse("비밀번호 입력값을 확인해주세요.");
+
+            redirectAttributes.addFlashAttribute(
+                    "resetError",
+                    message
+            );
+
+            return "redirect:/password/find";
+        }
+
+        try {
+            String verifiedEmail =
+                    (String) session.getAttribute(
+                            SESSION_RESET_EMAIL
+                    );
+
+            if (verifiedEmail == null ||
+                    !emailVerifyService
+                            .isPasswordResetVerified(verifiedEmail)) {
+                throw new IllegalArgumentException(
+                        "이메일 인증이 만료되었습니다. 다시 인증해주세요."
+                );
             }
 
-            String requestEmail = normalizeEmail(request.getEmail());
+            String requestEmail =
+                    normalizeEmail(request.getEmail());
 
             if (!verifiedEmail.equals(requestEmail)) {
-                throw new IllegalArgumentException("인증한 이메일 정보가 일치하지 않습니다.");
+                throw new IllegalArgumentException(
+                        "인증한 이메일 정보가 일치하지 않습니다."
+                );
             }
 
             passwordResetService.resetPassword(
@@ -127,6 +155,7 @@ public class PasswordResetController {
             session.removeAttribute(SESSION_RESET_EMAIL);
 
             return "redirect:/login?reset=true";
+
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute(
                     "resetError",

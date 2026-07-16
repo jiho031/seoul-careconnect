@@ -69,31 +69,22 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             String newPassword,
             String newPasswordConfirm
     ) {
-        if (newPassword == null || newPassword.isBlank()) {
-            throw new IllegalArgumentException("새 비밀번호를 입력해주세요.");
+        if (newPassword == null ||
+                !newPassword.matches(
+                        "^(?=\\S{8,20}$)"
+                                + "(?=.*[A-Za-z])"
+                                + "(?=.*\\d)"
+                                + "(?=.*[!@#$%^&*]).*$"
+                )) {
+            throw new IllegalArgumentException(
+                    "비밀번호는 8~20자이며 영문, 숫자, "
+                            + "특수문자(!@#$%^&*)를 각각 1개 이상 포함해야 합니다."
+            );
         }
 
         if (!newPassword.equals(newPasswordConfirm)) {
-            throw new IllegalArgumentException("새 비밀번호와 확인값이 일치하지 않습니다.");
-        }
-
-        if (newPassword.length() < 8 || newPassword.length() > 20) {
-            throw new IllegalArgumentException("비밀번호는 8자 이상 20자 이하로 입력해주세요.");
-        }
-
-        boolean hasLetter = newPassword.chars()
-                .anyMatch(Character::isLetter);
-        boolean hasDigit = newPassword.chars()
-                .anyMatch(Character::isDigit);
-        boolean hasSpecial = newPassword.chars()
-                .anyMatch(ch -> !Character.isLetterOrDigit(ch)
-                        && !Character.isWhitespace(ch));
-        boolean hasWhitespace = newPassword.chars()
-                .anyMatch(Character::isWhitespace);
-
-        if (!hasLetter || !hasDigit || !hasSpecial || hasWhitespace) {
             throw new IllegalArgumentException(
-                    "비밀번호는 공백 없이 영문, 숫자, 특수문자를 포함해야 합니다."
+                    "새 비밀번호와 확인값이 일치하지 않습니다."
             );
         }
     }

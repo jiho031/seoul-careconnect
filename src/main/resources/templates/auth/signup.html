@@ -27,7 +27,10 @@
                 <p>기본 정보만 입력하고 내게 필요한 정책을 더 쉽게 찾아보세요.</p>
             </div>
 
-            <form class="signup-form" th:action="@{/signup}" method="post">
+            <form class="signup-form"
+                  th:action="@{/signup}"
+                  th:object="${signupRequest}"
+                  method="post">
                 <div class="signup-row two-col">
                     <div class="signup-field">
                         <label for="userName">이름 <em class="required">*</em></label>
@@ -77,12 +80,42 @@
                 <div class="signup-row two-col">
                     <div class="signup-field">
                         <label for="password">비밀번호 <em class="required">*</em></label>
-                        <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" autocomplete="new-password">
+                        <input id="password"
+                               type="password"
+                               th:field="*{password}"
+                               minlength="8"
+                               maxlength="20"
+                               pattern="(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&amp;*])\S{8,20}"
+                               title="8~20자의 영문, 숫자, 특수문자를 각각 1개 이상 포함해주세요."
+                               autocomplete="new-password"
+                               required>
+
+                        <small class="password-guide">
+                            8~20자의 영문, 숫자, 특수문자(!@#$%^&amp;*)를 각각 1개 이상 포함해주세요.
+                        </small>
+
+                        <small class="field-error"
+                               th:if="${#fields.hasErrors('password')}"
+                               th:errors="*{password}">
+                            비밀번호 오류
+                        </small>
                     </div>
 
                     <div class="signup-field">
                         <label for="passwordConfirm">비밀번호 확인 <em class="required">*</em></label>
-                        <input id="passwordConfirm" name="passwordConfirm" type="password" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password">
+                        <input id="passwordConfirm"
+                               type="password"
+                               th:field="*{passwordConfirm}"
+                               minlength="8"
+                               maxlength="20"
+                               autocomplete="new-password"
+                               required>
+
+                        <small class="field-error"
+                               th:if="${#fields.hasErrors('passwordConfirm')}"
+                               th:errors="*{passwordConfirm}">
+                            비밀번호 확인 오류
+                        </small>
                     </div>
                 </div>
 
@@ -222,20 +255,50 @@
     });
 
     signupForm.addEventListener("submit", (event) => {
-        const name = document.getElementById("userName").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const passwordConfirm = document.getElementById("passwordConfirm").value.trim();
+        const name =
+            document.getElementById("userName").value.trim();
 
-        if (!name || !email || !password || !passwordConfirm) {
+        const email =
+            document.getElementById("email").value.trim();
+
+        const password =
+            document.getElementById("password").value;
+
+        const passwordConfirm =
+            document.getElementById("passwordConfirm").value;
+
+        const birthYear =
+            document.getElementById("birthYear").value.trim();
+
+        const passwordPattern =
+            /^(?=\S{8,20}$)(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*]).*$/;
+
+        if (
+            !name ||
+            !email ||
+            !birthYear ||
+            !password ||
+            !passwordConfirm
+        ) {
             event.preventDefault();
             alert("필수 정보를 모두 입력해주세요.");
             return;
         }
 
+        if (!passwordPattern.test(password)) {
+            event.preventDefault();
+            alert(
+                "비밀번호는 8~20자이며 영문, 숫자, " +
+                "특수문자(!@#$%^&*)를 각각 1개 이상 포함해야 합니다."
+            );
+            return;
+        }
+
         if (password !== passwordConfirm) {
             event.preventDefault();
-            alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            alert(
+                "비밀번호와 비밀번호 확인이 일치하지 않습니다."
+            );
             return;
         }
 
@@ -245,7 +308,21 @@
             return;
         }
 
-        alert("회원가입이 되었습니다.");
+        const requiredAgreed =
+            Array.from(requiredAgrees)
+                .every((checkbox) => checkbox.checked);
+
+        if (!requiredAgreed) {
+            event.preventDefault();
+            alert(
+                "이용약관과 개인정보 수집 및 이용에 동의해주세요."
+            );
+        }
+
+        /*
+         * 검증을 통과하면 preventDefault를 호출하지 않으므로
+         * form이 /signup으로 정상 제출됨
+         */
     });
 
     const agreeAll = document.getElementById("agreeAll");
@@ -263,6 +340,18 @@
             agreeAll.checked = Array.from(agreeItems).every((item) => item.checked);
         });
     });
+
+    const emailInput = document.getElementById("email");
+
+    emailInput.addEventListener("input", () => {
+        emailVerified = false;
+
+        message.innerText =
+            "이메일을 변경했습니다. 다시 인증해주세요.";
+
+        message.style.color = "red";
+    });
+
 </script>
 </body>
 </html>
