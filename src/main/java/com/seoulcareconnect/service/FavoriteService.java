@@ -1,10 +1,12 @@
 package com.seoulcareconnect.service.user;
 
+import com.seoulcareconnect.dto.policy.PolicyDTO;
 import com.seoulcareconnect.dto.user.FavoriteDetailDto;
 import com.seoulcareconnect.entity.user.Favorite;
-import com.seoulcareconnect.entity.user.Policy;
+import com.seoulcareconnect.entity.policy.Policy;
+import com.seoulcareconnect.mapper.policy.PolicyMapper;
 import com.seoulcareconnect.repository.user.FavoriteRepository;
-import com.seoulcareconnect.repository.user.PolicyRepository;
+import com.seoulcareconnect.repository.policy.PolicyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,21 +22,35 @@ import java.util.stream.Collectors;
 public class FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
-    private final PolicyRepository policyRepository; // [수정] Policy 조회를 위해 추가
+    private final PolicyRepository policyRepository;
+    private final PolicyMapper policyMapper;
 
-    // [수정] Policy 실제 데이터를 조회해서 title/category/summary 채움
+    // Policy 실제 데이터를 조회해서 title/category/summary 채움
     public List<FavoriteDetailDto> getFavoritesWithDetails(Long userId) {
         List<Favorite> favorites = favoriteRepository.findByUserId(userId);
 
         return favorites.stream().map(f -> {
             Policy policy = policyRepository.findById(f.getPolicyId()).orElse(null);
 
+            if (policy == null) {
+                return FavoriteDetailDto.builder()
+                        .favoriteId(f.getId())
+                        .policyId(f.getPolicyId())
+                        .title("삭제된 정책입니다")
+                        .category("미분류")
+                        .summary(null)
+                        .createdAt(f.getCreatedAt())
+                        .build();
+            }
+
+            PolicyDTO dto = policyMapper.toDto(policy);
+
             return FavoriteDetailDto.builder()
                     .favoriteId(f.getId())
                     .policyId(f.getPolicyId())
-                    .title(policy != null ? policy.getTitle() : "삭제된 정책입니다")
-                    .category(policy != null ? policy.getCategory() : "미분류")
-                    .summary(policy != null ? policy.getSummary() : null)
+                    .title(dto.getTitle())
+                    .category(dto.getCategoryLabel())
+                    .summary(dto.getSummary())
                     .createdAt(f.getCreatedAt())
                     .build();
         }).collect(Collectors.toList());
@@ -42,7 +58,7 @@ public class FavoriteService {
 
     @Transactional
     public void addFavorite(Long userId, Long policyId) {
-        // [수정] 이미 찜한 정책이면 409 Conflict 던짐 (프론트 JS가 이 응답을 기대함)
+        // 이미 찜한 정책이면 409 Conflict 던짐 (프론트 JS가 이 응답을 기대함)
         if (favoriteRepository.existsByUserIdAndPolicyId(userId, policyId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 관심 정책으로 등록된 정책입니다.");
         }
