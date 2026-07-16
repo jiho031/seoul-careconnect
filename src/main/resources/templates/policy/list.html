@@ -167,16 +167,28 @@
                                 신청 가능
                             </span>
 
-                            <span class="badge dday blue"
-                                  th:if="${policy.newPolicy}">
-                                NEW
-                            </span>
-
+                            <!-- D-DAY부터 D-14까지는 NEW보다 남은 날짜를 우선 표시 -->
                             <span class="badge dday"
-                                  th:unless="${policy.newPolicy}"
+                                  th:if="${policy.dDayPriority}"
                                   th:classappend="${policy.dDayCssClass}"
                                   th:text="${policy.dDayLabel}">
                                 D-5
+                            </span>
+
+                            <!-- 마감이 15일 이상 남았고 최근 등록된 정책 -->
+                            <span class="badge dday blue"
+                                  th:if="${!policy.dDayPriority
+                                           and policy.newPolicy}">
+                                NEW
+                            </span>
+
+                            <!-- D-Day 우선 대상도 아니고 신규 정책도 아닌 경우 -->
+                            <span class="badge dday"
+                                  th:if="${!policy.dDayPriority
+                                           and !policy.newPolicy}"
+                                  th:classappend="${policy.dDayCssClass}"
+                                  th:text="${policy.dDayLabel}">
+                                D-20
                             </span>
                         </div>
 

@@ -37,4 +37,5 @@ public class PolicyDTO {
     private List<String> tags = new ArrayList<>();
 
     private boolean newPolicy;
+    private boolean dDayPriority;
 }
