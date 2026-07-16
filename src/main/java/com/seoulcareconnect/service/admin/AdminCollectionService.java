@@ -33,80 +33,132 @@ public class AdminCollectionService {
      * API 수집 현황 페이지 상단 통계
      */
     public AdminCollectionSummaryDTO getSummary() {
-        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        LocalDateTime tomorrowStart = todayStart.plusDays(1);
+        LocalDateTime todayStart =
+                LocalDate.now().atStartOfDay();
 
-        List<SyncLog> allLogs = syncLogRepository.findAll();
+        LocalDateTime tomorrowStart =
+                todayStart.plusDays(1);
 
-        SyncLog latestLog = allLogs.stream()
-                .filter(log -> log.getStartedAt() != null)
-                .max(Comparator.comparing(SyncLog::getStartedAt))
-                .orElse(null);
+        List<SyncLog> allLogs =
+                syncLogRepository.findAll();
 
-        long latestSuccessCount = latestLog == null
-                ? 0
-                : safeCount(latestLog.getSuccessCount());
+        SyncLog latestLog =
+                allLogs.stream()
+                        .filter(log ->
+                                log.getStartedAt() != null
+                        )
+                        .max(
+                                Comparator.comparing(
+                                        SyncLog::getStartedAt
+                                )
+                        )
+                        .orElse(null);
 
-        long latestFailCount = latestLog == null
-                ? 0
-                : safeCount(latestLog.getFailCount());
+        long latestSuccessCount =
+                latestLog == null
+                        ? 0
+                        : safeCount(
+                        latestLog.getSuccessCount()
+                );
+
+        long latestFailCount =
+                latestLog == null
+                        ? 0
+                        : safeCount(
+                        latestLog.getFailCount()
+                );
 
         long latestProcessedCount =
-                latestSuccessCount + latestFailCount;
+                latestSuccessCount
+                        + latestFailCount;
 
-        long todayRunCount = allLogs.stream()
-                .filter(log -> log.getStartedAt() != null)
-                .filter(log ->
-                        !log.getStartedAt().isBefore(todayStart)
-                                && log.getStartedAt().isBefore(tomorrowStart)
-                )
-                .count();
+        long todayRunCount =
+                allLogs.stream()
+                        .filter(log ->
+                                log.getStartedAt() != null
+                        )
+                        .filter(log ->
+                                !log.getStartedAt()
+                                        .isBefore(todayStart)
+                                        && log.getStartedAt()
+                                        .isBefore(tomorrowStart)
+                        )
+                        .count();
 
         List<PolicySource> sources =
                 policySourceRepository.findAll();
 
-        long activeSourceCount = sources.stream()
-                .filter(source ->
-                        Boolean.TRUE.equals(source.getIsActive())
-                )
-                .count();
+        long activeSourceCount =
+                sources.stream()
+                        .filter(source ->
+                                Boolean.TRUE.equals(
+                                        source.getIsActive()
+                                )
+                        )
+                        .count();
 
         return AdminCollectionSummaryDTO.builder()
-                .latestProcessedCount(latestProcessedCount)
-                .latestSuccessCount(latestSuccessCount)
-                .latestFailCount(latestFailCount)
-                .todayRunCount(todayRunCount)
-                .totalSourceCount(sources.size())
-                .activeSourceCount(activeSourceCount)
-                .totalPolicyCount(policyRepository.count())
+                .latestProcessedCount(
+                        latestProcessedCount
+                )
+                .latestSuccessCount(
+                        latestSuccessCount
+                )
+                .latestFailCount(
+                        latestFailCount
+                )
+                .todayRunCount(
+                        todayRunCount
+                )
+                .totalSourceCount(
+                        sources.size()
+                )
+                .activeSourceCount(
+                        activeSourceCount
+                )
+                .totalPolicyCount(
+                        policyRepository.count()
+                )
                 .build();
     }
 
     /**
      * API 수집처별 연동 상태
      */
-    public List<AdminSourceStatusDTO> getSourceStatuses() {
-        List<PolicySource> sources = policySourceRepository.findAll();
+    public List<AdminSourceStatusDTO>
+    getSourceStatuses() {
 
-        Map<Long, SyncLog> latestLogMap = syncLogRepository.findAll()
-                .stream()
-                .filter(log -> log.getSource() != null)
-                .filter(log -> log.getSource().getSourceId() != null)
-                .sorted(
-                        Comparator.comparing(
-                                SyncLog::getStartedAt,
-                                Comparator.nullsLast(
-                                        Comparator.reverseOrder()
+        List<PolicySource> sources =
+                policySourceRepository.findAll();
+
+        Map<Long, SyncLog> latestLogMap =
+                syncLogRepository.findAll()
+                        .stream()
+                        .filter(log ->
+                                log.getSource() != null
+                        )
+                        .filter(log ->
+                                log.getSource()
+                                        .getSourceId() != null
+                        )
+                        .sorted(
+                                Comparator.comparing(
+                                        SyncLog::getStartedAt,
+                                        Comparator.nullsLast(
+                                                Comparator.reverseOrder()
+                                        )
                                 )
                         )
-                )
-                .collect(
-                        Collectors.toMap(
-                                log -> log.getSource().getSourceId(),
-                                Function.identity(),
-                                (first, ignored) -> first
-                        )
-                );
+                        .collect(
+                                Collectors.toMap(
+                                        log ->
+                                                log.getSource()
+                                                        .getSourceId(),
+                                        Function.identity(),
+                                        (first, ignored) ->
+                                                first
+                                )
+                        );
 
         return sources.stream()
                 .sorted(
@@ -117,43 +169,56 @@ public class AdminCollectionService {
                                 )
                         )
                 )
-                .map(source -> toSourceStatusDTO(
-                        source,
-                        latestLogMap.get(source.getSourceId())
-                ))
+                .map(source ->
+                        toSourceStatusDTO(
+                                source,
+                                latestLogMap.get(
+                                        source.getSourceId()
+                                )
+                        )
+                )
                 .toList();
     }
 
     /**
      * 최근 수집 로그 20건
      */
-    public List<AdminSyncLogDTO> getRecentSyncLogs() {
-        return syncLogRepository.findAll()
+    public List<AdminSyncLogDTO>
+    getRecentSyncLogs() {
+
+        return syncLogRepository
+                .findTop13ByOrderByStartedAtDesc()
                 .stream()
-                .sorted(
-                        Comparator.comparing(
-                                SyncLog::getStartedAt,
-                                Comparator.nullsLast(
-                                        Comparator.reverseOrder()
-                                )
-                        )
-                )
-                .limit(20)
                 .map(this::toSyncLogDTO)
                 .toList();
     }
 
-    private AdminSourceStatusDTO toSourceStatusDTO(
+    private AdminSourceStatusDTO
+    toSourceStatusDTO(
             PolicySource source,
             SyncLog latestLog
     ) {
         return AdminSourceStatusDTO.builder()
-                .sourceId(source.getSourceId())
-                .sourceName(source.getSourceName())
-                .sourceType(source.getSourceType())
-                .baseUrl(source.getBaseUrl())
-                .active(Boolean.TRUE.equals(source.getIsActive()))
-                .lastCheckedAt(source.getLastCheckedAt())
+                .sourceId(
+                        source.getSourceId()
+                )
+                .sourceName(
+                        source.getSourceName()
+                )
+                .sourceType(
+                        source.getSourceType()
+                )
+                .baseUrl(
+                        source.getBaseUrl()
+                )
+                .active(
+                        Boolean.TRUE.equals(
+                                source.getIsActive()
+                        )
+                )
+                .lastCheckedAt(
+                        source.getLastCheckedAt()
+                )
                 .latestSyncStatus(
                         latestLog == null
                                 ? null
@@ -172,12 +237,16 @@ public class AdminCollectionService {
                 .latestSuccessCount(
                         latestLog == null
                                 ? 0
-                                : safeCount(latestLog.getSuccessCount())
+                                : safeCount(
+                                latestLog.getSuccessCount()
+                        )
                 )
                 .latestFailCount(
                         latestLog == null
                                 ? 0
-                                : safeCount(latestLog.getFailCount())
+                                : safeCount(
+                                latestLog.getFailCount()
+                        )
                 )
                 .latestErrorMessage(
                         latestLog == null
@@ -187,32 +256,63 @@ public class AdminCollectionService {
                 .build();
     }
 
-    private AdminSyncLogDTO toSyncLogDTO(SyncLog log) {
-        PolicySource source = log.getSource();
-
+    private AdminSyncLogDTO toSyncLogDTO(
+            SyncLog log
+    ) {
         return AdminSyncLogDTO.builder()
-                .logId(log.getLogId())
+                .logId(
+                        log.getLogId()
+                )
                 .sourceId(
-                        source == null
+                        log.getSource() == null
                                 ? null
-                                : source.getSourceId()
+                                : log.getSource()
+                                .getSourceId()
                 )
                 .sourceName(
-                        source == null
+                        log.getSource() == null
                                 ? "출처 정보 없음"
-                                : source.getSourceName()
+                                : log.getSource()
+                                .getSourceName()
                 )
-                .syncType(log.getSyncType())
-                .status(log.getStatus())
-                .successCount(safeCount(log.getSuccessCount()))
-                .failCount(safeCount(log.getFailCount()))
-                .errorMessage(log.getErrorMessage())
-                .startedAt(log.getStartedAt())
-                .endedAt(log.getEndedAt())
+                .syncType(
+                        log.getSyncType()
+                )
+                .status(
+                        log.getStatus()
+                )
+                .successCount(
+                        safeCount(
+                                log.getSuccessCount()
+                        )
+                )
+                .failCount(
+                        safeCount(
+                                log.getFailCount()
+                        )
+                )
+                .duplicateCount(
+                        safeCount(
+                                log.getDuplicateCount()
+                        )
+                )
+                .errorMessage(
+                        log.getErrorMessage()
+                )
+                .startedAt(
+                        log.getStartedAt()
+                )
+                .endedAt(
+                        log.getEndedAt()
+                )
                 .build();
     }
 
-    private int safeCount(Integer count) {
-        return count == null ? 0 : count;
+    private int safeCount(
+            Integer count
+    ) {
+        return count == null
+                ? 0
+                : count;
     }
 }
