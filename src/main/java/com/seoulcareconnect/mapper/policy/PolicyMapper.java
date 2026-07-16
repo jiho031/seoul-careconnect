@@ -31,6 +31,9 @@ public class PolicyMapper {
     @Value("${app.policy.query.new-days:14}")
     private int newDays;
 
+    @Value("${app.policy.query.dday-priority-days:14}")
+    private int dDayPriorityDays;
+
     public PolicyDTO toDto(Policy policy) {
         PolicyDetail detail = policy.getDetail();
         LocalDate today = today();
@@ -40,24 +43,54 @@ public class PolicyMapper {
                 .title(valueOr(policy.getTitle(), "제목 없음"))
                 .agency(resolveAgency(policy))
                 .summary(resolveSummary(policy, detail))
-                .category(policy.getCategory() == null ? null : policy.getCategory().name())
+                .category(policy.getCategory() == null
+                        ? null
+                        : policy.getCategory().name())
                 .categoryLabel(categoryLabel(policy.getCategory()))
                 .target(valueOr(policy.getTarget(), "공식 공고 확인"))
                 .ageGroupDisplay(ageGroupDisplay(policy.getTarget()))
                 .regionDisplay(regionDisplay(policy))
-                .applyStatus(policy.getApplyStatus() == null ? null : policy.getApplyStatus().name())
-                .applyStatusLabel(applyStatusLabel(policy.getApplyStatus()))
-                .applyPeriod(applyPeriod(policy.getStartDate(), policy.getEndDate(), policy.getApplyStatus()))
-                .applyMethod(valueOr(policy.getApplyMethod(), "공식 공고 확인"))
-                .dDayLabel(dDayLabel(policy.getEndDate(), policy.getApplyStatus(), today))
-                .dDayCssClass(dDayCssClass(policy.getEndDate(), today))
+                .applyStatus(policy.getApplyStatus() == null
+                        ? null
+                        : policy.getApplyStatus().name())
+                .applyStatusLabel(
+                        applyStatusLabel(policy.getApplyStatus())
+                )
+                .applyPeriod(applyPeriod(
+                        policy.getStartDate(),
+                        policy.getEndDate(),
+                        policy.getApplyStatus()
+                ))
+                .applyMethod(valueOr(
+                        policy.getApplyMethod(),
+                        "공식 공고 확인"
+                ))
+                .dDayLabel(dDayLabel(
+                        policy.getEndDate(),
+                        policy.getApplyStatus(),
+                        today
+                ))
+                .dDayCssClass(dDayCssClass(
+                        policy.getEndDate(),
+                        today
+                ))
+                .dDayPriority(isDdayPriority(
+                        policy.getEndDate(),
+                        today
+                ))
                 .createdDate(policy.getCreatedAt() == null
                         ? "-"
-                        : policy.getCreatedAt().toLocalDate().format(DATE_FORMAT))
+                        : policy.getCreatedAt()
+                        .toLocalDate()
+                        .format(DATE_FORMAT))
                 .viewCount(policy.getViewCount())
                 .tags(tags(policy))
                 .newPolicy(policy.getCreatedAt() != null
-                        && !policy.getCreatedAt().toLocalDate().isBefore(today.minusDays(Math.max(newDays, 0))))
+                        && !policy.getCreatedAt()
+                        .toLocalDate()
+                        .isBefore(today.minusDays(
+                                Math.max(newDays, 0)
+                        )))
                 .build();
     }
 
@@ -175,6 +208,22 @@ public class PolicyMapper {
         if (days <= 7) return "red";
         if (days <= 14) return "orange";
         return "teal";
+    }
+
+    private boolean isDdayPriority(
+            LocalDate endDate,
+            LocalDate today
+    ) {
+        if (endDate == null) {
+            return false;
+        }
+
+        long remainingDays =
+                ChronoUnit.DAYS.between(today, endDate);
+
+        return remainingDays >= 0
+                && remainingDays
+                <= Math.max(dDayPriorityDays, 0);
     }
 
     private List<String> tags(Policy policy) {
