@@ -89,12 +89,40 @@
                         </div>
                     </div>
 
-                    <div class="easy-summary-box">
+                    <div th:if="${aiExplanation != null}" class="easy-summary-box ai-approved-summary">
+                        <p class="ai-summary-lead" th:text="${aiExplanation.easySummary}">쉬운 정책 설명</p>
+
+                        <dl class="ai-summary-list">
+                            <div>
+                                <dt>누가 받을 수 있나요?</dt>
+                                <dd th:text="${aiExplanation.eligibilitySummary}">지원 대상 설명</dd>
+                            </div>
+                            <div>
+                                <dt>무엇을 지원하나요?</dt>
+                                <dd th:text="${aiExplanation.benefitSummary}">지원 내용 설명</dd>
+                            </div>
+                            <div>
+                                <dt>어떻게 신청하나요?</dt>
+                                <dd th:text="${aiExplanation.applicationSummary}">신청 방법 설명</dd>
+                            </div>
+                            <div>
+                                <dt>꼭 확인하세요</dt>
+                                <dd th:text="${aiExplanation.cautionSummary}">주의사항</dd>
+                            </div>
+                        </dl>
+
+                        <span class="ai-approved-badge">관리자 검수 완료</span>
+                    </div>
+
+                    <div th:unless="${aiExplanation != null}" class="easy-summary-box">
                         <p th:text="${policy.summary}">정책 요약</p>
                     </div>
 
-                    <p class="ai-notice">
-                        요약 내용은 참고용입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.
+                    <p class="ai-notice" th:if="${aiExplanation != null}">
+                        AI가 공식 정책 내용을 쉽게 정리하고 관리자가 검수한 설명입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.
+                    </p>
+                    <p class="ai-notice" th:unless="${aiExplanation != null}">
+                        관리자 검수가 완료되기 전에는 기존 정책 요약을 제공합니다. 실제 신청 조건은 반드시 공식 안내에서 확인해 주세요.
                     </p>
                 </article>
 

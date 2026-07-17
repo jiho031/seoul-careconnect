@@ -8,6 +8,7 @@ import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyCategory;
 import com.seoulcareconnect.entity.user.User;
 import com.seoulcareconnect.repository.user.UserRepository;
+import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import com.seoulcareconnect.service.policy.PolicyDetailService;
 import com.seoulcareconnect.service.policy.PolicyService;
 import com.seoulcareconnect.service.policy.PolicyViewLogService;
@@ -45,6 +46,7 @@ public class PolicyController {
     private final PolicyDetailService policyDetailService;
     private final PolicyViewLogService policyViewLogService;
     private final UserRepository userRepository;
+    private final AiPolicyExplanationService aiPolicyExplanationService;
 
     @GetMapping("/policies")
     public String list(
@@ -91,6 +93,10 @@ public class PolicyController {
         );
 
         model.addAttribute("policy", policy);
+        model.addAttribute(
+                "aiExplanation",
+                aiPolicyExplanationService.findApproved(policyId).orElse(null)
+        );
         return "policy/detail";
     }
 
