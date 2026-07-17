@@ -540,6 +540,22 @@ input {
     line-height: 1.45;
 }
 
+.side-step-list {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.side-step-list li {
+    line-height: 1.45;
+}
+
+.side-step-list li span:first-child {
+    font-weight: 900;
+}
+
 .side-primary-link,
 .side-save-button {
     width: 100%;
@@ -622,5 +638,9 @@ input {
 
     .section-heading {
         gap: 12px;
+    }
+
+    .detail-guide-list li {
+        line-height: 1.75;
     }
 }

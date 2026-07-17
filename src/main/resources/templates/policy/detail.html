@@ -201,12 +201,15 @@
                 </article>
 
                 <article class="info-card"
-                         th:if="${policy.contentText != null and !#strings.isEmpty(policy.contentText)}">
+                         th:if="${!#lists.isEmpty(policy.contentLines)}">
                     <h2>상세 안내</h2>
-                    <p style="white-space: pre-line;"
-                       th:text="${policy.contentText}">
-                        상세 정책 내용
-                    </p>
+
+                    <ul class="dot-list detail-guide-list">
+                        <li th:each="line : ${policy.contentLines}"
+                            th:text="${line}">
+                            상세 정책 내용
+                        </li>
+                    </ul>
                 </article>
             </div>
 
@@ -229,7 +232,18 @@
                         </div>
                         <div>
                             <dt>신청 방법</dt>
-                            <dd th:text="${policy.applyMethod}">공식 공고 확인</dd>
+                            <dd>
+                                <ol class="side-step-list" th:if="${!#lists.isEmpty(policy.applicationLines)}">
+                                <li th:each="line, iter : ${policy.applicationLines}">
+                                <span th:text="|${iter.index + 1}. |">1. </span>
+                                <span th:text="${line}">신청 방법</span>
+                                </li>
+                                </ol>
+                           <span th:if="${#lists.isEmpty(policy.applicationLines)}"
+                           th:text="${policy.applyMethod}">
+                                 공식 공고 확인
+                           </span>
+                          </dd>
                         </div>
                         <div>
                             <dt>지역</dt>
