@@ -24,6 +24,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,26 @@ public class PolicyController {
                 ApplyStatus.ALWAYS
         ));
         return "policy/list";
+    }
+
+    @GetMapping("/policies/personalized")
+    public String personalizedSearch(
+            Authentication authentication,
+            RedirectAttributes redirectAttributes
+    ) {
+        User user = resolveCurrentUser(authentication);
+
+        if (user.getDistrict() != null && !user.getDistrict().isBlank()) {
+            redirectAttributes.addAttribute("district", user.getDistrict().trim());
+        }
+
+        String ageGroup = toSearchAgeGroup(user.getAgeGroup());
+        if (ageGroup != null) {
+            redirectAttributes.addAttribute("ageGroup", ageGroup);
+        }
+
+        redirectAttributes.addAttribute("page", 0);
+        return "redirect:/policies";
     }
 
     @GetMapping("/policies/{policyId:\\d+}")
@@ -160,5 +181,19 @@ public class PolicyController {
     private User findByEmail(String email) {
         return userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new IllegalStateException("로그인 회원을 찾을 수 없습니다."));
+    }
+
+    private String toSearchAgeGroup(String userAgeGroup) {
+        if (userAgeGroup == null || userAgeGroup.isBlank()) {
+            return null;
+        }
+
+        return switch (userAgeGroup.trim()) {
+            case "20대 이하", "30대", "30대 이하" -> AgeGroup.UNDER_40.name();
+            case "40대" -> AgeGroup.FORTIES.name();
+            case "50대" -> AgeGroup.FIFTIES.name();
+            case "60대 이상" -> AgeGroup.SIXTIES_PLUS.name();
+            default -> null;
+        };
     }
 }
