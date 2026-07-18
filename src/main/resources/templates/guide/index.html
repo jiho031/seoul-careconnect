@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>신청 가이드 | 서울 케어넥트</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+  <link rel="stylesheet" th:href="@{/css/application-guide.css}" href="/css/application-guide.css">
+  <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+</head>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}">
+  <div th:replace="~{fragments/nav :: nav}"></div>
+
+  <main class="application-guide-page">
+    <section class="guide-hero">
+      <div class="guide-container">
+        <span class="guide-eyebrow">서울 복지·지원정책 신청 가이드</span>
+        <h1>신청은 한 단계씩,<br>천천히 따라 하세요.</h1>
+        <p>
+          복잡한 안내를 한꺼번에 보지 않아도 됩니다.<br>
+          정책을 고르고, 준비물을 확인한 뒤, 공식 신청 페이지로 이동하세요.
+        </p>
+        <div class="guide-hero-actions">
+          <a class="guide-primary-button" th:href="@{/policies}">정책 먼저 찾기</a>
+          <a class="guide-secondary-button" href="#guide-policies">최근 정책에서 고르기</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-steps-section" aria-labelledby="guideStepsTitle">
+      <div class="guide-container">
+        <div class="guide-section-heading">
+          <span>신청 준비 순서</span>
+          <h2 id="guideStepsTitle">아래 순서대로만 확인하면 됩니다.</h2>
+        </div>
+
+        <div class="guide-steps">
+          <article class="guide-step-card">
+            <span class="guide-step-number">1</span>
+            <h3>나에게 맞는 정책 고르기</h3>
+            <p>지역과 생애주기를 선택해 필요한 정책을 먼저 찾아보세요.</p>
+            <a th:href="@{/policies}">정책 찾기로 이동</a>
+          </article>
+
+          <article class="guide-step-card">
+            <span class="guide-step-number">2</span>
+            <h3>대상과 준비물 확인하기</h3>
+            <p>정책 상세 화면에서 지원 대상, 신청 기간, 필요 서류를 확인하세요.</p>
+            <a href="#guide-checklist">신청 전 확인 보기</a>
+          </article>
+
+          <article class="guide-step-card">
+            <span class="guide-step-number">3</span>
+            <h3>공식 신청 페이지에서 접수하기</h3>
+            <p>정책 상세 화면의 공식 링크를 통해 신청 방법과 접수처를 확인하세요.</p>
+            <a href="#guide-policies">정책 고르기</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-preparation-section" id="guide-checklist" aria-labelledby="guideChecklistTitle">
+      <div class="guide-container">
+        <div class="guide-section-heading">
+          <span>신청 전 확인</span>
+          <h2 id="guideChecklistTitle">준비가 되었는지 하나씩 확인하세요.</h2>
+        </div>
+
+        <div class="guide-preparation-grid">
+          <ul class="guide-checklist">
+            <li><span>1</span><p><strong>지원 대상</strong>이 내 상황과 맞는지 확인합니다.</p></li>
+            <li><span>2</span><p><strong>신청 기간</strong>이 지나지 않았는지 확인합니다.</p></li>
+            <li><span>3</span><p><strong>필요 서류</strong>와 발급 방법을 확인합니다.</p></li>
+            <li><span>4</span><p><strong>신청 방법</strong>과 공식 접수처를 확인합니다.</p></li>
+          </ul>
+
+          <aside class="guide-notice" aria-label="신청 안내 유의사항">
+            <h3>기억해주세요</h3>
+            <p>정책마다 대상, 기간, 서류가 다를 수 있습니다.</p>
+            <p>마지막 신청 전에는 반드시 정책 상세 화면의 공식 안내를 확인해 주세요.</p>
+            <a th:href="@{/policies}">정책 상세 확인하기</a>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-policy-section" id="guide-policies" aria-labelledby="guidePoliciesTitle">
+      <div class="guide-container">
+        <div class="guide-policy-heading">
+          <div>
+            <span>정책 고르기</span>
+            <h2 id="guidePoliciesTitle">최근 등록된 정책부터 살펴보세요.</h2>
+          </div>
+          <a th:href="@{/policies}">전체 정책 보기</a>
+        </div>
+
+        <div class="guide-policy-list" th:if="${guidePolicies != null and !#lists.isEmpty(guidePolicies)}">
+          <article class="guide-policy-card" th:each="policy : ${guidePolicies}">
+            <div class="guide-policy-card-head">
+              <span th:text="${policy.applyStatusLabel}">신청 가능</span>
+              <small th:text="${policy.categoryLabel}">분야</small>
+            </div>
+            <h3 th:text="${policy.title}">정책명</h3>
+            <p th:text="${policy.summary}">정책 요약</p>
+            <dl>
+              <div><dt>신청 기간</dt><dd th:text="${policy.applyPeriod}">공고 확인</dd></div>
+              <div><dt>대상</dt><dd th:text="${policy.target}">공고 확인</dd></div>
+            </dl>
+            <a th:href="@{/policies/{policyId}(policyId=${policy.policyId})}">상세 확인 후 신청하기</a>
+          </article>
+        </div>
+
+        <div class="guide-policy-empty" th:if="${guidePolicies == null or #lists.isEmpty(guidePolicies)}">
+          <p>현재 바로 안내할 정책이 없습니다.</p>
+          <a th:href="@{/policies}">전체 정책 찾기</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+  <script th:src="@{/js/common.js}" src="/js/common.js"></script>
+</body>
+</html>
