@@ -388,7 +388,8 @@
   gap: 8px;
 }
 
-.preset-area a {
+.preset-area a,
+.preset-area button {
   height: 54px;
   min-width: 116px;
   padding: 0 12px;
@@ -403,11 +404,209 @@
   font-size: 15px;
   font-weight: 950;
   letter-spacing: -.05em;
+  cursor: pointer;
+}
+
+.preset-area button {
+  font-family: inherit;
 }
 
 .preset-area span {
   font-size: 19px;
   line-height: 1;
+}
+
+.preset-modal {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.preset-modal.is-open {
+  display: flex;
+}
+
+.preset-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 24, 70, .45);
+}
+
+.preset-dialog {
+  position: relative;
+  width: min(100%, 620px);
+  max-height: min(720px, calc(100vh - 48px));
+  overflow-y: auto;
+  padding: 28px;
+  border: 1px solid #dce7f2;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 24px 64px rgba(6, 24, 70, .25);
+}
+
+.preset-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.preset-dialog-head h2,
+.preset-list-wrap h3 {
+  margin: 0;
+  color: #0a1f4b;
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: -.05em;
+}
+
+.preset-dialog-head p {
+  margin: 8px 0 0;
+  color: #526989;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.preset-close {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border: 0;
+  border-radius: 8px;
+  color: #16345f;
+  background: #edf4fa;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.preset-save-form {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #dce7f2;
+  border-radius: 10px;
+  background: #f8fbfe;
+}
+
+.preset-save-form > label {
+  display: block;
+  margin-bottom: 9px;
+  color: #0c214c;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.preset-save-form > div {
+  display: flex;
+  gap: 8px;
+}
+
+.preset-save-form input {
+  min-width: 0;
+  height: 44px;
+  flex: 1;
+  padding: 0 12px;
+  border: 1px solid #cbdceb;
+  border-radius: 8px;
+  color: #0a1f4b;
+  font: inherit;
+  font-size: 14px;
+}
+
+.preset-save-form button,
+.preset-load-button,
+.preset-delete-button {
+  border: 0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.preset-save-form button {
+  min-width: 122px;
+  padding: 0 14px;
+  color: #fff;
+  background: #00777d;
+}
+
+.preset-list-wrap {
+  margin-top: 26px;
+}
+
+.preset-list-wrap h3 {
+  font-size: 17px;
+}
+
+.preset-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.preset-item {
+  min-width: 0;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #dce7f2;
+  border-radius: 10px;
+}
+
+.preset-item strong {
+  display: block;
+  color: #0a1f4b;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.preset-item p,
+.preset-empty {
+  margin: 6px 0 0;
+  color: #526989;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.preset-empty {
+  margin: 0;
+  padding: 22px 0;
+  text-align: center;
+}
+
+.preset-item-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.preset-load-button,
+.preset-delete-button {
+  height: 34px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.preset-load-button {
+  color: #00777d;
+  background: #e7f6f5;
+}
+
+.preset-delete-button {
+  color: #c53942;
+  background: #fff0f1;
+}
+
+.preset-modal-open {
+  overflow: hidden;
 }
 
 .ai-card {
@@ -807,7 +1006,8 @@
     padding: 0 6px;
   }
 
-  .preset-area a {
+  .preset-area a,
+  .preset-area button {
     min-width: 110px;
     padding: 0 10px;
     font-size: 14px;
@@ -909,8 +1109,32 @@
     flex-wrap: wrap;
   }
 
-  .preset-area a {
+  .preset-area a,
+  .preset-area button {
     flex: 1 1 140px;
+  }
+
+  .preset-modal {
+    padding: 16px;
+  }
+
+  .preset-dialog {
+    max-height: calc(100vh - 32px);
+    padding: 22px 18px;
+  }
+
+  .preset-save-form > div,
+  .preset-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .preset-save-form button {
+    height: 42px;
+  }
+
+  .preset-item-actions {
+    justify-content: flex-end;
   }
 
   .ai-card {
@@ -1033,7 +1257,8 @@
     flex: 0 0 auto;
   }
 
-  .preset-area a {
+  .preset-area a,
+  .preset-area button {
     min-width: 105px;
     padding: 0 8px;
     font-size: 13px;

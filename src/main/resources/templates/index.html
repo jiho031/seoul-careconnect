@@ -1,5 +1,7 @@
 <!doctype html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -129,8 +131,13 @@
               </div>
 
               <div class="preset-area">
-                <a href="#"><span>↔</span>내 맞춤 검색</a>
-                <a href="#"><span>□</span>불러오기</a>
+                <a th:href="@{/policies/personalized}">내 맞춤 검색</a>
+                <button sec:authorize="isAuthenticated()"
+                        id="openPresetModal"
+                        type="button">
+                  프리셋
+                </button>
+                <a sec:authorize="isAnonymous()" th:href="@{/login}"><span>□</span>프리셋</a>
               </div>
             </div>
           </form>
@@ -156,7 +163,7 @@
               <span><b>필요 서류 확인하기</b><small>신청에 필요한 서류와 준비물을 한눈에 확인하세요.</small></span>
               <i>›</i>
             </a>
-            <a href="#">
+            <a th:href="@{/guides}">
               <em class="purple">☑</em>
               <span><b>신청 절차 안내받기</b><small>신청 방법과 절차를 단계별로 안내해드려요.</small></span>
               <i>›</i>
@@ -257,6 +264,43 @@
 
   <div th:replace="~{fragments/footer :: footer}"></div>
 
+  <div class="preset-modal"
+       id="presetModal"
+       aria-hidden="true">
+    <div class="preset-modal-backdrop" data-preset-close></div>
+    <section class="preset-dialog"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="presetModalTitle">
+      <div class="preset-dialog-head">
+        <div>
+          <h2 id="presetModalTitle">검색 프리셋</h2>
+          <p>현재 검색 조건을 저장하거나 다시 불러올 수 있어요.</p>
+        </div>
+        <button class="preset-close" type="button" aria-label="프리셋 창 닫기" data-preset-close>×</button>
+      </div>
+
+      <form class="preset-save-form" id="presetSaveForm">
+        <label for="presetName">프리셋 이름</label>
+        <div>
+          <input id="presetName"
+                 name="presetName"
+                 type="text"
+                 maxlength="30"
+                 placeholder="예: 우리 동네 주거 지원"
+                 required>
+          <button type="submit">현재 조건 저장</button>
+        </div>
+      </form>
+
+      <div class="preset-list-wrap">
+        <h3>저장한 프리셋</h3>
+        <div class="preset-list" id="presetList" aria-live="polite"></div>
+      </div>
+    </section>
+  </div>
+
   <script th:src="@{/js/common.js}" src="/js/common.js"></script>
+  <script th:src="@{/js/index-presets.js}" src="/js/index-presets.js"></script>
 </body>
 </html>

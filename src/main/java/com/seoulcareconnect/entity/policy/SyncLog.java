@@ -55,4 +55,7 @@ public class SyncLog {
         if (failCount == null) failCount = 0;
         if (startedAt == null) startedAt = LocalDateTime.now();
     }
+
+    @Column(nullable = false)
+    private Integer duplicateCount = 0;
 }

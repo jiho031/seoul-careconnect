@@ -144,7 +144,7 @@ public class PolicyUpsertService {
                 policy.getTitle()
         );
 
-        return true;
+        return newPolicy;
     }
 
     private boolean isExpired(ExternalPolicyItem item) {
@@ -165,6 +165,10 @@ public class PolicyUpsertService {
     }
 
     private ApplyStatus resolveApplyStatus(ExternalPolicyItem item) {
+        if (!item.isApplicationInfoAvailable()) {
+            return ApplyStatus.INFORMATION_ONLY;
+        }
+
         if (dateParser.containsAlwaysText(
                 item.getStatusText(),
                 item.getApplyMethod(),

@@ -449,63 +449,50 @@
                 <section class="admin-card admin-wide-log">
                     <div class="admin-card-head">
                         <h2>최근 관리자 활동</h2>
-                        <a class="admin-link" href="#">전체 로그 ›</a>
+                        <button type="button"
+                                class="admin-link"
+                                onclick="openActivityLogModal()">
+                            전체 로그 ›
+                        </button>
                     </div>
 
                     <div class="activity-list">
 
-                        <div class="activity-item">
-                            <span class="activity-badge blue">
-                                권한요청
-                            </span>
+                        <!-- 활동 로그가 없을 때 -->
+                        <div class="activity-item activity-empty"
+                             th:if="${#lists.isEmpty(recentActivities)}">
 
                             <p>
-                                admin02@careconnect.com 관리자가
-                                정책 관리 권한을 요청했습니다.
+                                최근 관리자 활동이 없습니다.
                             </p>
-
-                            <time>10:20</time>
                         </div>
 
-                        <div class="activity-item">
-                            <span class="activity-badge green">
-                                정책승인
+                        <!-- 실제 최근 관리자 활동 -->
+                        <div class="activity-item"
+                             th:each="activity : ${recentActivities}">
+
+                            <span class="activity-badge blue"
+                                th:text="${activity.activityType}">
+                                    관리자 활동
                             </span>
-
                             <p>
-                                중장년 직업역량 강화 교육 정책이
-                                공개 승인되었습니다.
+                                <strong th:text="${activity.adminName}">
+                                    관리자
+                                </strong>
+
+                                <span th:text="${' · ' + activity.description}">
+                                    · 관리자 활동이 수행되었습니다.
+                                </span>
+
+                                <small th:if="${activity.targetName != '-'}"
+                                       th:text="${' [' + activity.targetName + ']'}">
+                                    [전체 정책 API]
+                                </small>
                             </p>
-
-                            <time>10:05</time>
+                            <time th:text="${activity.dashboardTimeText}">
+                                12:21
+                            </time>
                         </div>
-
-                        <div class="activity-item">
-                            <span class="activity-badge purple">
-                                AI수정
-                            </span>
-
-                            <p>
-                                1인가구 생활지원금 AI 요약 문구가
-                                수정되었습니다.
-                            </p>
-
-                            <time>09:50</time>
-                        </div>
-
-                        <div class="activity-item">
-                            <span class="activity-badge red">
-                                신고처리
-                            </span>
-
-                            <p>
-                                신청기간 오류 신고가
-                                반영 완료 처리되었습니다.
-                            </p>
-
-                            <time>09:30</time>
-                        </div>
-
                     </div>
                 </section>
 
@@ -513,6 +500,77 @@
         </section>
     </div>
 </main>
+
+<!-- 관리자 전체 활동 로그 모달 -->
+<div id="activityLogModal"
+     class="notice-modal">
+
+    <div class="notice-modal-content activity-log-modal-content">
+
+        <div class="notice-modal-head">
+            <div>
+                <h3>관리자 전체 활동 로그</h3>
+                <p>최근 14일 동안 수행된 관리자 활동입니다.</p>
+            </div>
+
+            <button type="button"
+                    class="notice-modal-close"
+                    onclick="closeActivityLogModal()">
+                ×
+            </button>
+        </div>
+
+        <div class="activity-modal-list">
+
+            <div class="activity-item activity-empty"
+                 th:if="${#lists.isEmpty(allActivities)}">
+
+                <p>최근 14일 동안 관리자 활동이 없습니다.</p>
+            </div>
+
+            <div class="activity-item"
+                 th:each="activity : ${allActivities}">
+
+                <span class="activity-badge blue"
+                      th:text="${activity.activityType}">
+                    API 수집
+                </span>
+
+                <div class="activity-modal-body">
+                    <p>
+                        <strong th:text="${activity.adminName}">
+                            관리자
+                        </strong>
+
+                        <span th:text="${' · ' + activity.description}">
+                            · 관리자 활동이 수행되었습니다.
+                        </span>
+                    </p>
+
+                    <small th:if="${activity.targetName != '-'}"
+                           th:text="${'대상: ' + activity.targetName}">
+                        대상: 전체 정책 API
+                    </small>
+                </div>
+
+                <time th:text="${activity.createdAtText}">
+                    2026.07.16 12:11
+                </time>
+
+            </div>
+
+        </div>
+
+        <div class="notice-modal-actions">
+            <button type="button"
+                    class="admin-btn"
+                    onclick="closeActivityLogModal()">
+                닫기
+            </button>
+        </div>
+
+    </div>
+</div>
 
 <!-- 공지 작성 모달: 최고 관리자만 렌더링 -->
 <div id="noticeModal"
@@ -927,7 +985,38 @@
             closeNoticeEditModal();
         }
     });
+
+    function openActivityLogModal() {
+        const modal =
+            document.getElementById("activityLogModal");
+
+        if (modal) {
+            modal.classList.add("open");
+        }
+    }
+
+    function closeActivityLogModal() {
+        const modal =
+            document.getElementById("activityLogModal");
+
+        if (modal) {
+            modal.classList.remove("open");
+        }
+    }
+
+    const activityLogModal =
+        document.getElementById("activityLogModal");
+
+    if (
+        activityLogModal
+        && event.target === activityLogModal
+    ) {
+        closeActivityLogModal();
+    }
+
+    closeActivityLogModal();
 </script>
+
 
 </body>
 </html>
