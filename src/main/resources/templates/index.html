@@ -120,14 +120,23 @@
                      tabindex="0"
                      aria-label="인기 정책 목록">
 
-                  <a th:each="policy : ${popularPolicies}"
+                  <a class="popular-policy-link"
+                     th:each="policy : ${popularPolicies}"
                      th:href="@{/policies/{policyId}(policyId=${policy.policyId})}"
-                     th:title="${policy.title}"
-                     draggable="false">
+                     th:attr="
+                         data-preview-title=${policy.title},
+                         data-preview-category=${policy.categoryLabel},
+                         data-preview-agency=${policy.agency},
+                         data-preview-region=${policy.regionDisplay},
+                         data-preview-target=${policy.target},
+                         data-preview-status=${policy.applyStatusLabel},
+                         data-preview-period=${policy.applyPeriod},
+                         aria-label=${policy.title}"
+                                       draggable="false">
 
-                  <span th:text="${policy.title}">
-                    인기 정책
-                  </span>
+                    <span th:text="${policy.title}">
+                      인기 정책
+                    </span>
                   </a>
 
                   <span class="keyword-empty"
@@ -390,6 +399,56 @@
       </div>
     </section>
   </div>
+
+  <!-- 인기 정책 간단 미리보기 -->
+  <aside class="popular-policy-preview"
+         id="popularPolicyPreview"
+         role="tooltip"
+         aria-hidden="true">
+
+    <div class="popular-policy-preview-head">
+    <span class="popular-policy-preview-category"
+          data-preview-field="category">
+      분야
+    </span>
+
+      <span class="popular-policy-preview-status"
+            data-preview-field="status">
+      신청 상태
+    </span>
+    </div>
+
+    <strong class="popular-policy-preview-title"
+            data-preview-field="title">
+      정책명
+    </strong>
+
+    <dl class="popular-policy-preview-info">
+      <div data-preview-row="agency">
+        <dt>기관</dt>
+        <dd data-preview-field="agency"></dd>
+      </div>
+
+      <div data-preview-row="region">
+        <dt>지역</dt>
+        <dd data-preview-field="region"></dd>
+      </div>
+
+      <div data-preview-row="target">
+        <dt>대상</dt>
+        <dd data-preview-field="target"></dd>
+      </div>
+
+      <div data-preview-row="period">
+        <dt>신청 기간</dt>
+        <dd data-preview-field="period"></dd>
+      </div>
+    </dl>
+
+    <p class="popular-policy-preview-guide">
+      클릭하면 정책 상세 내용을 확인할 수 있습니다.
+    </p>
+  </aside>
 
   <script th:src="@{/js/common.js}" src="/js/common.js"></script>
   <script th:src="@{/js/index-presets.js}" src="/js/index-presets.js"></script>
