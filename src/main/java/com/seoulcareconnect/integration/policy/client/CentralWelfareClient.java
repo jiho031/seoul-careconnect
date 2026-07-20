@@ -470,6 +470,8 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                         reader.stripHtml(content)
                 )
 
+                .applicationInfoAvailable(false)
+
                 .rawXml(rawXml)
                 .httpStatus(200)
                 .build();
