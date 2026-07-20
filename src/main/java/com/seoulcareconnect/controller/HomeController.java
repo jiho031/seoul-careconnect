@@ -26,7 +26,7 @@ public class HomeController {
 
         model.addAttribute(
                 "popularPolicies",
-                policyService.popular(4)
+                policyService.popular(10)
         );
 
         return "index";

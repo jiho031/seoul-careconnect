@@ -378,7 +378,7 @@
   border-radius: 8px;
   color: #244066;
   background: #fff;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: -.07em;
 }
@@ -393,23 +393,26 @@
   height: 54px;
   min-width: 116px;
   padding: 0 12px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
+
   border: 1px solid #d4e1ee;
   border-radius: 10px;
+
   color: #00777d;
   background: #fff;
+
+  font-family: inherit;
   font-size: 15px;
   font-weight: 950;
   letter-spacing: -.05em;
+
   cursor: pointer;
 }
 
-.preset-area button {
-  font-family: inherit;
-}
 
 .preset-area span {
   font-size: 19px;
@@ -964,6 +967,73 @@
   background: #e5f8ed;
 }
 
+/* 최근 등록 정책 카테고리 아이콘 */
+.recent-category-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+  font-style: normal;
+}
+
+.recent-category-icon svg {
+  width: 27px;
+  height: 27px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 교육 */
+.recent-category-icon.category-EDUCATION {
+  color: #277de0;
+  background: #e5f1ff;
+}
+
+/* 일자리 */
+.recent-category-icon.category-JOB {
+  color: #078a84;
+  background: #def7ef;
+}
+
+/* 주거 */
+.recent-category-icon.category-HOUSING {
+  color: #7440e8;
+  background: #eee5ff;
+}
+
+/* 생활지원 */
+.recent-category-icon.category-LIVING_SUPPORT {
+  color: #1aa56d;
+  background: #e5f8ed;
+}
+
+/* 돌봄 */
+.recent-category-icon.category-CARE {
+  color: #ee7045;
+  background: #fff0e9;
+}
+
+/* 문화·생활 */
+.recent-category-icon.category-CULTURE_LIFE {
+  color: #d25291;
+  background: #fdeaf4;
+}
+
+/* 카테고리가 없거나 예상하지 못한 값 */
+.recent-category-icon.category-default {
+  color: #078a84;
+  background: #def7ef;
+}
+
 .recent-card b {
   display: block;
   margin-bottom: 11px;
@@ -1229,28 +1299,54 @@
   }
 
   .keyword-list {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     gap: 5px;
     min-width: 0;
-    overflow: hidden;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .keyword-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .keyword-list.dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
   }
 
   .keyword-list a {
-    width: 100%;
+
+    flex: 0 0 calc((100% - 15px) / 4);
+    width: auto;
     min-width: 0;
     max-width: none;
     height: 44px;
-    padding: 4px 5px;
+    padding: 4px 8px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     white-space: normal;
     overflow: hidden;
     word-break: keep-all;
-    line-height: 1.2;
+
+    line-height: 1.25;
     text-align: center;
-    font-size: 9.5px;
+    font-size: 12px;
+    font-weight: 900;
+
+    scroll-snap-align: start;
   }
 
   .preset-area {
@@ -1380,4 +1476,118 @@
 /* 데이터가 없을 때 불필요한 여백 축소 */
 .policy-empty {
   padding: 14px 4px 6px;
+}
+
+.keyword-list a span {
+  width: 100%;
+  min-width: 0;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+
+  line-height: 1.25;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.policy-inner {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+body:not(.large-text-mode) .policy-inner {
+  padding-left: clamp(
+          0px,
+          calc(100vw - 1516px),
+          36px
+  );
+}
+
+body.large-text-mode .policy-inner {
+  padding-left: 0;
+}
+
+.policy-board {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+}
+
+.deadline-grid,
+.recent-grid {
+  min-width: 0;
+  flex: 1;
+}
+
+.deadline-grid:has(.policy-empty) {
+  display: flex;
+  align-items: center;
+}
+
+.deadline-grid:has(.policy-empty) .policy-empty {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 1320px) {
+  .hero {
+    min-height: auto;
+    padding: 44px 0 70px;
+  }
+
+  .hero-inner,
+  .policy-inner {
+    width: min(calc(100% - 40px), 1000px);
+
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: center;
+  }
+
+  .hero-copy {
+    padding-top: 24px;
+  }
+
+  .policy-inner {
+    padding-left: 0;
+    align-items: start;
+  }
+
+  .policy-board {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+
+    box-sizing: border-box;
+  }
+
+  .deadline-grid,
+  .recent-grid {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .deadline-grid:has(.policy-empty) {
+    min-height: auto;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-inner,
+  .policy-inner {
+    width: calc(100% - 32px);
+  }
 }
