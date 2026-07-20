@@ -95,19 +95,35 @@ public final class PolicySpecification {
 
             if (district != null) {
                 if ("서울시 전체".equals(district)) {
-                    predicates.add(cb.or(
+
+                    Predicate noDistrict = cb.or(
                             cb.isNull(root.get("district")),
-                            cb.equal(root.get("district"), "")
-                    ));
+                            cb.equal(root.get("district"), ""),
+                            cb.equal(root.get("district"), "서울시 전체")
+                    );
+
+                    Predicate seoulRegion = cb.or(
+                            cb.isNull(root.get("region")),
+                            root.get("region").in(
+                                    "서울",
+                                    "서울시",
+                                    "서울특별시",
+                                    "서울시 전체"
+                            )
+                    );
+
+                    predicates.add(
+                            cb.and(noDistrict, seoulRegion)
+                    );
+
                 } else {
-                    predicates.add(cb.or(
+
+                    predicates.add(
                             cb.equal(
                                     root.get("district"),
                                     district
-                            ),
-                            cb.isNull(root.get("district")),
-                            cb.equal(root.get("district"), "")
-                    ));
+                            )
+                    );
                 }
             }
 
