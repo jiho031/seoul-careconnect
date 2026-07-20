@@ -61,6 +61,18 @@ public class UserServiceImpl implements UserService {
             );
         }
 
+        if (!request.isTermsAgreed()) {
+            throw new IllegalArgumentException(
+                    "이용약관 동의가 필요합니다."
+            );
+        }
+
+        if (!request.isPrivacyAgreed()) {
+            throw new IllegalArgumentException(
+                    "개인정보 수집 및 이용 동의가 필요합니다."
+            );
+        }
+
         validatePasswordPolicy(request.getPassword());
 
         if (!request.getPassword()

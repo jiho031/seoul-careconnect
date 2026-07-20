@@ -24,4 +24,8 @@ public class SignupRequest {
     private String ageGroup;
     private String district;
     private String birthYear;
+
+    private boolean termsAgreed;
+    private boolean privacyAgreed;
+    private boolean noticeAgreed;
 }

@@ -1,7 +1,7 @@
 package com.seoulcareconnect.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +13,10 @@ public class PasswordChangeRequest {
     private String currentPassword;
 
     @NotBlank(message = "새 비밀번호를 입력해주세요.")
-    @Size(min = 8, max = 30, message = "새 비밀번호는 8자 이상 30자 이하로 입력해주세요.")
+    @Pattern(
+            regexp = "^(?=\\S{8,20}$)(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*]).*$",
+            message = "비밀번호는 8~20자이며 영문, 숫자, 특수문자(!@#$%^&*)를 각각 1개 이상 포함해야 합니다."
+    )
     private String newPassword;
 
     @NotBlank(message = "새 비밀번호 확인을 입력해주세요.")
