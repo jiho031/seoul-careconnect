@@ -21,11 +21,6 @@ public class AdminPageController {
         return "admin/duplicates";
     }
 
-    @GetMapping("/admin/ai-review")
-    public String aiReview() {
-        return "admin/ai-review";
-    }
-
     @GetMapping("/admin/reports")
     public String reports() {
         return "admin/reports";

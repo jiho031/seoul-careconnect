@@ -99,6 +99,7 @@ public class PolicyMapper {
         String benefit = detail == null ? null : normalizeBlock(detail.getBenefit());
         String documents = detail == null ? null : normalizeBlock(detail.getRequiredDocumentsText());
         String application = normalizeBlock(policy.getApplyMethod());
+        String content = detail == null ? null : normalizeBlock(detail.getContentText());
 
         return PolicyDetailDTO.builder()
                 .policyId(policy.getPolicyId())
@@ -125,6 +126,7 @@ public class PolicyMapper {
                 .benefitLines(splitLines(benefit))
                 .documentLines(splitLines(documents))
                 .applicationLines(splitLines(application))
+                .contentLines(splitLines(content))
                 .build();
     }
 
@@ -186,6 +188,7 @@ public class PolicyMapper {
     }
 
     private String applyPeriod(LocalDate start, LocalDate end, ApplyStatus status) {
+        if (status == ApplyStatus.INFORMATION_ONLY) return "공식 안내 확인";
         if (status == ApplyStatus.ALWAYS && start == null && end == null) return "상시 신청";
         if (start == null && end == null) return "공고 확인";
         if (start == null) return "~ " + end.format(DATE_FORMAT);
@@ -194,6 +197,7 @@ public class PolicyMapper {
     }
 
     private String dDayLabel(LocalDate endDate, ApplyStatus status, LocalDate today) {
+        if (status == ApplyStatus.INFORMATION_ONLY) return "안내";
         if (status == ApplyStatus.ALWAYS) return "상시";
         if (endDate == null) return "공고 확인";
         long days = ChronoUnit.DAYS.between(today, endDate);
@@ -248,9 +252,14 @@ public class PolicyMapper {
 
     private List<String> splitLines(String text) {
         String value = normalizeBlock(text);
-        if (value == null) return new ArrayList<>();
-        return Arrays.stream(value.split("(?:\\r?\\n)+|[•·▪■]+"))
-                .map(String::trim)
+        if (value == null) {
+            return new ArrayList<>();
+        }
+
+        String normalized = value.replaceAll("(?<!^)(?<!\\n)(?=\\s*\\d{1,2}[.)]\\s*)", "\n");
+
+        return Arrays.stream(normalized.split("(?:\\r?\\n)+|[•·▪■]+"))
+                .map(v -> v.replaceAll("^\\s*\\d{1,2}[.)]\\s*", "").trim())
                 .filter(v -> !v.isBlank())
                 .distinct()
                 .limit(20)

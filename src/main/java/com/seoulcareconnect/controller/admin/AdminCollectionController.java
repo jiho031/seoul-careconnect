@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.core.Authentication;
 
@@ -43,6 +44,11 @@ public class AdminCollectionController {
         model.addAttribute(
                 "syncLogs",
                 adminCollectionService.getRecentSyncLogs()
+        );
+
+        model.addAttribute(
+                "availableSources",
+                policyCollectService.availableSourceNames()
         );
 
         return "admin/collection";
@@ -83,6 +89,30 @@ public class AdminCollectionController {
                     "collectionError",
                     "수동 재수집 중 오류가 발생했습니다: "
                             + e.getMessage()
+            );
+        }
+
+        return "redirect:/admin/collection";
+    }
+
+    @PostMapping("/admin/collection/run-source")
+    public String runSourceCollection(
+            @RequestParam String sourceName,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            policyCollectService.collectOne(sourceName, SyncType.MANUAL);
+            redirectAttributes.addFlashAttribute(
+                    "collectionSuccess",
+                    sourceName + " 재수집이 완료되었습니다."
+            );
+        } catch (Exception e) {
+            log.error("{} 수동 수집 실패", sourceName, e);
+            redirectAttributes.addFlashAttribute(
+                    "collectionError",
+                    e.getMessage() == null
+                            ? sourceName + " 재수집 중 오류가 발생했습니다."
+                            : e.getMessage()
             );
         }
 

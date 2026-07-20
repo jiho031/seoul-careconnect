@@ -382,6 +382,7 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 .selectionCriteria(reader.stripHtml(criteria))
                 .requiredDocumentsText(reader.stripHtml(documents))
                 .contentText(reader.stripHtml(content))
+                .applicationInfoAvailable(false)
                 .rawXml(rawXml)
                 .httpStatus(200)
                 .build();
@@ -393,7 +394,8 @@ public class LocalWelfareClient implements ExternalPolicyClient {
         }
 
         String digitsOnly = enforcementEndText.replaceAll("[^0-9]", "");
-        return "99991231".equals(digitsOnly);
+        return "99991231".equals(digitsOnly)
+                || "29991231".equals(digitsOnly);
     }
 
     private String first(
