@@ -1,12 +1,14 @@
 package com.seoulcareconnect.service.user;
 
 import com.seoulcareconnect.dto.policy.PolicyDTO;
+import com.seoulcareconnect.dto.user.FavoriteCardDto;
 import com.seoulcareconnect.dto.user.FavoriteDetailDto;
 import com.seoulcareconnect.entity.user.Favorite;
 import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.mapper.policy.PolicyMapper;
 import com.seoulcareconnect.repository.user.FavoriteRepository;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
+import com.seoulcareconnect.service.policy.PolicyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,8 +27,9 @@ public class FavoriteService {
     private final FavoriteRepository favoriteRepository;
     private final PolicyRepository policyRepository;
     private final PolicyMapper policyMapper;
+    private final PolicyService policyService;
 
-    // Policy 실제 데이터를 조회해서 title/category/summary 채움
+    // Policy 실제 데이터를 조회해서 title/category/summary 채움 (마이페이지 요약용)
     public List<FavoriteDetailDto> getFavoritesWithDetails(Long userId) {
         List<Favorite> favorites = favoriteRepository.findByUserId(userId);
 
@@ -56,9 +60,57 @@ public class FavoriteService {
         }).collect(Collectors.toList());
     }
 
+    // 관심 정책 페이지(/favorites)용 상세 카드 목록
+    public List<FavoriteCardDto> getFavoriteCards(Long userId) {
+        List<Favorite> favorites = favoriteRepository.findByUserId(userId);
+
+        return favorites.stream().map(f -> {
+            Policy policy = policyRepository.findById(f.getPolicyId()).orElse(null);
+
+            if (policy == null) {
+                return FavoriteCardDto.builder()
+                        .favoriteId(f.getId())
+                        .policyId(f.getPolicyId())
+                        .title("삭제된 정책입니다")
+                        .categoryLabel("미분류")
+                        .favoritedAt(f.getCreatedAt())
+                        .build();
+            }
+
+            PolicyDTO dto = policyMapper.toDto(policy);
+
+            return FavoriteCardDto.builder()
+                    .favoriteId(f.getId())
+                    .policyId(f.getPolicyId())
+                    .title(dto.getTitle())
+                    .categoryLabel(dto.getCategoryLabel())
+                    .summary(dto.getSummary())
+                    .target(dto.getTarget())
+                    .ageGroupDisplay(dto.getAgeGroupDisplay())
+                    .regionDisplay(dto.getRegionDisplay())
+                    .applyStatusLabel(dto.getApplyStatusLabel())
+                    .applyPeriod(dto.getApplyPeriod())
+                    .dDayLabel(dto.getDDayLabel())
+                    .dDayCssClass(dto.getDDayCssClass())
+                    .favoritedAt(f.getCreatedAt())
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    // 찜하지 않은 정책 중 인기 정책 기준으로 추천
+    public List<PolicyDTO> getRecommendedPolicies(Long userId, int limit) {
+        Set<Long> favoritedIds = favoriteRepository.findByUserId(userId).stream()
+                .map(Favorite::getPolicyId)
+                .collect(Collectors.toSet());
+
+        return policyService.popular(limit + favoritedIds.size()).stream()
+                .filter(p -> !favoritedIds.contains(p.getPolicyId()))
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void addFavorite(Long userId, Long policyId) {
-        // 이미 찜한 정책이면 409 Conflict 던짐 (프론트 JS가 이 응답을 기대함)
         if (favoriteRepository.existsByUserIdAndPolicyId(userId, policyId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 관심 정책으로 등록된 정책입니다.");
         }

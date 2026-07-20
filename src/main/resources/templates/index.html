@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>서울 케어넥트</title>
+  <link rel="stylesheet" th:href="@{/css/favorite.css}" href="/css/favorite.css">
   <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
   <link rel="stylesheet" th:href="@{/css/index.css}" href="/css/index.css">
     <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
@@ -172,6 +173,17 @@
           </div>
         </aside>
       </div>
+    </section>
+
+    <section class="favorite-banner" sec:authorize="isAuthenticated()">
+      <a th:href="@{/favorites}" class="favorite-banner-link">
+        <span class="favorite-banner-icon">♥</span>
+        <span class="favorite-banner-text">
+      <strong>내가 찜한 정책 확인하기</strong>
+      <small>저장해둔 관심 정책과 맞춤 추천 정책을 한 번에 확인해보세요.</small>
+    </span>
+        <span class="favorite-banner-arrow">›</span>
+      </a>
     </section>
 
     <section class="policy-section">

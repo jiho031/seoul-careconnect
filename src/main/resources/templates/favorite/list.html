@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관심 정책 | 서울 케어넥트</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/index.css}" href="/css/index.css">
+    <link rel="stylesheet" th:href="@{/css/mypage.css}" href="/css/mypage.css">
+    <link rel="stylesheet" th:href="@{/css/favorite.css}" href="/css/favorite.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+</head>
+
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="favorite-page">
+
+    <section class="favorite-hero">
+        <span class="favorite-eyebrow">FAVORITES</span>
+        <h1>관심 정책</h1>
+        <p th:text="|찜한 정책 ${favorites != null ? #lists.size(favorites) : 0}건을 모아봤어요.|">
+            찜한 정책을 모아봤어요.
+        </p>
+    </section>
+
+    <section class="favorite-list-section">
+        <div class="board-head">
+            <h2>찜한 정책</h2>
+            <a href="/mypage#favorites">마이페이지에서 관리 ›</a>
+        </div>
+
+        <div class="favorite-grid" id="favoriteGrid">
+            <div class="policy-card favorite-card"
+                 th:each="fav : ${favorites}"
+                 th:attr="data-policy-id=${fav.policyId}">
+
+                <a class="favorite-card-link" th:href="@{|/policies/${fav.policyId}|}">
+
+                    <div class="policy-card-top">
+                        <span class="policy-dday"
+                              th:if="${fav.dDayLabel != null}"
+                              th:classappend="${fav.dDayCssClass}"
+                              th:text="${fav.dDayLabel}">
+                            D-5
+                        </span>
+
+                        <span class="policy-card-category" th:text="${fav.categoryLabel}">카테고리</span>
+                    </div>
+
+                    <h3 class="policy-card-title" th:text="${fav.title}" th:title="${fav.title}">정책명</h3>
+
+                    <p class="policy-card-summary"
+                       th:if="${fav.summary != null}"
+                       th:text="${fav.summary}">
+                        정책 요약 설명이 들어갑니다.
+                    </p>
+
+                    <div class="policy-meta" th:if="${fav.applyPeriod != null}">
+                        <span class="policy-status" th:text="${fav.applyStatusLabel}">신청 가능</span>
+                        <span class="policy-meta-label">신청 기간</span>
+                        <span class="policy-meta-divider"></span>
+                        <span class="policy-date" th:text="${fav.applyPeriod}">공고 확인</span>
+                    </div>
+                </a>
+
+                <button class="policy-card-remove"
+                        type="button"
+                        th:attr="data-policy-id=${fav.policyId}"
+                        onclick="removeFavorite(this)">
+                    삭제
+                </button>
+            </div>
+        </div>
+
+        <p class="favorite-empty"
+           id="emptyFavoriteMessage"
+           th:if="${favorites == null or #lists.isEmpty(favorites)}">
+            아직 찜한 정책이 없어요. 마음에 드는 정책을 찜해보세요!
+        </p>
+    </section>
+
+    <section class="policy-section recommend-section">
+        <div class="board-head">
+            <h2>이런 정책은 어떠세요?</h2>
+            <a th:href="@{/policies}">전체 정책 보기 ›</a>
+        </div>
+
+        <div class="deadline-grid">
+            <a class="policy-card"
+               th:each="policy : ${recommendedPolicies}"
+               th:href="@{|/policies/${policy.policyId}|}">
+
+                <div class="policy-card-top">
+                    <span class="policy-dday"
+                          th:classappend="${policy.dDayCssClass}"
+                          th:text="${policy.dDayLabel}">
+                        D-5
+                    </span>
+
+                    <strong class="policy-title" th:text="${policy.title}" th:title="${policy.title}">정책명</strong>
+                </div>
+
+                <div class="policy-meta">
+                    <span class="policy-status" th:text="${policy.applyStatusLabel}">신청 가능</span>
+                    <span class="policy-meta-label">신청 기간</span>
+                    <span class="policy-meta-divider"></span>
+                    <span class="policy-date" th:text="${policy.applyPeriod}" th:title="${policy.applyPeriod}">공고 확인</span>
+                </div>
+            </a>
+
+            <p class="policy-empty"
+               th:if="${recommendedPolicies == null or #lists.isEmpty(recommendedPolicies)}">
+                아직 추천할 정책이 없습니다.
+            </p>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:inline="javascript">
+    const currentUserId = /*[[${user.userId}]]*/ 1;
+
+    function removeFavorite(btn) {
+        const policyId = btn.getAttribute('data-policy-id');
+
+        if (!confirm('관심 정책에서 삭제하시겠습니까?')) return;
+
+        fetch(`/api/users/${currentUserId}/favorites/${policyId}`, { method: 'DELETE' })
+            .then(res => {
+                if (res.ok) {
+                    const card = btn.closest('.favorite-card');
+                    card.remove();
+
+                    if (document.querySelectorAll('.favorite-card').length === 0) {
+                        document.getElementById('emptyFavoriteMessage').style.display = 'block';
+                    }
+                } else {
+                    alert('삭제 중 오류가 발생했습니다.');
+                }
+            });
+    }
+</script>
+
+</body>
+</html>

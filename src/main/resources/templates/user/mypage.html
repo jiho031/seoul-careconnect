@@ -62,7 +62,7 @@
 
             <nav class="mypage-side-nav" aria-label="마이페이지 메뉴">
                 <a href="#profile-edit" class="active">회원정보 수정</a>
-                <a href="#favorites">관심 정책</a>
+                <a href="@{/favorites}">관심 정책</a>
                 <a href="#account-security">계정 보안</a>
             </nav>
         </aside>
@@ -315,8 +315,10 @@
                         <h2>관심 정책</h2>
                         <p>관심 있는 정책과 돌봄 서비스를 모아서 확인하세요.</p>
                     </div>
+                    <a th:href="@{/favorites}">전체보기 ›</a>
                 </div>
                 <div id="favorites-list" class="policy-card-list"></div>
+                ...
                 <p id="emptyFavoriteMessage" style="display:none; color:#6b7b99; font-weight:700; padding: 20px 0;">
                     아직 찜한 정책이 없어요. 관심 있는 정책을 찜해보세요!
                 </p>
