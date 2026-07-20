@@ -61,6 +61,7 @@ public class PolicyController {
                 : policyService.search(search);
 
         model.addAttribute("policyPage", policyPage);
+        model.addAttribute("user", resolveCurrentUserOrNull(authentication));
         model.addAttribute("pageNumbers", pageNumbers(policyPage));
         model.addAttribute("districts", SEOUL_DISTRICTS);
         model.addAttribute("ageGroups", AgeGroup.values());
@@ -149,6 +150,14 @@ public class PolicyController {
         }
 
         return findByEmail(authentication.getName());
+    }
+
+    private User resolveCurrentUserOrNull(Authentication authentication) {
+        try {
+            return resolveCurrentUser(authentication);
+        } catch (IllegalStateException e) {
+            return null;
+        }
     }
 
     private User findByEmail(String email) {
