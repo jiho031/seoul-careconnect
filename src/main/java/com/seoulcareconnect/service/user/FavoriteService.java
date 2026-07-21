@@ -1,6 +1,7 @@
 package com.seoulcareconnect.service.user;
 
 import com.seoulcareconnect.dto.policy.PolicyDTO;
+import com.seoulcareconnect.dto.policy.PolicySearchDTO;
 import com.seoulcareconnect.dto.user.FavoriteCardDto;
 import com.seoulcareconnect.dto.user.FavoriteDetailDto;
 import com.seoulcareconnect.entity.user.Favorite;
@@ -15,7 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -97,16 +101,56 @@ public class FavoriteService {
         }).collect(Collectors.toList());
     }
 
-    // 찜하지 않은 정책 중 인기 정책 기준으로 추천
+    // 찜한 정책들의 카테고리를 기반으로 관련 정책 추천 (부족하면 인기 정책으로 보충)
     public List<PolicyDTO> getRecommendedPolicies(Long userId, int limit) {
-        Set<Long> favoritedIds = favoriteRepository.findByUserId(userId).stream()
+        List<Favorite> favorites = favoriteRepository.findByUserId(userId);
+        Set<Long> favoritedIds = favorites.stream()
                 .map(Favorite::getPolicyId)
                 .collect(Collectors.toSet());
 
-        return policyService.popular(limit + favoritedIds.size()).stream()
-                .filter(p -> !favoritedIds.contains(p.getPolicyId()))
-                .limit(limit)
-                .collect(Collectors.toList());
+        // 찜한 정책들의 카테고리 집계
+        Map<String, Long> categoryCounts = favorites.stream()
+                .map(f -> policyRepository.findById(f.getPolicyId()).orElse(null))
+                .filter(Objects::nonNull)
+                .map(policy -> policyMapper.toDto(policy).getCategory())
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(c -> c, Collectors.counting()));
+
+        List<PolicyDTO> recommended = new ArrayList<>();
+
+        // 가장 많이 찜한 카테고리 찾기
+        String topCategory = categoryCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        if (topCategory != null) {
+            PolicySearchDTO searchDTO = new PolicySearchDTO();
+            searchDTO.setCategory(topCategory);
+            searchDTO.setSize(limit + favoritedIds.size());
+
+            recommended = policyService.search(searchDTO).getContent().stream()
+                    .filter(p -> !favoritedIds.contains(p.getPolicyId()))
+                    .limit(limit)
+                    .collect(Collectors.toList());
+        }
+
+        // 같은 카테고리 정책이 부족하면(또는 찜한 정책이 없으면) 인기 정책으로 채움
+        if (recommended.size() < limit) {
+            Set<Long> excludeIds = recommended.stream()
+                    .map(PolicyDTO::getPolicyId)
+                    .collect(Collectors.toSet());
+            excludeIds.addAll(favoritedIds);
+
+            List<PolicyDTO> fillers = policyService.popular(limit + excludeIds.size()).stream()
+                    .filter(p -> !excludeIds.contains(p.getPolicyId()))
+                    .limit(limit - recommended.size())
+                    .collect(Collectors.toList());
+
+            recommended.addAll(fillers);
+        }
+
+        return recommended;
     }
 
     @Transactional

@@ -55,8 +55,9 @@
 
                 <div class="detail-action-box" aria-label="정책 바로가기 버튼">
                     <button type="button"
-                            class="primary-action"
-                            title="관심 정책 기능은 추후 연결됩니다.">
+                            class="primary-action policy-save-btn"
+                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
 
@@ -273,8 +274,9 @@
                     </span>
 
                     <button type="button"
-                            class="side-save-button"
-                            title="관심 정책 기능은 추후 연결됩니다.">
+                            class="side-save-button policy-save-btn"
+                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
                 </div>
@@ -290,6 +292,46 @@
         </div>
     </section>
 </main>
+<script>
+    function handleFavoriteClick(btn) {
+        const userId = btn.dataset.userId;
+        const policyId = btn.dataset.policyId;
+        addFavorite(userId, policyId, policyId);
+    }
+
+    function addFavorite(userId, policyId) {
+        if (!userId) {
+            alert("로그인 후 이용 가능합니다.");
+            return;
+        }
+
+        fetch(`/api/users/${userId}/favorites/${policyId}`, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok || response.status === 409) {
+                    markSaved(policyId);
+                    if (response.status === 409) {
+                        alert("이미 관심 정책으로 등록된 정책입니다.");
+                    } else {
+                        alert("관심 정책에 추가되었습니다!");
+                    }
+                } else {
+                    alert("오류가 발생했습니다.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function markSaved(policyId) {
+        document.querySelectorAll('.policy-save-btn').forEach(btn => {
+            if (btn.dataset.policyId === String(policyId)) {
+                btn.innerText = "찜 완료";
+                btn.disabled = true;
+            }
+        });
+    }
+</script>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>

@@ -115,6 +115,7 @@ public class PolicyController {
         );
 
         model.addAttribute("policy", policy);
+        model.addAttribute("user", currentUser);
         model.addAttribute(
                 "aiExplanation",
                 aiPolicyExplanationService.findApproved(policyId).orElse(null)

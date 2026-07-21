@@ -62,7 +62,7 @@
 
             <nav class="mypage-side-nav" aria-label="마이페이지 메뉴">
                 <a href="#profile-edit" class="active">회원정보 수정</a>
-                <a href="@{/favorites}">관심 정책</a>
+                <a href="#favorites">관심 정책</a>
                 <a href="#account-security">계정 보안</a>
             </nav>
         </aside>
@@ -368,6 +368,13 @@
 `).join('');
         } catch (error) { console.error('Error:', error); }
     }
+
+    document.querySelectorAll('.mypage-side-nav a').forEach(link => {
+        link.addEventListener('click', function () {
+            document.querySelectorAll('.mypage-side-nav a').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
 
     function removeFavorite(policyId, btn) {
         if(!confirm('관심 정책에서 삭제하시겠습니까?')) return;
