@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>마이페이지 | 서울 케어넥트</title>
 
     <link rel="stylesheet"
@@ -26,11 +27,17 @@
 
 <main class="mypage-page">
 
+    <!-- 상단 안내 영역 -->
     <section class="mypage-hero">
         <div class="mypage-hero-text">
             <span class="mypage-eyebrow">내 정보 관리</span>
+
             <h1>마이페이지</h1>
-            <p>회원정보와 관심 지역, 화면 표시 방식을 한 곳에서 관리하세요.</p>
+
+            <p>
+                회원정보와 관심 지역, 화면 표시 방식을
+                한 곳에서 관리하세요.
+            </p>
         </div>
 
         <div class="hero-status">
@@ -46,71 +53,202 @@
 
     <section class="mypage-layout">
 
+        <!-- 왼쪽 회원 요약 -->
         <aside class="profile-summary-card">
-            <div class="profile-avatar" th:text="${user.initial}">서</div>
+
+            <div class="profile-avatar"
+                 th:text="${user.initial}">
+                서
+            </div>
+
             <div class="profile-summary-title">
-                <h2 th:text="${user.name}">사용자</h2>
-                <span class="provider-badge" th:classappend="${#strings.toLowerCase(user.provider)}" th:text="${user.providerLabel}">이메일 가입</span>
+                <h2 th:text="${user.name}">
+                    사용자
+                </h2>
+
+                <span class="provider-badge"
+                      th:classappend="${#strings.toLowerCase(user.provider)}"
+                      th:text="${user.providerLabel}">
+                    이메일 가입
+                </span>
             </div>
 
             <dl class="profile-summary-list">
-                <div><dt>이메일</dt><dd th:text="${user.email}">user@example.com</dd></div>
-                <div><dt>관심 지역</dt><dd th:text="${user.district != null ? user.district : '미설정'}">미설정</dd></div>
-                <div><dt>연령대</dt><dd th:text="${user.ageGroup != null ? user.ageGroup : '미설정'}">미설정</dd></div>
-                <div><dt>가입일</dt><dd th:text="${user.createdAtText}">2026.07.10</dd></div>
+                <div>
+                    <dt>이메일</dt>
+                    <dd th:text="${user.email}">
+                        user@example.com
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>관심 지역</dt>
+                    <dd th:text="${user.district != null
+                            ? user.district
+                            : '미설정'}">
+                        미설정
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>연령대</dt>
+                    <dd th:text="${user.ageGroup != null
+                            ? user.ageGroup
+                            : '미설정'}">
+                        미설정
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>가입일</dt>
+                    <dd th:text="${user.createdAtText}">
+                        2026.07.10
+                    </dd>
+                </div>
             </dl>
 
-            <nav class="mypage-side-nav" aria-label="마이페이지 메뉴">
-                <a href="#profile-edit" class="active">회원정보 수정</a>
-                <a href="#favorites">관심 정책</a>
-                <a href="#account-security">계정 보안</a>
+            <nav class="mypage-side-nav"
+                 aria-label="마이페이지 메뉴">
+
+                <a href="#profile-edit" class="active">
+                    회원정보 수정
+                </a>
+
+                <a href="#accessibility-setting">
+                    화면 설정
+                </a>
+
+                <a href="#account-security">
+                    계정 보안
+                </a>
             </nav>
         </aside>
 
+        <!-- 오른쪽 콘텐츠 -->
         <div class="mypage-content">
 
             <!-- 회원정보 수정 -->
-            <section class="mypage-card" id="profile-edit">
+            <section class="mypage-card"
+                     id="profile-edit">
+
                 <div class="card-heading">
                     <div>
                         <span>PROFILE</span>
+
                         <h2>회원정보 수정</h2>
-                        <p>정책 추천과 서비스 이용에 사용할 기본 정보를 관리합니다.</p>
+
+                        <p>
+                            정책 추천과 서비스 이용에 사용할
+                            기본 정보를 관리합니다.
+                        </p>
                     </div>
-                    <span class="required-guide"><b>*</b> 필수 입력</span>
+
+                    <span class="required-guide">
+                        <b>*</b> 필수 입력
+                    </span>
                 </div>
 
-                <div class="result-message success" th:if="${profileSuccess}" th:text="${profileSuccess}">회원정보가 저장되었습니다.</div>
+                <div class="result-message success"
+                     th:if="${profileSuccess}"
+                     th:text="${profileSuccess}">
+                    회원정보가 저장되었습니다.
+                </div>
 
-                <form class="mypage-form" th:action="@{/mypage/profile}" th:object="${profileRequest}" method="post">
-                    <div class="form-alert error" th:if="${#fields.hasGlobalErrors()}">
-                        <p th:each="error : ${#fields.globalErrors()}" th:text="${error}">입력값을 확인해주세요.</p>
+                <form class="mypage-form"
+                      th:action="@{/mypage/profile}"
+                      th:object="${profileRequest}"
+                      method="post">
+
+                    <div class="form-alert error"
+                         th:if="${#fields.hasGlobalErrors()}">
+
+                        <p th:each="error : ${#fields.globalErrors()}"
+                           th:text="${error}">
+                            입력값을 확인해주세요.
+                        </p>
                     </div>
 
+                    <!-- 계정 정보 -->
                     <section class="form-section readonly-section">
                         <div class="form-section-heading">
-                            <div><h3>계정 정보</h3><p>로그인과 계정 식별에 사용되는 정보입니다.</p></div>
-                            <span class="section-badge">수정 불가</span>
-                        </div>
-                        <div class="form-grid two-col">
-                            <div class="mypage-field">
-                                <label for="email">이메일</label>
-                                <input id="email" type="email" th:value="${user.email}" readonly>
+                            <div>
+                                <h3>계정 정보</h3>
+                                <p>
+                                    로그인과 계정 식별에 사용되는 정보입니다.
+                                </p>
                             </div>
+
+                            <span class="section-badge">
+                                수정 불가
+                            </span>
+                        </div>
+
+                        <div class="form-grid two-col">
+
                             <div class="mypage-field">
-                                <label for="provider">가입 방식</label>
-                                <input id="provider" type="text" th:value="${user.providerLabel}" readonly>
+                                <label for="email">
+                                    이메일
+                                </label>
+
+                                <input id="email"
+                                       type="email"
+                                       th:value="${user.email}"
+                                       readonly>
+
+                                <small>
+                                    로그인 이메일은 변경할 수 없습니다.
+                                </small>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="provider">
+                                    가입 방식
+                                </label>
+
+                                <input id="provider"
+                                       type="text"
+                                       th:value="${user.providerLabel}"
+                                       readonly>
+
+                                <small>
+                                    최초 가입에 사용한 로그인 방식입니다.
+                                </small>
                             </div>
                         </div>
                     </section>
 
+                    <!-- 기본 정보 -->
                     <section class="form-section">
-                        <div class="form-section-heading"><div><h3>기본 정보</h3><p>이름, 연락처와 정책 추천 기준을 수정합니다.</p></div></div>
-                        <div class="form-grid two-col">
-                            <div class="mypage-field">
-                                <label for="name">이름 <em>*</em></label>
-                                <input id="name" type="text" th:field="*{name}" maxlength="50">
+                        <div class="form-section-heading">
+                            <div>
+                                <h3>기본 정보</h3>
+                                <p>
+                                    이름, 연락처와 정책 추천 기준을 수정합니다.
+                                </p>
                             </div>
+                        </div>
+
+                        <!-- 이름 / 연락처 -->
+                        <div class="form-grid two-col">
+
+                            <div class="mypage-field">
+                                <label for="name">
+                                    이름 <em>*</em>
+                                </label>
+
+                                <input id="name"
+                                       type="text"
+                                       th:field="*{name}"
+                                       maxlength="50"
+                                       placeholder="이름을 입력하세요">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('name')}"
+                                       th:errors="*{name}">
+                                    이름 오류
+                                </small>
+                            </div>
+
                             <div class="mypage-field">
                                 <label for="phone">
                                     연락처
@@ -307,90 +445,228 @@
                 </form>
             </section>
 
-            <!-- 관심 정책 -->
-            <section class="mypage-card" id="favorites">
-                <div class="card-heading compact">
-                    <div>
-                        <span>FAVORITES</span>
-                        <h2>관심 정책</h2>
-                        <p>관심 있는 정책과 돌봄 서비스를 모아서 확인하세요.</p>
-                    </div>
-                    <a th:href="@{/favorites}">전체보기 ›</a>
-                </div>
-                <div id="favorites-list" class="policy-card-list"></div>
-                ...
-                <p id="emptyFavoriteMessage" style="display:none; color:#6b7b99; font-weight:700; padding: 20px 0;">
-                    아직 찜한 정책이 없어요. 관심 있는 정책을 찜해보세요!
-                </p>
-            </section>
-
             <!-- 계정 보안 -->
-            <section class="mypage-card security-card" id="account-security">
+            <section class="mypage-card security-card"
+                     id="account-security">
+
                 <div class="card-heading compact">
                     <div>
                         <span>SECURITY</span>
+
                         <h2>계정 보안</h2>
-                        <p>비밀번호 변경과 회원 탈퇴를 관리합니다.</p>
+
+                        <p>
+                            비밀번호 변경과 회원 탈퇴를 관리합니다.
+                        </p>
                     </div>
                 </div>
-                <!-- 보안 관련 상세 폼은 그대로 유지 -->
+
+                <div class="result-message success"
+                     th:if="${passwordSuccess}"
+                     th:text="${passwordSuccess}">
+                    비밀번호가 변경되었습니다.
+                </div>
+
+                <div class="security-grid">
+
+                    <!-- 일반 회원 비밀번호 변경 -->
+                    <details class="security-item"
+                             th:if="${user.localAccount}">
+
+                        <summary>
+                            <span class="security-icon">
+                                PW
+                            </span>
+
+                            <span>
+                                <strong>비밀번호 변경</strong>
+
+                                <small>
+                                    현재 비밀번호 확인 후 변경합니다.
+                                </small>
+                            </span>
+
+                            <b>열기</b>
+                        </summary>
+
+                        <form class="security-form"
+                              th:action="@{/mypage/password}"
+                              th:object="${passwordRequest}"
+                              method="post">
+
+                            <div class="form-alert error"
+                                 th:if="${#fields.hasGlobalErrors()}">
+
+                                <p th:each="error : ${#fields.globalErrors()}"
+                                   th:text="${error}">
+                                    비밀번호 오류
+                                </p>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="currentPassword">
+                                    현재 비밀번호
+                                </label>
+
+                                <input id="currentPassword"
+                                       type="password"
+                                       th:field="*{currentPassword}"
+                                       autocomplete="current-password">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('currentPassword')}"
+                                       th:errors="*{currentPassword}">
+                                    비밀번호 오류
+                                </small>
+                            </div>
+
+                            <div class="form-grid two-col">
+
+                                <div class="mypage-field">
+                                    <label for="newPassword">
+                                        새 비밀번호
+                                    </label>
+
+                                    <input id="newPassword"
+                                           type="password"
+                                           th:field="*{newPassword}"
+                                           autocomplete="new-password"
+                                           placeholder="8자 이상 입력">
+
+                                    <small class="field-error"
+                                           th:if="${#fields.hasErrors('newPassword')}"
+                                           th:errors="*{newPassword}">
+                                        새 비밀번호 오류
+                                    </small>
+                                </div>
+
+                                <div class="mypage-field">
+                                    <label for="newPasswordConfirm">
+                                        새 비밀번호 확인
+                                    </label>
+
+                                    <input id="newPasswordConfirm"
+                                           type="password"
+                                           th:field="*{newPasswordConfirm}"
+                                           autocomplete="new-password">
+
+                                    <small class="field-error"
+                                           th:if="${#fields.hasErrors('newPasswordConfirm')}"
+                                           th:errors="*{newPasswordConfirm}">
+                                        비밀번호 확인 오류
+                                    </small>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                    class="button-primary small-button">
+                                비밀번호 변경
+                            </button>
+                        </form>
+                    </details>
+
+                    <!-- 소셜 회원 안내 -->
+                    <div class="security-item social-notice"
+                         th:unless="${user.localAccount}">
+
+                        <div class="social-notice-inner">
+                            <span class="security-icon">
+                                SNS
+                            </span>
+
+                            <span>
+                                <strong>소셜 로그인 계정</strong>
+
+                                <small th:text="|${user.providerLabel} 계정의 비밀번호는 해당 서비스에서 관리합니다.|">
+                                    소셜 계정에서 비밀번호를 관리합니다.
+                                </small>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 회원 탈퇴 -->
+                    <details class="security-item danger-item">
+
+                        <summary>
+                            <span class="security-icon danger">
+                                !
+                            </span>
+
+                            <span>
+                                <strong>회원 탈퇴</strong>
+
+                                <small>
+                                    계정을 비활성화하고 서비스 이용을 중단합니다.
+                                </small>
+                            </span>
+
+                            <b>열기</b>
+                        </summary>
+
+                        <form class="security-form"
+                              th:action="@{/mypage/withdraw}"
+                              th:object="${withdrawRequest}"
+                              method="post"
+                              onsubmit="return confirm('정말 회원 탈퇴를 진행하시겠습니까?');">
+
+                            <div class="form-alert error"
+                                 th:if="${#fields.hasGlobalErrors()}">
+
+                                <p th:each="error : ${#fields.globalErrors()}"
+                                   th:text="${error}">
+                                    회원 탈퇴 오류
+                                </p>
+                            </div>
+
+                            <div class="withdraw-warning">
+                                탈퇴 후 계정은 즉시 비활성화되며
+                                로그인이 제한됩니다.
+                            </div>
+
+                            <div class="mypage-field"
+                                 th:if="${user.localAccount}">
+
+                                <label for="withdrawPassword">
+                                    현재 비밀번호
+                                </label>
+
+                                <input id="withdrawPassword"
+                                       type="password"
+                                       th:field="*{currentPassword}"
+                                       autocomplete="current-password">
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="confirmText">
+                                    확인 문구
+                                    <span>‘탈퇴합니다’ 입력</span>
+                                </label>
+
+                                <input id="confirmText"
+                                       type="text"
+                                       th:field="*{confirmText}"
+                                       placeholder="탈퇴합니다">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('confirmText')}"
+                                       th:errors="*{confirmText}">
+                                    확인 문구 오류
+                                </small>
+                            </div>
+
+                            <button type="submit"
+                                    class="button-danger">
+                                회원 탈퇴
+                            </button>
+                        </form>
+                    </details>
+                </div>
             </section>
         </div>
     </section>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-
-<script th:inline="javascript">
-    const currentUserId = /*[[${user.userId}]]*/ 1;
-
-    async function loadFavorites() {
-        try {
-            const response = await fetch(`/api/users/${currentUserId}/favorites`);
-            const data = await response.json();
-            const container = document.getElementById('favorites-list');
-            const emptyMsg = document.getElementById('emptyFavoriteMessage');
-
-            if (data.length === 0) {
-                container.innerHTML = '';
-                emptyMsg.style.display = 'block';
-                return;
-            }
-            emptyMsg.style.display = 'none';
-            container.innerHTML = data.map(item => `
-    <div class="policy-card">
-        <div class="policy-card-body">
-            <span class="policy-card-category">${item.category}</span>
-            <h4 class="policy-card-title">${item.title}</h4>
-        </div>
-        <button class="policy-card-remove" onclick="removeFavorite(${item.policyId}, this)">삭제</button>
-    </div>
-`).join('');
-        } catch (error) { console.error('Error:', error); }
-    }
-
-    document.querySelectorAll('.mypage-side-nav a').forEach(link => {
-        link.addEventListener('click', function () {
-            document.querySelectorAll('.mypage-side-nav a').forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-
-    function removeFavorite(policyId, btn) {
-        if(!confirm('관심 정책에서 삭제하시겠습니까?')) return;
-        fetch(`/api/users/${currentUserId}/favorites/${policyId}`, { method: 'DELETE' })
-            .then(res => {
-                if (res.ok) {
-                    alert("삭제되었습니다.");
-                    btn.closest('.policy-card').remove();
-                    if(document.querySelectorAll('.policy-card').length === 0)
-                        document.getElementById('emptyFavoriteMessage').style.display = 'block';
-                }
-            });
-    }
-
-    loadFavorites();
-</script>
 
 </body>
 
