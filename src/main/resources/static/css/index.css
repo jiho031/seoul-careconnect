@@ -1393,6 +1393,8 @@
 .deadline-grid .policy-card .policy-status {
   width: 50px;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .deadline-grid .policy-card .policy-meta-label {
