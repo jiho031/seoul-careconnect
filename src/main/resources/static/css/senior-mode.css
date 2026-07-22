@@ -2221,3 +2221,53 @@ body.large-text-mode .policy-empty {
 body.large-text-mode .policy-result-card .summary {
   max-height: none;
 }
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-meta {
+  grid-template-columns:
+    max-content max-content 1px minmax(0, 1fr) !important;
+
+  column-gap: 9px;
+  row-gap: 0;
+  align-items: center;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-status {
+  width: auto !important;
+  min-width: 0;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-meta-label {
+  white-space: nowrap;
+}
+
+/* 신청 기간과 날짜 사이 구분선 복구 */
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-meta-divider {
+  display: block !important;
+  width: 1px;
+  height: 18px;
+  background: #cbdbea;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-date {
+  min-width: 0;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
