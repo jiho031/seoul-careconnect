@@ -223,7 +223,16 @@
           <div class="deadline-grid">
             <a class="policy-card"
                th:each="policy : ${closingSoonPolicies}"
-               th:href="@{|/policies/${policy.policyId}|}">
+               th:href="@{|/policies/${policy.policyId}|}"
+               th:attr="
+                   data-preview-title=${policy.title},
+                   data-preview-category=${policy.categoryLabel},
+                   data-preview-agency=${policy.agency},
+                   data-preview-region=${policy.regionDisplay},
+                   data-preview-target=${policy.target},
+                   data-preview-status=${policy.applyStatusLabel},
+                   data-preview-period=${policy.applyPeriod},
+                   aria-label=${policy.title}">
 
               <div class="policy-card-top">
                 <span class="policy-dday"
@@ -233,15 +242,16 @@
                 </span>
 
                 <strong class="policy-title"
-                        th:text="${policy.title}"
-                        th:title="${policy.title}">
+                        th:text="${policy.title}">
                   정책명
                 </strong>
               </div>
 
               <div class="policy-meta">
                 <span class="policy-status"
-                      th:text="${policy.applyStatusLabel}">
+                      th:text="${#strings.equals(policy.applyStatus, 'INFORMATION_ONLY')
+                          ? '공고 확인'
+                          : policy.applyStatusLabel}">
                   신청 가능
                 </span>
 
@@ -249,8 +259,7 @@
                 <span class="policy-meta-divider"></span>
 
                 <span class="policy-date"
-                      th:text="${policy.applyPeriod}"
-                      th:title="${policy.applyPeriod}">
+                      th:text="${policy.applyPeriod}">
                   공고 확인
                 </span>
               </div>
@@ -274,13 +283,21 @@
           <div class="recent-grid">
             <a class="recent-card"
                th:each="policy : ${recentPolicies}"
-               th:href="@{|/policies/${policy.policyId}|}">
+               th:href="@{|/policies/${policy.policyId}|}"
+               th:attr="
+                   data-preview-title=${policy.title},
+                   data-preview-category=${policy.categoryLabel},
+                   data-preview-agency=${policy.agency},
+                   data-preview-region=${policy.regionDisplay},
+                   data-preview-target=${policy.target},
+                   data-preview-status=${policy.applyStatusLabel},
+                   data-preview-period=${policy.applyPeriod},
+                   aria-label=${policy.title}">
 
               <em class="recent-category-icon"
                   th:classappend="${policy.category != null
         ? ' category-' + policy.category
         : ' category-default'}"
-                  th:title="${policy.categoryLabel}"
                   role="img"
                   th:attr="aria-label=${policy.categoryLabel}">
 
@@ -340,8 +357,7 @@
               </em>
 
               <span>
-                <b th:text="${policy.title}"
-                   th:title="${policy.title}">
+                <b th:text="${policy.title}">
                   정책명
                 </b>
 
