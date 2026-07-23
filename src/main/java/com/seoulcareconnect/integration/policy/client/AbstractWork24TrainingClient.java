@@ -128,6 +128,7 @@ abstract class AbstractWork24TrainingClient implements ExternalPolicyClient {
                 .district(classifier.district(address))
                 .startDate(dateParser.parseSingle(reader.firstText(item, "traStartDate", "TRA_START_DATE")))
                 .endDate(dateParser.parseSingle(reader.firstText(item, "traEndDate", "TRA_END_DATE")))
+                .applicationInfoAvailable(false)
                 .applyMethod("고용24 공식 페이지에서 신청")
                 .officialUrl(reader.firstText(item, "titleLink", "TITLE_LINK", "subTitleLink", "SUB_TITLE_LINK"))
                 .contact(reader.stripHtml(reader.joinNonBlank(" / ",

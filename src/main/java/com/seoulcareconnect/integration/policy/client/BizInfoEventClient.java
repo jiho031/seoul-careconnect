@@ -64,13 +64,20 @@ public class BizInfoEventClient implements ExternalPolicyClient {
     @Override
     public List<ExternalPolicyItem> fetch() {
         Map<String, Object> params = new LinkedHashMap<>();
+
         params.put("crtfcKey", apiKey);
         params.put("dataType", dataType);
         params.put("searchCnt", searchCount);
-        params.put("hashtags", hashtags);
         params.put("pageUnit", pageUnit);
         params.put("pageIndex", pageIndex);
-        params.put("searchLclasId", categoryCode);
+
+        if (hashtags != null && !hashtags.isBlank()) {
+            params.put("hashtags", hashtags.trim());
+        }
+
+        if (categoryCode != null && !categoryCode.isBlank()) {
+            params.put("searchLclasId", categoryCode.trim());
+        }
 
         String raw = api.get(url, params);
         JsonNode root = api.readJson(raw);
@@ -87,10 +94,37 @@ public class BizInfoEventClient implements ExternalPolicyClient {
         String title = reader.firstText(item, "nttNm", "title");
         String summary = reader.firstText(item, "nttCn", "description");
         String eventType = reader.firstText(item, "eventInfoTyNm", "eventType");
-        String category = reader.firstText(item, "pldirSportRealmLclasCodeNm", "lcategory");
-        String area = reader.firstText(item, "areaNm", "regionNm");
-        String agencyName = reader.firstText(item, "originEngnNm", "originOrg");
+        String category = reader.firstText(
+                item,
+                "pldirSportRealmLclasCodeNm",
+                "lcategory"
+        );
+
+        String area = reader.firstText(
+                item,
+                "areaNm",
+                "regionNm"
+        );
+
+        String target = reader.firstText(
+                item,
+                "trgetNm",
+                "target"
+        );
+
+        String agencyName = reader.firstText(
+                item,
+                "originEngnNm",
+                "originOrg"
+        );
+
         String reference = reader.firstText(item, "refrncNm");
+
+        String region = resolveEventRegion(
+                area,
+                title,
+                summary
+        );
 
         ExternalDateParser.DateRange receiptRange = dateParser.parseRange(
                 reader.firstText(item, "rceptPd")
@@ -101,15 +135,30 @@ public class BizInfoEventClient implements ExternalPolicyClient {
         );
 
         return ExternalPolicyItem.builder()
-                .sourceName(sourceName()).sourceBaseUrl(sourceBaseUrl())
+                .sourceName(sourceName())
+                .sourceBaseUrl(sourceBaseUrl())
                 .externalId(reader.firstText(item, "eventInfoId", "seq"))
                 .title(reader.stripHtml(title))
                 .agencyName(reader.stripHtml(agencyName))
                 .summary(reader.stripHtml(summary))
-                .category(classifier.category(PolicyCategory.EDUCATION, eventType, category, title, summary))
-                .target("중소기업 및 예비 창업자")
-                .region(area == null ? "서울특별시" : area)
-                .district(classifier.district(area, title, summary))
+                .category(classifier.category(
+                        PolicyCategory.EDUCATION,
+                        eventType,
+                        category,
+                        title,
+                        summary
+                ))
+                .target(reader.stripHtml(target))
+                .region(region)
+                .district(
+                        "서울특별시".equals(region)
+                                ? classifier.district(
+                                area,
+                                title,
+                                summary
+                        )
+                                : null
+                )
                 .startDate(receiptRange.startDate() != null
                         ? receiptRange.startDate() : eventRange.startDate())
                 .endDate(receiptRange.endDate() != null
@@ -125,5 +174,41 @@ public class BizInfoEventClient implements ExternalPolicyClient {
                 )))
                 .rawJson(rawJson).httpStatus(200)
                 .build();
+    }
+    private String resolveEventRegion(
+            String area,
+            String title,
+            String summary
+    ) {
+        String text = reader.joinNonBlank(
+                " ",
+                area,
+                title,
+                summary
+        );
+
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+
+        String normalized = text.replaceAll("\\s+", "");
+
+        if (normalized.contains("서울특별시")
+                || normalized.contains("서울시")
+                || normalized.contains("[서울]")) {
+            return "서울특별시";
+        }
+
+        if (normalized.contains("전국")
+                || normalized.contains("지역무관")
+                || normalized.contains("지역제한없음")) {
+            return "전국";
+        }
+
+        if (area != null && !area.isBlank()) {
+            return area.trim();
+        }
+
+        return null;
     }
 }
