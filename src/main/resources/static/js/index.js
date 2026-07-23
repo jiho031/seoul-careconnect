@@ -129,7 +129,13 @@ function initPopularPolicyPreview() {
         document.getElementById('popularPolicyPreview');
 
     const policyLinks =
-        document.querySelectorAll('.popular-policy-link');
+        document.querySelectorAll(
+            [
+                '.popular-policy-link',
+                '.deadline-grid .policy-card',
+                '.recent-grid .recent-card'
+            ].join(', ')
+        );
 
     const slider =
         document.querySelector('[data-drag-scroll]');

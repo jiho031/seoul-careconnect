@@ -155,13 +155,61 @@ public class PolicyMapper {
         return "공식 제공기관";
     }
 
-    private String resolveSummary(Policy policy, PolicyDetail detail) {
-        String value = null;
-        if (detail != null) {
-            value = firstNonBlank(detail.getBenefit(), detail.getContentText());
+    private String resolveSummary(
+            Policy policy,
+            PolicyDetail detail
+    ) {
+        if (isMyHomePolicy(policy)) {
+            String agency = resolveAgency(policy);
+            String title = valueOr(
+                    policy.getTitle(),
+                    "주거 지원 공고"
+            );
+
+            return shorten(
+                    agency
+                            + "에서 진행하는 "
+                            + title
+                            + "입니다. 세부 자격과 신청 조건은 공식 공고에서 확인해 주세요.",
+                    150
+            );
         }
-        value = firstNonBlank(value, policy.getTarget());
-        return shorten(valueOr(value, "상세 내용은 공식 공고를 확인해 주세요."), 150);
+
+        String value = null;
+
+        if (detail != null) {
+            value = firstNonBlank(
+                    detail.getBenefit(),
+                    detail.getContentText()
+            );
+        }
+
+        value = firstNonBlank(
+                value,
+                policy.getTarget()
+        );
+
+        return shorten(
+                valueOr(
+                        value,
+                        "상세 내용은 공식 공고를 확인해 주세요."
+                ),
+                150
+        );
+    }
+
+    private boolean isMyHomePolicy(
+            Policy policy
+    ) {
+        if (policy.getSource() == null) {
+            return false;
+        }
+
+        String sourceName =
+                policy.getSource().getSourceName();
+
+        return sourceName != null
+                && sourceName.startsWith("마이홈-");
     }
 
     private String ageGroupDisplay(String target) {
@@ -252,17 +300,24 @@ public class PolicyMapper {
 
     private List<String> splitLines(String text) {
         String value = normalizeBlock(text);
+
         if (value == null) {
             return new ArrayList<>();
         }
 
-        String normalized = value.replaceAll("(?<!^)(?<!\\n)(?=\\s*\\d{1,2}[.)]\\s*)", "\n");
-
-        return Arrays.stream(normalized.split("(?:\\r?\\n)+|[•·▪■]+"))
-                .map(v -> v.replaceAll("^\\s*\\d{1,2}[.)]\\s*", "").trim())
-                .filter(v -> !v.isBlank())
+        return Arrays.stream(
+                        value.split("(?:\\r?\\n)+|[•▪■]+")
+                )
+                .map(line -> line
+                        .replaceFirst(
+                                "^\\s*(?:[-–—]\\s+|\\d{1,2}[.)]\\s+)",
+                                ""
+                        )
+                        .trim()
+                )
+                .filter(line -> !line.isBlank())
                 .distinct()
-                .limit(20)
+                .limit(30)
                 .toList();
     }
 

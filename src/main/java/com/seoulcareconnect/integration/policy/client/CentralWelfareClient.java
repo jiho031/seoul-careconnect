@@ -106,7 +106,8 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                         "serviceKey", serviceKey,
                         "callTp", listCallType,
                         "pageNo", pageNo,
-                        "numOfRows", maxDetailCount
+                        "numOfRows", maxDetailCount,
+                        "srchKeyCode", "001"
                 )
         );
 
@@ -354,8 +355,7 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                 listItem,
                 "servStts",
                 "serviceStatus",
-                "status",
-                "onapPsbltYn"
+                "status"
         );
 
         String documents = first(
