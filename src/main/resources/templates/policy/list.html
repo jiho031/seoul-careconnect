@@ -7,6 +7,81 @@
     <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
     <link rel="stylesheet" th:href="@{/css/policy-list.css}" href="/css/policy-list.css">
     <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+    <!-- 신고 페이지(form.html)와 동일한 모달 디자인을 재사용 -->
+    <style>
+        .info-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 30, 50, 0.45);
+        }
+
+        .info-modal.is-open {
+            display: flex;
+        }
+
+        .info-modal-box {
+            width: min(360px, 100%);
+            padding: 34px 28px 28px;
+            border-radius: 22px;
+            background: #ffffff;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.25);
+        }
+
+        .info-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .info-modal-icon.success {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .info-modal-icon.notice {
+            background: #fdeeee;
+            color: #d64545;
+        }
+
+        .info-modal-box h3 {
+            margin: 0 0 8px;
+            color: #071947;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .info-modal-box p {
+            margin: 0 0 22px;
+            color: #65758e;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .info-modal-box button {
+            width: 100%;
+            padding: 13px;
+            border: 0;
+            border-radius: 12px;
+            background: #164ce0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
         ? 'large-text-mode'
@@ -308,7 +383,46 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<!-- 관심 정책 관련 안내 모달 (신고 페이지 모달과 동일한 디자인) -->
+<div class="info-modal" id="favoriteModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon" id="favoriteModalIcon">✓</div>
+        <h3 id="favoriteModalTitle">관심 정책에 추가되었습니다</h3>
+        <p id="favoriteModalMessage">마이페이지에서 관심 정책을 확인할 수 있어요.</p>
+        <button type="button" id="favoriteModalCloseButton">확인</button>
+    </div>
+</div>
+
 <script>
+    const favoriteModal = document.getElementById("favoriteModal");
+    const favoriteModalIcon = document.getElementById("favoriteModalIcon");
+    const favoriteModalTitle = document.getElementById("favoriteModalTitle");
+    const favoriteModalMessage = document.getElementById("favoriteModalMessage");
+    const favoriteModalCloseButton = document.getElementById("favoriteModalCloseButton");
+
+    function showFavoriteModal(type, title, message) {
+        favoriteModalIcon.textContent = type === "success" ? "✓" : "!";
+        favoriteModalIcon.className = "info-modal-icon " + (type === "success" ? "success" : "notice");
+        favoriteModalTitle.textContent = title;
+        favoriteModalMessage.textContent = message;
+
+        favoriteModal.classList.add("is-open");
+        favoriteModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeFavoriteModal() {
+        favoriteModal.classList.remove("is-open");
+        favoriteModal.setAttribute("aria-hidden", "true");
+    }
+
+    favoriteModalCloseButton.addEventListener("click", closeFavoriteModal);
+
+    favoriteModal.addEventListener("click", function (event) {
+        if (event.target === favoriteModal) {
+            closeFavoriteModal();
+        }
+    });
+
     function handleFavoriteClick(btn) {
         const userId = btn.dataset.userId;
         const policyId = btn.dataset.policyId;
@@ -317,7 +431,7 @@
 
     function addFavorite(userId, policyId, btn) {
         if (!userId) {
-            alert("로그인 후 이용 가능합니다.");
+            showFavoriteModal("notice", "로그인이 필요합니다", "로그인 후 이용 가능합니다.");
             return;
         }
 
@@ -326,16 +440,19 @@
         })
             .then(response => {
                 if (response.ok) {
-                    alert("관심 정책에 추가되었습니다!");
+                    showFavoriteModal("success", "관심 정책에 추가되었습니다", "마이페이지에서 관심 정책을 확인할 수 있어요.");
                     btn.innerText = "찜 완료";
                     btn.disabled = true;
                 } else if (response.status === 409) {
-                    alert("이미 관심 정책으로 등록된 정책입니다.");
+                    showFavoriteModal("notice", "이미 등록된 정책입니다", "이미 관심 정책으로 등록된 정책입니다.");
                 } else {
-                    alert("오류가 발생했습니다.");
+                    showFavoriteModal("notice", "오류가 발생했습니다", "잠시 후 다시 시도해주세요.");
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                showFavoriteModal("notice", "오류가 발생했습니다", "네트워크 상태를 확인 후 다시 시도해주세요.");
+            });
     }
 </script>
 <script th:src="@{/js/common.js}" src="/js/common.js"></script>

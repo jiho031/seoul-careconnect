@@ -1,0 +1,3 @@
+spring.application.name=seoul-careconnect
+
+spring.thymeleaf.cache=false

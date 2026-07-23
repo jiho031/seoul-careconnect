@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>마이페이지 | 서울 케어넥트</title>
@@ -16,12 +16,105 @@
           th:href="@{/css/mypage.css}"
           href="/css/mypage.css">
     <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+    <!-- 신고 페이지 / 정책 목록 페이지와 동일한 모달 디자인을 재사용 -->
+    <style>
+        .info-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 30, 50, 0.45);
+        }
+
+        .info-modal.is-open {
+            display: flex;
+        }
+
+        .info-modal-box {
+            width: min(360px, 100%);
+            padding: 34px 28px 28px;
+            border-radius: 22px;
+            background: #ffffff;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.25);
+        }
+
+        .info-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .info-modal-icon.success {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .info-modal-icon.notice {
+            background: #fdeeee;
+            color: #d64545;
+        }
+
+        .info-modal-box h3 {
+            margin: 0 0 8px;
+            color: #071947;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .info-modal-box p {
+            margin: 0 0 22px;
+            color: #65758e;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .info-modal-box button {
+            width: 100%;
+            padding: 13px;
+            border: 0;
+            border-radius: 12px;
+            background: #164ce0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .info-modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-modal-actions button {
+            flex: 1;
+        }
+
+        .info-modal-actions .info-modal-cancel {
+            background: #eef1f7;
+            color: #4a5a75;
+        }
+
+        .info-modal-actions .info-modal-danger {
+            background: #d64545;
+        }
+    </style>
 </head>
 
-<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+<body th:classappend="${#strings.equalsignorecase(currentuimode, 'large_text')
         ? 'large-text-mode'
         : ''}"
-      th:attr="data-ui-mode=${currentUiMode}">
+      th:attr="data-ui-mode=${currentuimode}">
 
 <div th:replace="~{fragments/nav :: nav}"></div>
 
@@ -43,7 +136,7 @@
         <div class="hero-status">
             <span>현재 화면 모드</span>
 
-            <strong th:text="${user.uiMode == 'LARGE_TEXT'}
+            <strong th:text="${user.uimode == 'large_text'}
                     ? '고령친화 모드'
                     : '일반 모드'">
                 일반 모드
@@ -67,8 +160,8 @@
                 </h2>
 
                 <span class="provider-badge"
-                      th:classappend="${#strings.toLowerCase(user.provider)}"
-                      th:text="${user.providerLabel}">
+                      th:classappend="${#strings.tolowercase(user.provider)}"
+                      th:text="${user.providerlabel}">
                     이메일 가입
                 </span>
             </div>
@@ -92,8 +185,8 @@
 
                 <div>
                     <dt>연령대</dt>
-                    <dd th:text="${user.ageGroup != null
-                            ? user.ageGroup
+                    <dd th:text="${user.agegroup != null
+                            ? user.agegroup
                             : '미설정'}">
                         미설정
                     </dd>
@@ -101,7 +194,7 @@
 
                 <div>
                     <dt>가입일</dt>
-                    <dd th:text="${user.createdAtText}">
+                    <dd th:text="${user.createdattext}">
                         2026.07.10
                     </dd>
                 </div>
@@ -112,6 +205,10 @@
 
                 <a href="#profile-edit" class="active">
                     회원정보 수정
+                </a>
+
+                <a href="#favorites">
+                    관심 정책
                 </a>
 
                 <a href="#accessibility-setting">
@@ -133,7 +230,7 @@
 
                 <div class="card-heading">
                     <div>
-                        <span>PROFILE</span>
+                        <span>profile</span>
 
                         <h2>회원정보 수정</h2>
 
@@ -149,20 +246,20 @@
                 </div>
 
                 <div class="result-message success"
-                     th:if="${profileSuccess}"
-                     th:text="${profileSuccess}">
+                     th:if="${profilesuccess}"
+                     th:text="${profilesuccess}">
                     회원정보가 저장되었습니다.
                 </div>
 
                 <form class="mypage-form"
                       th:action="@{/mypage/profile}"
-                      th:object="${profileRequest}"
+                      th:object="${profilerequest}"
                       method="post">
 
                     <div class="form-alert error"
-                         th:if="${#fields.hasGlobalErrors()}">
+                         th:if="${#fields.hasglobalerrors()}">
 
-                        <p th:each="error : ${#fields.globalErrors()}"
+                        <p th:each="error : ${#fields.globalerrors()}"
                            th:text="${error}">
                             입력값을 확인해주세요.
                         </p>
@@ -207,7 +304,7 @@
 
                                 <input id="provider"
                                        type="text"
-                                       th:value="${user.providerLabel}"
+                                       th:value="${user.providerlabel}"
                                        readonly>
 
                                 <small>
@@ -243,7 +340,7 @@
                                        placeholder="이름을 입력하세요">
 
                                 <small class="field-error"
-                                       th:if="${#fields.hasErrors('name')}"
+                                       th:if="${#fields.haserrors('name')}"
                                        th:errors="*{name}">
                                     이름 오류
                                 </small>
@@ -260,7 +357,7 @@
                                        placeholder="010-0000-0000">
 
                                 <small class="field-error"
-                                       th:if="${#fields.hasErrors('phone')}"
+                                       th:if="${#fields.haserrors('phone')}"
                                        th:errors="*{phone}">
                                     연락처 오류
                                 </small>
@@ -271,37 +368,37 @@
                         <div class="form-grid two-col">
 
                             <div class="mypage-field">
-                                <label for="birthYear">
+                                <label for="birthyear">
                                     출생연도 <em>*</em>
                                 </label>
 
-                                <input id="birthYear"
+                                <input id="birthyear"
                                        type="text"
                                        inputmode="numeric"
                                        maxlength="4"
-                                       th:field="*{birthYear}"
+                                       th:field="*{birthyear}"
                                        placeholder="예: 1972"
-                                       oninput="updateAgeGroup()">
+                                       oninput="updateagegroup()">
 
                                 <small>
                                     숫자 4자리로 입력해주세요.
                                 </small>
 
                                 <small class="field-error"
-                                       th:if="${#fields.hasErrors('birthYear')}"
-                                       th:errors="*{birthYear}">
+                                       th:if="${#fields.haserrors('birthyear')}"
+                                       th:errors="*{birthyear}">
                                     출생연도 오류
                                 </small>
                             </div>
 
                             <div class="mypage-field">
-                                <label for="ageGroup">
+                                <label for="agegroup">
                                     연령대
                                 </label>
 
-                                <input id="ageGroup"
+                                <input id="agegroup"
                                        type="text"
-                                       th:field="*{ageGroup}"
+                                       th:field="*{agegroup}"
                                        readonly>
 
                                 <small>
@@ -371,7 +468,7 @@
                                 </select>
 
                                 <small class="field-error"
-                                       th:if="${#fields.hasErrors('district')}"
+                                       th:if="${#fields.haserrors('district')}"
                                        th:errors="*{district}">
                                     관심 지역 오류
                                 </small>
@@ -396,8 +493,8 @@
 
                             <label class="ui-mode-option">
                                 <input type="radio"
-                                       th:field="*{uiMode}"
-                                       value="DEFAULT">
+                                       th:field="*{uimode}"
+                                       value="default">
 
                                 <span class="mode-check"></span>
 
@@ -410,8 +507,8 @@
 
                             <label class="ui-mode-option">
                                 <input type="radio"
-                                       th:field="*{uiMode}"
-                                       value="LARGE_TEXT">
+                                       th:field="*{uimode}"
+                                       value="large_text">
 
                                 <span class="mode-check"></span>
 
@@ -424,8 +521,8 @@
                         </div>
 
                         <small class="field-error"
-                               th:if="${#fields.hasErrors('uiMode')}"
-                               th:errors="*{uiMode}">
+                               th:if="${#fields.haserrors('uimode')}"
+                               th:errors="*{uimode}">
                             화면 모드 오류
                         </small>
                     </fieldset>
@@ -445,13 +542,44 @@
                 </form>
             </section>
 
+            <section class="mypage-card" id="favorites">
+
+                <div class="card-heading compact">
+                    <div>
+                        <span>favorites</span>
+                        <h2>관심 정책</h2>
+                        <p>관심 있는 정책을 모아 확인할 수 있습니다.</p>
+                    </div>
+
+                    <a th:href="@{/favorites}">
+                        전체보기 →
+                    </a>
+                </div>
+
+                <div
+                        id="favorites-list"
+                        class="policy-card-list">
+                </div>
+
+                <p
+                        id="emptyfavoritemessage"
+                        style="display:none;
+               color:#6b7b99;
+               font-weight:700;
+               padding:20px 0;">
+
+                    아직 관심 정책이 없습니다.
+                </p>
+
+            </section>
+
             <!-- 계정 보안 -->
             <section class="mypage-card security-card"
                      id="account-security">
 
                 <div class="card-heading compact">
                     <div>
-                        <span>SECURITY</span>
+                        <span>security</span>
 
                         <h2>계정 보안</h2>
 
@@ -462,8 +590,8 @@
                 </div>
 
                 <div class="result-message success"
-                     th:if="${passwordSuccess}"
-                     th:text="${passwordSuccess}">
+                     th:if="${passwordsuccess}"
+                     th:text="${passwordsuccess}">
                     비밀번호가 변경되었습니다.
                 </div>
 
@@ -471,11 +599,11 @@
 
                     <!-- 일반 회원 비밀번호 변경 -->
                     <details class="security-item"
-                             th:if="${user.localAccount}">
+                             th:if="${user.localaccount}">
 
                         <summary>
                             <span class="security-icon">
-                                PW
+                                pw
                             </span>
 
                             <span>
@@ -491,31 +619,31 @@
 
                         <form class="security-form"
                               th:action="@{/mypage/password}"
-                              th:object="${passwordRequest}"
+                              th:object="${passwordrequest}"
                               method="post">
 
                             <div class="form-alert error"
-                                 th:if="${#fields.hasGlobalErrors()}">
+                                 th:if="${#fields.hasglobalerrors()}">
 
-                                <p th:each="error : ${#fields.globalErrors()}"
+                                <p th:each="error : ${#fields.globalerrors()}"
                                    th:text="${error}">
                                     비밀번호 오류
                                 </p>
                             </div>
 
                             <div class="mypage-field">
-                                <label for="currentPassword">
+                                <label for="currentpassword">
                                     현재 비밀번호
                                 </label>
 
-                                <input id="currentPassword"
+                                <input id="currentpassword"
                                        type="password"
-                                       th:field="*{currentPassword}"
+                                       th:field="*{currentpassword}"
                                        autocomplete="current-password">
 
                                 <small class="field-error"
-                                       th:if="${#fields.hasErrors('currentPassword')}"
-                                       th:errors="*{currentPassword}">
+                                       th:if="${#fields.haserrors('currentpassword')}"
+                                       th:errors="*{currentpassword}">
                                     비밀번호 오류
                                 </small>
                             </div>
@@ -523,36 +651,36 @@
                             <div class="form-grid two-col">
 
                                 <div class="mypage-field">
-                                    <label for="newPassword">
+                                    <label for="newpassword">
                                         새 비밀번호
                                     </label>
 
-                                    <input id="newPassword"
+                                    <input id="newpassword"
                                            type="password"
-                                           th:field="*{newPassword}"
+                                           th:field="*{newpassword}"
                                            autocomplete="new-password"
                                            placeholder="8자 이상 입력">
 
                                     <small class="field-error"
-                                           th:if="${#fields.hasErrors('newPassword')}"
-                                           th:errors="*{newPassword}">
+                                           th:if="${#fields.haserrors('newpassword')}"
+                                           th:errors="*{newpassword}">
                                         새 비밀번호 오류
                                     </small>
                                 </div>
 
                                 <div class="mypage-field">
-                                    <label for="newPasswordConfirm">
+                                    <label for="newpasswordconfirm">
                                         새 비밀번호 확인
                                     </label>
 
-                                    <input id="newPasswordConfirm"
+                                    <input id="newpasswordconfirm"
                                            type="password"
-                                           th:field="*{newPasswordConfirm}"
+                                           th:field="*{newpasswordconfirm}"
                                            autocomplete="new-password">
 
                                     <small class="field-error"
-                                           th:if="${#fields.hasErrors('newPasswordConfirm')}"
-                                           th:errors="*{newPasswordConfirm}">
+                                           th:if="${#fields.haserrors('newpasswordconfirm')}"
+                                           th:errors="*{newpasswordconfirm}">
                                         비밀번호 확인 오류
                                     </small>
                                 </div>
@@ -567,17 +695,17 @@
 
                     <!-- 소셜 회원 안내 -->
                     <div class="security-item social-notice"
-                         th:unless="${user.localAccount}">
+                         th:unless="${user.localaccount}">
 
                         <div class="social-notice-inner">
                             <span class="security-icon">
-                                SNS
+                                sns
                             </span>
 
                             <span>
                                 <strong>소셜 로그인 계정</strong>
 
-                                <small th:text="|${user.providerLabel} 계정의 비밀번호는 해당 서비스에서 관리합니다.|">
+                                <small th:text="|${user.providerlabel} 계정의 비밀번호는 해당 서비스에서 관리합니다.|">
                                     소셜 계정에서 비밀번호를 관리합니다.
                                 </small>
                             </span>
@@ -604,15 +732,15 @@
                         </summary>
 
                         <form class="security-form"
+                              id="withdrawform"
                               th:action="@{/mypage/withdraw}"
-                              th:object="${withdrawRequest}"
-                              method="post"
-                              onsubmit="return confirm('정말 회원 탈퇴를 진행하시겠습니까?');">
+                              th:object="${withdrawrequest}"
+                              method="post">
 
                             <div class="form-alert error"
-                                 th:if="${#fields.hasGlobalErrors()}">
+                                 th:if="${#fields.hasglobalerrors()}">
 
-                                <p th:each="error : ${#fields.globalErrors()}"
+                                <p th:each="error : ${#fields.globalerrors()}"
                                    th:text="${error}">
                                     회원 탈퇴 오류
                                 </p>
@@ -624,32 +752,32 @@
                             </div>
 
                             <div class="mypage-field"
-                                 th:if="${user.localAccount}">
+                                 th:if="${user.localaccount}">
 
-                                <label for="withdrawPassword">
+                                <label for="withdrawpassword">
                                     현재 비밀번호
                                 </label>
 
-                                <input id="withdrawPassword"
+                                <input id="withdrawpassword"
                                        type="password"
-                                       th:field="*{currentPassword}"
+                                       th:field="*{currentpassword}"
                                        autocomplete="current-password">
                             </div>
 
                             <div class="mypage-field">
-                                <label for="confirmText">
+                                <label for="confirmtext">
                                     확인 문구
                                     <span>‘탈퇴합니다’ 입력</span>
                                 </label>
 
-                                <input id="confirmText"
+                                <input id="confirmtext"
                                        type="text"
-                                       th:field="*{confirmText}"
+                                       th:field="*{confirmtext}"
                                        placeholder="탈퇴합니다">
 
                                 <small class="field-error"
-                                       th:if="${#fields.hasErrors('confirmText')}"
-                                       th:errors="*{confirmText}">
+                                       th:if="${#fields.haserrors('confirmtext')}"
+                                       th:errors="*{confirmtext}">
                                     확인 문구 오류
                                 </small>
                             </div>
@@ -668,50 +796,290 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<!-- 관심 정책 삭제 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
+<div class="info-modal" id="favoriteconfirmmodal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon notice">!</div>
+        <h3>관심 정책에서 삭제하시겠습니까?</h3>
+        <p>삭제하면 목록에서 바로 사라지며, 다시 보려면 관심 등록을 새로 해야 해요.</p>
+        <div class="info-modal-actions">
+            <button type="button" id="favoriteconfirmcancelbutton" class="info-modal-cancel">취소</button>
+            <button type="button" id="favoriteconfirmokbutton" class="info-modal-danger">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 회원 탈퇴 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
+<div class="info-modal" id="withdrawconfirmmodal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon notice">!</div>
+        <h3>정말 회원 탈퇴를 진행하시겠습니까?</h3>
+        <p>탈퇴 후 계정은 즉시 비활성화되며 로그인이 제한됩니다.</p>
+        <div class="info-modal-actions">
+            <button type="button" id="withdrawconfirmcancelbutton" class="info-modal-cancel">취소</button>
+            <button type="button" id="withdrawconfirmokbutton" class="info-modal-danger">확인</button>
+        </div>
+    </div>
+</div>
+
 </body>
 
+<script th:inline="javascript">
+
+    const currentuserid = /*[[${user.userid}]]*/ 1;
+
+    let pendingremovepolicyid = null;
+    let pendingremovebutton = null;
+
+    document.addeventlistener("domcontentloaded", function () {
+
+        // ===========================
+        // 마이페이지 사이드 메뉴
+        // ===========================
+        const menulinks = document.queryselectorall(".mypage-side-nav a");
+
+        menulinks.foreach(link => {
+
+            link.addeventlistener("click", function (e) {
+
+                e.preventdefault();
+
+                // active 변경
+                menulinks.foreach(item => item.classlist.remove("active"));
+                this.classlist.add("active");
+
+                // 해당 위치로 이동
+                const target = document.queryselector(this.getattribute("href"));
+
+                if (target) {
+                    window.scrollto({
+                        top: target.offsettop - 100,
+                        behavior: "smooth"
+                    });
+                }
+
+            });
+
+        });
+
+        // 관심 정책 불러오기
+        loadfavorites();
+
+        // ===========================
+        // 관심 정책 삭제 확인 모달
+        // ===========================
+        const confirmmodal = document.getelementbyid("favoriteconfirmmodal");
+        const cancelbutton = document.getelementbyid("favoriteconfirmcancelbutton");
+        const okbutton = document.getelementbyid("favoriteconfirmokbutton");
+
+        cancelbutton.addeventlistener("click", closefavoriteconfirmmodal);
+
+        confirmmodal.addeventlistener("click", function (event) {
+            if (event.target === confirmmodal) {
+                closefavoriteconfirmmodal();
+            }
+        });
+
+        okbutton.addeventlistener("click", function () {
+            if (!pendingremovepolicyid) {
+                closefavoriteconfirmmodal();
+                return;
+            }
+
+            const policyid = pendingremovepolicyid;
+            const btn = pendingremovebutton;
+
+            fetch(`/api/users/${currentuserid}/favorites/${policyid}`, {
+                method: "delete"
+            }).then(res => {
+                if (res.ok && btn) {
+                    btn.closest(".policy-card").remove();
+
+                    if (document.queryselectorall(".policy-card").length === 0) {
+                        document.getelementbyid("emptyfavoritemessage").style.display = "block";
+                    }
+                }
+
+                closefavoriteconfirmmodal();
+            });
+        });
+
+        // ===========================
+        // 회원 탈퇴 확인 모달
+        // ===========================
+        const withdrawform = document.getelementbyid("withdrawform");
+        const withdrawconfirmmodal = document.getelementbyid("withdrawconfirmmodal");
+        const withdrawcancelbutton = document.getelementbyid("withdrawconfirmcancelbutton");
+        const withdrawokbutton = document.getelementbyid("withdrawconfirmokbutton");
+
+        function openwithdrawconfirmmodal() {
+            withdrawconfirmmodal.classlist.add("is-open");
+            withdrawconfirmmodal.setattribute("aria-hidden", "false");
+        }
+
+        function closewithdrawconfirmmodal() {
+            withdrawconfirmmodal.classlist.remove("is-open");
+            withdrawconfirmmodal.setattribute("aria-hidden", "true");
+        }
+
+        if (withdrawform) {
+            withdrawform.addeventlistener("submit", function (event) {
+                event.preventdefault();
+                openwithdrawconfirmmodal();
+            });
+        }
+
+        withdrawcancelbutton.addeventlistener("click", closewithdrawconfirmmodal);
+
+        withdrawconfirmmodal.addeventlistener("click", function (event) {
+            if (event.target === withdrawconfirmmodal) {
+                closewithdrawconfirmmodal();
+            }
+        });
+
+        withdrawokbutton.addeventlistener("click", function () {
+            closewithdrawconfirmmodal();
+            // form.submit()은 submit 이벤트 리스너를 다시 거치지 않으므로
+            // 여기서 안전하게 실제 제출을 진행한다.
+            withdrawform.submit();
+        });
+
+    });
+
+    function openfavoriteconfirmmodal() {
+        const modal = document.getelementbyid("favoriteconfirmmodal");
+        modal.classlist.add("is-open");
+        modal.setattribute("aria-hidden", "false");
+    }
+
+    function closefavoriteconfirmmodal() {
+        const modal = document.getelementbyid("favoriteconfirmmodal");
+        modal.classlist.remove("is-open");
+        modal.setattribute("aria-hidden", "true");
+        pendingremovepolicyid = null;
+        pendingremovebutton = null;
+    }
+
+    // ===========================
+    // 관심 정책 조회
+    // ===========================
+    async function loadfavorites() {
+
+        try {
+
+            const response =
+                await fetch(`/api/users/${currentuserid}/favorites`);
+
+            const data =
+                await response.json();
+
+            const container =
+                document.getelementbyid("favorites-list");
+
+            const empty =
+                document.getelementbyid("emptyfavoritemessage");
+
+            if (data.length === 0) {
+
+                container.innerhtml = "";
+
+                empty.style.display = "block";
+
+                return;
+            }
+
+            empty.style.display = "none";
+
+            container.innerhtml =
+                data.map(item => `
+
+<div class="policy-card">
+
+    <div class="policy-card-body">
+
+        <span class="policy-card-category">
+            ${item.category}
+        </span>
+
+        <h4 class="policy-card-title">
+            ${item.title}
+        </h4>
+
+    </div>
+
+    <button
+        class="policy-card-remove"
+        onclick="removefavorite(${item.policyid}, this)">
+        삭제
+    </button>
+
+</div>
+
+`).join("");
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+
+    }
+
+    // ===========================
+    // 관심 정책 삭제 (확인 모달을 먼저 띄운다)
+    // ===========================
+    function removefavorite(policyid, btn) {
+
+        pendingremovepolicyid = policyid;
+        pendingremovebutton = btn;
+        openfavoriteconfirmmodal();
+
+    }
+
+</script>
+
 <script>
-    function updateAgeGroup() {
-        const birthYearInput =
-            document.getElementById("birthYear");
+    function updateagegroup() {
+        const birthyearinput =
+            document.getelementbyid("birthyear");
 
-        const ageGroupInput =
-            document.getElementById("ageGroup");
+        const agegroupinput =
+            document.getelementbyid("agegroup");
 
-        if (!birthYearInput || !ageGroupInput) {
+        if (!birthyearinput || !agegroupinput) {
             return;
         }
 
-        const birthYear = Number(birthYearInput.value);
-        const currentYear = new Date().getFullYear();
+        const birthyear = number(birthyearinput.value);
+        const currentyear = new date().getfullyear();
 
         if (
-            !Number.isInteger(birthYear) ||
-            birthYear < 1900 ||
-            birthYear > currentYear
+            !number.isinteger(birthyear) ||
+            birthyear < 1900 ||
+            birthyear > currentyear
         ) {
-            ageGroupInput.value = "";
+            agegroupinput.value = "";
             return;
         }
 
-        const age = currentYear - birthYear;
+        const age = currentyear - birthyear;
 
         if (age <= 29) {
-            ageGroupInput.value = "20대 이하";
+            agegroupinput.value = "20대 이하";
         } else if (age <= 39) {
-            ageGroupInput.value = "30대";
+            agegroupinput.value = "30대";
         } else if (age <= 49) {
-            ageGroupInput.value = "40대";
+            agegroupinput.value = "40대";
         } else if (age <= 59) {
-            ageGroupInput.value = "50대";
+            agegroupinput.value = "50대";
         } else {
-            ageGroupInput.value = "60대 이상";
+            agegroupinput.value = "60대 이상";
         }
     }
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        updateAgeGroup
+    document.addeventlistener(
+        "domcontentloaded",
+        updateagegroup
     );
 </script>
 
