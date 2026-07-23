@@ -99,6 +99,7 @@
   <div class="session-timeout-modal"
        id="sessionTimeoutModal"
        sec:authorize="isAuthenticated()"
+       th:attr="data-remember-me=${rememberMeEnabled}"
        aria-hidden="true">
 
     <div class="session-timeout-backdrop"></div>
