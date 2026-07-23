@@ -92,12 +92,25 @@ public class Work24EmploymentProgramClient implements ExternalPolicyClient {
         String place = reader.firstText(item, "openPlcCont");
         String agencyName = reader.firstText(item, "orgNm");
 
-        String time = reader.joinNonBlank(" / ",
-                reader.firstText(item, "openTime"),
-                reader.firstText(item, "operationTime")
+        String startTime = reader.firstText(
+                item,
+                "openTime"
         );
 
-        String summary = reader.joinNonBlank("\n", target, place, time);
+        String operationTime = formatOperationTime(
+                reader.firstText(
+                        item,
+                        "operationTime"
+                )
+        );
+
+        String summary = reader.joinNonBlank(
+                "\n",
+                labeled("대상", target),
+                labeled("장소", place),
+                labeled("시작 시간", startTime),
+                labeled("운영 시간", operationTime)
+        );
         String region = place;
 
         if (place != null && (place.contains("온라인") || place.contains("비대면"))) {
@@ -126,4 +139,28 @@ public class Work24EmploymentProgramClient implements ExternalPolicyClient {
                 .rawXml(rawXml).httpStatus(200)
                 .build();
     }
+
+    private String labeled(
+            String label,
+            String value
+    ) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return label + ": " + value.trim();
+    }
+
+    private String formatOperationTime(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String cleaned = value.trim();
+
+        return cleaned.matches("\\d+(?:\\.\\d+)?")
+                ? cleaned + "시간"
+                : cleaned;
+    }
+
 }

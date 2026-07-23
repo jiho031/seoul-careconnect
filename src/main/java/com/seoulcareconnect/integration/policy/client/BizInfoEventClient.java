@@ -118,6 +118,12 @@ public class BizInfoEventClient implements ExternalPolicyClient {
                 "originOrg"
         );
 
+        String eventPeriod = reader.firstText(
+                item,
+                "BeginEndDe",
+                "eventPeriod"
+        );
+
         String reference = reader.firstText(item, "refrncNm");
 
         String region = resolveEventRegion(
@@ -167,10 +173,17 @@ public class BizInfoEventClient implements ExternalPolicyClient {
                 .officialUrl(reader.firstText(item, "originUrlAdres", "originUrl", "bizinfoUrl"))
                 .contact(reader.stripHtml(reader.joinNonBlank(" / ", agencyName, reference)))
                 .benefit(reader.stripHtml(summary))
-                .contentText(reader.stripHtml(reader.joinNonBlank("\n",
-                        summary, eventType,
-                        reader.firstText(item, "BeginEndDe", "eventPeriod"),
-                        agencyName
+                .contentText(reader.stripHtml(reader.joinNonBlank(
+                        "\n",
+                        eventType == null
+                                ? null
+                                : "행사 유형: " + eventType,
+                        eventPeriod == null
+                                ? null
+                                : "행사 기간: " + eventPeriod,
+                        agencyName == null
+                                ? null
+                                : "주관 기관: " + agencyName
                 )))
                 .rawJson(rawJson).httpStatus(200)
                 .build();

@@ -263,13 +263,27 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                 "benefit"
         );
 
-        String target = first(
+        String targetGroup = first(
                 detailItem,
                 listItem,
+                "trgterIndvdlNmArray",
                 "trgterIndvdlNm",
                 "trgterIndvdl",
                 "supportTarget",
                 "target"
+        );
+
+        String supportTarget = first(
+                detailItem,
+                listItem,
+                "sprtTrgtCn",
+                "supportTargetContent"
+        );
+
+        String target = reader.joinNonBlank(
+                "\n",
+                targetGroup,
+                supportTarget
         );
 
         String criteria = first(

@@ -219,7 +219,7 @@
                     <h2>신청 정보</h2>
                     <dl class="side-info-list">
                         <div>
-                            <dt>신청 기간</dt>
+                            <dt th:text="${policy.periodLabel}">신청 기간</dt>
                             <dd th:text="${policy.applyPeriod}">공고 확인</dd>
                         </div>
                         <div>
