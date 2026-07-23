@@ -240,13 +240,9 @@ public class KStartupAnnouncementClient implements ExternalPolicyClient {
                 "tel_no"
         );
 
-        String content = reader.joinNonBlank(
-                "\n",
-                field,
-                target,
-                summary,
-                method
-        );
+        String content = field == null
+                ? null
+                : "지원 분야: " + field;
 
         return ExternalPolicyItem.builder()
                 .sourceName(sourceName())
@@ -296,7 +292,7 @@ public class KStartupAnnouncementClient implements ExternalPolicyClient {
                         contactInfo
                 )))
                 .benefit(reader.stripHtml(summary))
-                .selectionCriteria(reader.stripHtml(target))
+                .selectionCriteria(null)
                 .requiredDocumentsText(null)
                 .contentText(reader.stripHtml(content))
                 .rawJson(rawJson)

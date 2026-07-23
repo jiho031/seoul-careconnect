@@ -166,9 +166,30 @@ public class PolicyUpsertService {
                 || compact.equals("n");
     }
 
-    private ApplyStatus resolveApplyStatus(ExternalPolicyItem item) {
+    private ApplyStatus resolveApplyStatus(
+            ExternalPolicyItem item
+    ) {
         if (!item.isApplicationInfoAvailable()) {
             return ApplyStatus.INFORMATION_ONLY;
+        }
+
+        LocalDate endDate = item.getEndDate();
+
+        if (endDate != null) {
+            long days = java.time.temporal.ChronoUnit.DAYS.between(
+                    today(),
+                    endDate
+            );
+
+            if (days < 0) {
+                return ApplyStatus.EXPIRED;
+            }
+
+            if (days <= Math.max(closingSoonDays, 1)) {
+                return ApplyStatus.CLOSING_SOON;
+            }
+
+            return ApplyStatus.OPEN;
         }
 
         if (dateParser.containsAlwaysText(
@@ -179,14 +200,9 @@ public class PolicyUpsertService {
             return ApplyStatus.ALWAYS;
         }
 
-        LocalDate endDate = item.getEndDate();
-        if (endDate == null) return ApplyStatus.OPEN;
-
-        long days = java.time.temporal.ChronoUnit.DAYS.between(today(), endDate);
-        if (days < 0) return ApplyStatus.EXPIRED;
-        if (days <= Math.max(closingSoonDays, 1)) return ApplyStatus.CLOSING_SOON;
         return ApplyStatus.OPEN;
     }
+
 
     private PolicyStatus resolvePolicyStatus(ExternalPolicyItem item, PolicyStatus existingStatus) {
         if (existingStatus == PolicyStatus.APPROVED

@@ -26,6 +26,7 @@ public class PolicyDetailDTO {
     private String regionDisplay;
     private String applyStatusLabel;
     private String dDayLabel;
+    private String periodLabel;
     private String applyPeriod;
     private String applyMethod;
     private String officialUrl;

@@ -22,7 +22,10 @@ public class ExternalPolicyClassifier {
     );
 
     private static final Pattern AGE_RANGE = Pattern.compile(
-            "(?:만\\s*)?(\\d{1,3})\\s*세?\\s*(?:~|-|–|부터)\\s*(?:만\\s*)?(\\d{1,3})\\s*세"
+            "(?:만\\s*)?(\\d{1,3})\\s*세\\s*"
+                    + "(?:(?:이상|초과)?\\s*(?:~|-|–)|부터)\\s*"
+                    + "(?:만\\s*)?(\\d{1,3})\\s*세\\s*"
+                    + "(?:이하|미만|까지)?"
     );
     private static final Pattern AGE_MIN = Pattern.compile(
             "(?:만\\s*)?(\\d{1,3})\\s*세\\s*(?:이상|초과|부터)"
@@ -61,33 +64,37 @@ public class ExternalPolicyClassifier {
         EnumSet<AgeGroup> groups = EnumSet.noneOf(AgeGroup.class);
 
         Matcher rangeMatcher = AGE_RANGE.matcher(value);
+        StringBuffer remaining = new StringBuffer();
+
         while (rangeMatcher.find()) {
             addOverlappingGroups(
                     groups,
                     Integer.parseInt(rangeMatcher.group(1)),
                     Integer.parseInt(rangeMatcher.group(2))
             );
+
+            rangeMatcher.appendReplacement(remaining, " ");
         }
 
-        Integer minAge = null;
-        Matcher minMatcher = AGE_MIN.matcher(value);
+        rangeMatcher.appendTail(remaining);
+
+        Matcher minMatcher = AGE_MIN.matcher(remaining.toString());
+
         while (minMatcher.find()) {
-            int found = Integer.parseInt(minMatcher.group(1));
-            minAge = minAge == null ? found : Math.min(minAge, found);
-        }
-
-        Integer maxAge = null;
-        Matcher maxMatcher = AGE_MAX.matcher(value);
-        while (maxMatcher.find()) {
-            int found = Integer.parseInt(maxMatcher.group(1));
-            maxAge = maxAge == null ? found : Math.max(maxAge, found);
-        }
-
-        if (minAge != null || maxAge != null) {
             addOverlappingGroups(
                     groups,
-                    minAge == null ? 0 : minAge,
-                    maxAge == null ? 120 : maxAge
+                    Integer.parseInt(minMatcher.group(1)),
+                    120
+            );
+        }
+
+        Matcher maxMatcher = AGE_MAX.matcher(remaining.toString());
+
+        while (maxMatcher.find()) {
+            addOverlappingGroups(
+                    groups,
+                    0,
+                    Integer.parseInt(maxMatcher.group(1))
             );
         }
 
@@ -128,7 +135,7 @@ public class ExternalPolicyClassifier {
         values.add(ageDisplay);
 
         String combined = combine(rawTarget, combine(extraTexts));
-        for (String keyword : List.of("구직자", "1인가구", "저소득층", "소상공인", "장애인", "돌봄가구")) {
+        for (String keyword : List.of("구직자", "1인가구", "저소득층", "소상공인", "창업자" , "장애인", "돌봄가구")) {
             if (matchesTargetKeyword(combined, keyword)) values.add(keyword);
         }
 
@@ -143,6 +150,7 @@ public class ExternalPolicyClassifier {
             case "1인가구" -> contains(value, "1인가구", "1인 가구", "독거");
             case "저소득층" -> contains(value, "저소득", "기초생활", "차상위", "생계급여", "중위소득");
             case "소상공인" -> contains(value, "소상공인", "자영업자", "중소기업", "사업자");
+            case "창업자" -> contains(value, "창업자", "예비창업", "창업기업", "스타트업", "창업 희망");
             case "장애인" -> contains(value, "장애인", "장애 정도", "장애 가구");
             case "돌봄가구" -> contains(value, "돌봄 가구", "보호자", "가족돌봄", "간병");
             default -> value.contains(keyword);
