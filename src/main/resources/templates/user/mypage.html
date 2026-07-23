@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>마이페이지 | 서울 케어넥트</title>
@@ -111,10 +111,10 @@
     </style>
 </head>
 
-<body th:classappend="${#strings.equalsignorecase(currentuimode, 'large_text')
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
         ? 'large-text-mode'
         : ''}"
-      th:attr="data-ui-mode=${currentuimode}">
+      th:attr="data-ui-mode=${currentUiMode}">
 
 <div th:replace="~{fragments/nav :: nav}"></div>
 
@@ -136,7 +136,7 @@
         <div class="hero-status">
             <span>현재 화면 모드</span>
 
-            <strong th:text="${user.uimode == 'large_text'}
+            <strong th:text="${user.uiMode == 'LARGE_TEXT'}
                     ? '고령친화 모드'
                     : '일반 모드'">
                 일반 모드
@@ -160,8 +160,8 @@
                 </h2>
 
                 <span class="provider-badge"
-                      th:classappend="${#strings.tolowercase(user.provider)}"
-                      th:text="${user.providerlabel}">
+                      th:classappend="${#strings.toLowerCase(user.provider)}"
+                      th:text="${user.providerLabel}">
                     이메일 가입
                 </span>
             </div>
@@ -185,8 +185,8 @@
 
                 <div>
                     <dt>연령대</dt>
-                    <dd th:text="${user.agegroup != null
-                            ? user.agegroup
+                    <dd th:text="${user.ageGroup != null
+                            ? user.ageGroup
                             : '미설정'}">
                         미설정
                     </dd>
@@ -194,7 +194,7 @@
 
                 <div>
                     <dt>가입일</dt>
-                    <dd th:text="${user.createdattext}">
+                    <dd th:text="${user.createdAtText}">
                         2026.07.10
                     </dd>
                 </div>
@@ -230,7 +230,7 @@
 
                 <div class="card-heading">
                     <div>
-                        <span>profile</span>
+                        <span>PROFILE</span>
 
                         <h2>회원정보 수정</h2>
 
@@ -246,20 +246,20 @@
                 </div>
 
                 <div class="result-message success"
-                     th:if="${profilesuccess}"
-                     th:text="${profilesuccess}">
+                     th:if="${profileSuccess}"
+                     th:text="${profileSuccess}">
                     회원정보가 저장되었습니다.
                 </div>
 
                 <form class="mypage-form"
                       th:action="@{/mypage/profile}"
-                      th:object="${profilerequest}"
+                      th:object="${profileRequest}"
                       method="post">
 
                     <div class="form-alert error"
-                         th:if="${#fields.hasglobalerrors()}">
+                         th:if="${#fields.hasGlobalErrors()}">
 
-                        <p th:each="error : ${#fields.globalerrors()}"
+                        <p th:each="error : ${#fields.globalErrors()}"
                            th:text="${error}">
                             입력값을 확인해주세요.
                         </p>
@@ -304,7 +304,7 @@
 
                                 <input id="provider"
                                        type="text"
-                                       th:value="${user.providerlabel}"
+                                       th:value="${user.providerLabel}"
                                        readonly>
 
                                 <small>
@@ -340,7 +340,7 @@
                                        placeholder="이름을 입력하세요">
 
                                 <small class="field-error"
-                                       th:if="${#fields.haserrors('name')}"
+                                       th:if="${#fields.hasErrors('name')}"
                                        th:errors="*{name}">
                                     이름 오류
                                 </small>
@@ -357,7 +357,7 @@
                                        placeholder="010-0000-0000">
 
                                 <small class="field-error"
-                                       th:if="${#fields.haserrors('phone')}"
+                                       th:if="${#fields.hasErrors('phone')}"
                                        th:errors="*{phone}">
                                     연락처 오류
                                 </small>
@@ -368,37 +368,37 @@
                         <div class="form-grid two-col">
 
                             <div class="mypage-field">
-                                <label for="birthyear">
+                                <label for="birthYear">
                                     출생연도 <em>*</em>
                                 </label>
 
-                                <input id="birthyear"
+                                <input id="birthYear"
                                        type="text"
                                        inputmode="numeric"
                                        maxlength="4"
-                                       th:field="*{birthyear}"
+                                       th:field="*{birthYear}"
                                        placeholder="예: 1972"
-                                       oninput="updateagegroup()">
+                                       oninput="updateAgeGroup()">
 
                                 <small>
                                     숫자 4자리로 입력해주세요.
                                 </small>
 
                                 <small class="field-error"
-                                       th:if="${#fields.haserrors('birthyear')}"
-                                       th:errors="*{birthyear}">
+                                       th:if="${#fields.hasErrors('birthYear')}"
+                                       th:errors="*{birthYear}">
                                     출생연도 오류
                                 </small>
                             </div>
 
                             <div class="mypage-field">
-                                <label for="agegroup">
+                                <label for="ageGroup">
                                     연령대
                                 </label>
 
-                                <input id="agegroup"
+                                <input id="ageGroup"
                                        type="text"
-                                       th:field="*{agegroup}"
+                                       th:field="*{ageGroup}"
                                        readonly>
 
                                 <small>
@@ -468,7 +468,7 @@
                                 </select>
 
                                 <small class="field-error"
-                                       th:if="${#fields.haserrors('district')}"
+                                       th:if="${#fields.hasErrors('district')}"
                                        th:errors="*{district}">
                                     관심 지역 오류
                                 </small>
@@ -493,8 +493,8 @@
 
                             <label class="ui-mode-option">
                                 <input type="radio"
-                                       th:field="*{uimode}"
-                                       value="default">
+                                       th:field="*{uiMode}"
+                                       value="DEFAULT">
 
                                 <span class="mode-check"></span>
 
@@ -507,8 +507,8 @@
 
                             <label class="ui-mode-option">
                                 <input type="radio"
-                                       th:field="*{uimode}"
-                                       value="large_text">
+                                       th:field="*{uiMode}"
+                                       value="LARGE_TEXT">
 
                                 <span class="mode-check"></span>
 
@@ -521,8 +521,8 @@
                         </div>
 
                         <small class="field-error"
-                               th:if="${#fields.haserrors('uimode')}"
-                               th:errors="*{uimode}">
+                               th:if="${#fields.hasErrors('uiMode')}"
+                               th:errors="*{uiMode}">
                             화면 모드 오류
                         </small>
                     </fieldset>
@@ -546,7 +546,7 @@
 
                 <div class="card-heading compact">
                     <div>
-                        <span>favorites</span>
+                        <span>FAVORITES</span>
                         <h2>관심 정책</h2>
                         <p>관심 있는 정책을 모아 확인할 수 있습니다.</p>
                     </div>
@@ -562,7 +562,7 @@
                 </div>
 
                 <p
-                        id="emptyfavoritemessage"
+                        id="emptyFavoriteMessage"
                         style="display:none;
                color:#6b7b99;
                font-weight:700;
@@ -579,7 +579,7 @@
 
                 <div class="card-heading compact">
                     <div>
-                        <span>security</span>
+                        <span>SECURITY</span>
 
                         <h2>계정 보안</h2>
 
@@ -590,8 +590,8 @@
                 </div>
 
                 <div class="result-message success"
-                     th:if="${passwordsuccess}"
-                     th:text="${passwordsuccess}">
+                     th:if="${passwordSuccess}"
+                     th:text="${passwordSuccess}">
                     비밀번호가 변경되었습니다.
                 </div>
 
@@ -599,11 +599,11 @@
 
                     <!-- 일반 회원 비밀번호 변경 -->
                     <details class="security-item"
-                             th:if="${user.localaccount}">
+                             th:if="${user.localAccount}">
 
                         <summary>
                             <span class="security-icon">
-                                pw
+                                PW
                             </span>
 
                             <span>
@@ -619,31 +619,31 @@
 
                         <form class="security-form"
                               th:action="@{/mypage/password}"
-                              th:object="${passwordrequest}"
+                              th:object="${passwordRequest}"
                               method="post">
 
                             <div class="form-alert error"
-                                 th:if="${#fields.hasglobalerrors()}">
+                                 th:if="${#fields.hasGlobalErrors()}">
 
-                                <p th:each="error : ${#fields.globalerrors()}"
+                                <p th:each="error : ${#fields.globalErrors()}"
                                    th:text="${error}">
                                     비밀번호 오류
                                 </p>
                             </div>
 
                             <div class="mypage-field">
-                                <label for="currentpassword">
+                                <label for="currentPassword">
                                     현재 비밀번호
                                 </label>
 
-                                <input id="currentpassword"
+                                <input id="currentPassword"
                                        type="password"
-                                       th:field="*{currentpassword}"
+                                       th:field="*{currentPassword}"
                                        autocomplete="current-password">
 
                                 <small class="field-error"
-                                       th:if="${#fields.haserrors('currentpassword')}"
-                                       th:errors="*{currentpassword}">
+                                       th:if="${#fields.hasErrors('currentPassword')}"
+                                       th:errors="*{currentPassword}">
                                     비밀번호 오류
                                 </small>
                             </div>
@@ -651,36 +651,36 @@
                             <div class="form-grid two-col">
 
                                 <div class="mypage-field">
-                                    <label for="newpassword">
+                                    <label for="newPassword">
                                         새 비밀번호
                                     </label>
 
-                                    <input id="newpassword"
+                                    <input id="newPassword"
                                            type="password"
-                                           th:field="*{newpassword}"
+                                           th:field="*{newPassword}"
                                            autocomplete="new-password"
                                            placeholder="8자 이상 입력">
 
                                     <small class="field-error"
-                                           th:if="${#fields.haserrors('newpassword')}"
-                                           th:errors="*{newpassword}">
+                                           th:if="${#fields.hasErrors('newPassword')}"
+                                           th:errors="*{newPassword}">
                                         새 비밀번호 오류
                                     </small>
                                 </div>
 
                                 <div class="mypage-field">
-                                    <label for="newpasswordconfirm">
+                                    <label for="newPasswordConfirm">
                                         새 비밀번호 확인
                                     </label>
 
-                                    <input id="newpasswordconfirm"
+                                    <input id="newPasswordConfirm"
                                            type="password"
-                                           th:field="*{newpasswordconfirm}"
+                                           th:field="*{newPasswordConfirm}"
                                            autocomplete="new-password">
 
                                     <small class="field-error"
-                                           th:if="${#fields.haserrors('newpasswordconfirm')}"
-                                           th:errors="*{newpasswordconfirm}">
+                                           th:if="${#fields.hasErrors('newPasswordConfirm')}"
+                                           th:errors="*{newPasswordConfirm}">
                                         비밀번호 확인 오류
                                     </small>
                                 </div>
@@ -695,17 +695,17 @@
 
                     <!-- 소셜 회원 안내 -->
                     <div class="security-item social-notice"
-                         th:unless="${user.localaccount}">
+                         th:unless="${user.localAccount}">
 
                         <div class="social-notice-inner">
                             <span class="security-icon">
-                                sns
+                                SNS
                             </span>
 
                             <span>
                                 <strong>소셜 로그인 계정</strong>
 
-                                <small th:text="|${user.providerlabel} 계정의 비밀번호는 해당 서비스에서 관리합니다.|">
+                                <small th:text="|${user.providerLabel} 계정의 비밀번호는 해당 서비스에서 관리합니다.|">
                                     소셜 계정에서 비밀번호를 관리합니다.
                                 </small>
                             </span>
@@ -732,15 +732,15 @@
                         </summary>
 
                         <form class="security-form"
-                              id="withdrawform"
+                              id="withdrawForm"
                               th:action="@{/mypage/withdraw}"
-                              th:object="${withdrawrequest}"
+                              th:object="${withdrawRequest}"
                               method="post">
 
                             <div class="form-alert error"
-                                 th:if="${#fields.hasglobalerrors()}">
+                                 th:if="${#fields.hasGlobalErrors()}">
 
-                                <p th:each="error : ${#fields.globalerrors()}"
+                                <p th:each="error : ${#fields.globalErrors()}"
                                    th:text="${error}">
                                     회원 탈퇴 오류
                                 </p>
@@ -752,32 +752,32 @@
                             </div>
 
                             <div class="mypage-field"
-                                 th:if="${user.localaccount}">
+                                 th:if="${user.localAccount}">
 
-                                <label for="withdrawpassword">
+                                <label for="withdrawPassword">
                                     현재 비밀번호
                                 </label>
 
-                                <input id="withdrawpassword"
+                                <input id="withdrawPassword"
                                        type="password"
-                                       th:field="*{currentpassword}"
+                                       th:field="*{currentPassword}"
                                        autocomplete="current-password">
                             </div>
 
                             <div class="mypage-field">
-                                <label for="confirmtext">
+                                <label for="confirmText">
                                     확인 문구
                                     <span>‘탈퇴합니다’ 입력</span>
                                 </label>
 
-                                <input id="confirmtext"
+                                <input id="confirmText"
                                        type="text"
-                                       th:field="*{confirmtext}"
+                                       th:field="*{confirmText}"
                                        placeholder="탈퇴합니다">
 
                                 <small class="field-error"
-                                       th:if="${#fields.haserrors('confirmtext')}"
-                                       th:errors="*{confirmtext}">
+                                       th:if="${#fields.hasErrors('confirmText')}"
+                                       th:errors="*{confirmText}">
                                     확인 문구 오류
                                 </small>
                             </div>
@@ -797,27 +797,27 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- 관심 정책 삭제 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
-<div class="info-modal" id="favoriteconfirmmodal" aria-hidden="true">
+<div class="info-modal" id="favoriteConfirmModal" aria-hidden="true">
     <div class="info-modal-box">
         <div class="info-modal-icon notice">!</div>
         <h3>관심 정책에서 삭제하시겠습니까?</h3>
         <p>삭제하면 목록에서 바로 사라지며, 다시 보려면 관심 등록을 새로 해야 해요.</p>
         <div class="info-modal-actions">
-            <button type="button" id="favoriteconfirmcancelbutton" class="info-modal-cancel">취소</button>
-            <button type="button" id="favoriteconfirmokbutton" class="info-modal-danger">확인</button>
+            <button type="button" id="favoriteConfirmCancelButton" class="info-modal-cancel">취소</button>
+            <button type="button" id="favoriteConfirmOkButton" class="info-modal-danger">확인</button>
         </div>
     </div>
 </div>
 
 <!-- 회원 탈퇴 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
-<div class="info-modal" id="withdrawconfirmmodal" aria-hidden="true">
+<div class="info-modal" id="withdrawConfirmModal" aria-hidden="true">
     <div class="info-modal-box">
         <div class="info-modal-icon notice">!</div>
         <h3>정말 회원 탈퇴를 진행하시겠습니까?</h3>
         <p>탈퇴 후 계정은 즉시 비활성화되며 로그인이 제한됩니다.</p>
         <div class="info-modal-actions">
-            <button type="button" id="withdrawconfirmcancelbutton" class="info-modal-cancel">취소</button>
-            <button type="button" id="withdrawconfirmokbutton" class="info-modal-danger">확인</button>
+            <button type="button" id="withdrawConfirmCancelButton" class="info-modal-cancel">취소</button>
+            <button type="button" id="withdrawConfirmOkButton" class="info-modal-danger">확인</button>
         </div>
     </div>
 </div>
@@ -826,34 +826,34 @@
 
 <script th:inline="javascript">
 
-    const currentuserid = /*[[${user.userid}]]*/ 1;
+    const currentUserId = /*[[${user.userId}]]*/ 1;
 
-    let pendingremovepolicyid = null;
-    let pendingremovebutton = null;
+    let pendingRemovePolicyId = null;
+    let pendingRemoveButton = null;
 
-    document.addeventlistener("domcontentloaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
 
         // ===========================
         // 마이페이지 사이드 메뉴
         // ===========================
-        const menulinks = document.queryselectorall(".mypage-side-nav a");
+        const menuLinks = document.querySelectorAll(".mypage-side-nav a");
 
-        menulinks.foreach(link => {
+        menuLinks.forEach(link => {
 
-            link.addeventlistener("click", function (e) {
+            link.addEventListener("click", function (e) {
 
-                e.preventdefault();
+                e.preventDefault();
 
                 // active 변경
-                menulinks.foreach(item => item.classlist.remove("active"));
-                this.classlist.add("active");
+                menuLinks.forEach(item => item.classList.remove("active"));
+                this.classList.add("active");
 
                 // 해당 위치로 이동
-                const target = document.queryselector(this.getattribute("href"));
+                const target = document.querySelector(this.getAttribute("href"));
 
                 if (target) {
-                    window.scrollto({
-                        top: target.offsettop - 100,
+                    window.scrollTo({
+                        top: target.offsetTop - 100,
                         behavior: "smooth"
                     });
                 }
@@ -863,125 +863,125 @@
         });
 
         // 관심 정책 불러오기
-        loadfavorites();
+        loadFavorites();
 
         // ===========================
         // 관심 정책 삭제 확인 모달
         // ===========================
-        const confirmmodal = document.getelementbyid("favoriteconfirmmodal");
-        const cancelbutton = document.getelementbyid("favoriteconfirmcancelbutton");
-        const okbutton = document.getelementbyid("favoriteconfirmokbutton");
+        const confirmModal = document.getElementById("favoriteConfirmModal");
+        const cancelButton = document.getElementById("favoriteConfirmCancelButton");
+        const okButton = document.getElementById("favoriteConfirmOkButton");
 
-        cancelbutton.addeventlistener("click", closefavoriteconfirmmodal);
+        cancelButton.addEventListener("click", closeFavoriteConfirmModal);
 
-        confirmmodal.addeventlistener("click", function (event) {
-            if (event.target === confirmmodal) {
-                closefavoriteconfirmmodal();
+        confirmModal.addEventListener("click", function (event) {
+            if (event.target === confirmModal) {
+                closeFavoriteConfirmModal();
             }
         });
 
-        okbutton.addeventlistener("click", function () {
-            if (!pendingremovepolicyid) {
-                closefavoriteconfirmmodal();
+        okButton.addEventListener("click", function () {
+            if (!pendingRemovePolicyId) {
+                closeFavoriteConfirmModal();
                 return;
             }
 
-            const policyid = pendingremovepolicyid;
-            const btn = pendingremovebutton;
+            const policyId = pendingRemovePolicyId;
+            const btn = pendingRemoveButton;
 
-            fetch(`/api/users/${currentuserid}/favorites/${policyid}`, {
-                method: "delete"
+            fetch(`/api/users/${currentUserId}/favorites/${policyId}`, {
+                method: "DELETE"
             }).then(res => {
                 if (res.ok && btn) {
                     btn.closest(".policy-card").remove();
 
-                    if (document.queryselectorall(".policy-card").length === 0) {
-                        document.getelementbyid("emptyfavoritemessage").style.display = "block";
+                    if (document.querySelectorAll(".policy-card").length === 0) {
+                        document.getElementById("emptyFavoriteMessage").style.display = "block";
                     }
                 }
 
-                closefavoriteconfirmmodal();
+                closeFavoriteConfirmModal();
             });
         });
 
         // ===========================
         // 회원 탈퇴 확인 모달
         // ===========================
-        const withdrawform = document.getelementbyid("withdrawform");
-        const withdrawconfirmmodal = document.getelementbyid("withdrawconfirmmodal");
-        const withdrawcancelbutton = document.getelementbyid("withdrawconfirmcancelbutton");
-        const withdrawokbutton = document.getelementbyid("withdrawconfirmokbutton");
+        const withdrawForm = document.getElementById("withdrawForm");
+        const withdrawConfirmModal = document.getElementById("withdrawConfirmModal");
+        const withdrawCancelButton = document.getElementById("withdrawConfirmCancelButton");
+        const withdrawOkButton = document.getElementById("withdrawConfirmOkButton");
 
-        function openwithdrawconfirmmodal() {
-            withdrawconfirmmodal.classlist.add("is-open");
-            withdrawconfirmmodal.setattribute("aria-hidden", "false");
+        function openWithdrawConfirmModal() {
+            withdrawConfirmModal.classList.add("is-open");
+            withdrawConfirmModal.setAttribute("aria-hidden", "false");
         }
 
-        function closewithdrawconfirmmodal() {
-            withdrawconfirmmodal.classlist.remove("is-open");
-            withdrawconfirmmodal.setattribute("aria-hidden", "true");
+        function closeWithdrawConfirmModal() {
+            withdrawConfirmModal.classList.remove("is-open");
+            withdrawConfirmModal.setAttribute("aria-hidden", "true");
         }
 
-        if (withdrawform) {
-            withdrawform.addeventlistener("submit", function (event) {
-                event.preventdefault();
-                openwithdrawconfirmmodal();
+        if (withdrawForm) {
+            withdrawForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                openWithdrawConfirmModal();
             });
         }
 
-        withdrawcancelbutton.addeventlistener("click", closewithdrawconfirmmodal);
+        withdrawCancelButton.addEventListener("click", closeWithdrawConfirmModal);
 
-        withdrawconfirmmodal.addeventlistener("click", function (event) {
-            if (event.target === withdrawconfirmmodal) {
-                closewithdrawconfirmmodal();
+        withdrawConfirmModal.addEventListener("click", function (event) {
+            if (event.target === withdrawConfirmModal) {
+                closeWithdrawConfirmModal();
             }
         });
 
-        withdrawokbutton.addeventlistener("click", function () {
-            closewithdrawconfirmmodal();
+        withdrawOkButton.addEventListener("click", function () {
+            closeWithdrawConfirmModal();
             // form.submit()은 submit 이벤트 리스너를 다시 거치지 않으므로
             // 여기서 안전하게 실제 제출을 진행한다.
-            withdrawform.submit();
+            withdrawForm.submit();
         });
 
     });
 
-    function openfavoriteconfirmmodal() {
-        const modal = document.getelementbyid("favoriteconfirmmodal");
-        modal.classlist.add("is-open");
-        modal.setattribute("aria-hidden", "false");
+    function openFavoriteConfirmModal() {
+        const modal = document.getElementById("favoriteConfirmModal");
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
     }
 
-    function closefavoriteconfirmmodal() {
-        const modal = document.getelementbyid("favoriteconfirmmodal");
-        modal.classlist.remove("is-open");
-        modal.setattribute("aria-hidden", "true");
-        pendingremovepolicyid = null;
-        pendingremovebutton = null;
+    function closeFavoriteConfirmModal() {
+        const modal = document.getElementById("favoriteConfirmModal");
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        pendingRemovePolicyId = null;
+        pendingRemoveButton = null;
     }
 
     // ===========================
     // 관심 정책 조회
     // ===========================
-    async function loadfavorites() {
+    async function loadFavorites() {
 
         try {
 
             const response =
-                await fetch(`/api/users/${currentuserid}/favorites`);
+                await fetch(`/api/users/${currentUserId}/favorites`);
 
             const data =
                 await response.json();
 
             const container =
-                document.getelementbyid("favorites-list");
+                document.getElementById("favorites-list");
 
             const empty =
-                document.getelementbyid("emptyfavoritemessage");
+                document.getElementById("emptyFavoriteMessage");
 
             if (data.length === 0) {
 
-                container.innerhtml = "";
+                container.innerHTML = "";
 
                 empty.style.display = "block";
 
@@ -990,7 +990,7 @@
 
             empty.style.display = "none";
 
-            container.innerhtml =
+            container.innerHTML =
                 data.map(item => `
 
 <div class="policy-card">
@@ -1009,7 +1009,7 @@
 
     <button
         class="policy-card-remove"
-        onclick="removefavorite(${item.policyid}, this)">
+        onclick="removeFavorite(${item.policyId}, this)">
         삭제
     </button>
 
@@ -1028,58 +1028,58 @@
     // ===========================
     // 관심 정책 삭제 (확인 모달을 먼저 띄운다)
     // ===========================
-    function removefavorite(policyid, btn) {
+    function removeFavorite(policyId, btn) {
 
-        pendingremovepolicyid = policyid;
-        pendingremovebutton = btn;
-        openfavoriteconfirmmodal();
+        pendingRemovePolicyId = policyId;
+        pendingRemoveButton = btn;
+        openFavoriteConfirmModal();
 
     }
 
 </script>
 
 <script>
-    function updateagegroup() {
-        const birthyearinput =
-            document.getelementbyid("birthyear");
+    function updateAgeGroup() {
+        const birthYearInput =
+            document.getElementById("birthYear");
 
-        const agegroupinput =
-            document.getelementbyid("agegroup");
+        const ageGroupInput =
+            document.getElementById("ageGroup");
 
-        if (!birthyearinput || !agegroupinput) {
+        if (!birthYearInput || !ageGroupInput) {
             return;
         }
 
-        const birthyear = number(birthyearinput.value);
-        const currentyear = new date().getfullyear();
+        const birthYear = Number(birthYearInput.value);
+        const currentYear = new Date().getFullYear();
 
         if (
-            !number.isinteger(birthyear) ||
-            birthyear < 1900 ||
-            birthyear > currentyear
+            !Number.isInteger(birthYear) ||
+            birthYear < 1900 ||
+            birthYear > currentYear
         ) {
-            agegroupinput.value = "";
+            ageGroupInput.value = "";
             return;
         }
 
-        const age = currentyear - birthyear;
+        const age = currentYear - birthYear;
 
         if (age <= 29) {
-            agegroupinput.value = "20대 이하";
+            ageGroupInput.value = "20대 이하";
         } else if (age <= 39) {
-            agegroupinput.value = "30대";
+            ageGroupInput.value = "30대";
         } else if (age <= 49) {
-            agegroupinput.value = "40대";
+            ageGroupInput.value = "40대";
         } else if (age <= 59) {
-            agegroupinput.value = "50대";
+            ageGroupInput.value = "50대";
         } else {
-            agegroupinput.value = "60대 이상";
+            ageGroupInput.value = "60대 이상";
         }
     }
 
-    document.addeventlistener(
-        "domcontentloaded",
-        updateagegroup
+    document.addEventListener(
+        "DOMContentLoaded",
+        updateAgeGroup
     );
 </script>
 
