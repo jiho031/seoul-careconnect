@@ -74,7 +74,9 @@ public class PolicyUpsertService {
             return false;
         }
 
-        if (item.getStartDate() != null && item.getStartDate().isAfter(today())) {
+        if (item.isApplicationInfoAvailable()
+                && item.getStartDate() != null
+                && item.getStartDate().isAfter(today())) {
             return false;
         }
 

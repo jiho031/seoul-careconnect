@@ -2151,7 +2151,6 @@ body.large-text-mode .hero-city {
   opacity: 0.4 !important;
   filter: blur(0.6px) !important;
 
-  /* 오른쪽과 아래쪽이 배경에 자연스럽게 섞이도록 처리 */
   -webkit-mask-image:
           linear-gradient(
                   to right,
@@ -2251,7 +2250,6 @@ body.large-text-mode
   white-space: nowrap;
 }
 
-/* 신청 기간과 날짜 사이 구분선 복구 */
 body.large-text-mode
 .deadline-grid
 .policy-card
