@@ -108,6 +108,40 @@
         .info-modal-actions .info-modal-danger {
             background: #d64545;
         }
+
+        /* 신고 내역 카드 상태 배지 */
+        .policy-card-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .policy-card-status.received {
+            background: #eef1f7;
+            color: #4a5a75;
+        }
+
+        .policy-card-status.in-review {
+            background: #fff4e5;
+            color: #b26b00;
+        }
+
+        .policy-card-status.completed {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .report-card-meta {
+            margin: 4px 0 0;
+            color: #6b7b99;
+            font-size: 13px;
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -209,6 +243,10 @@
 
                 <a href="#favorites">
                     관심 정책
+                </a>
+
+                <a href="#reports">
+                    신고 내역
                 </a>
 
                 <a href="#accessibility-setting">
@@ -573,6 +611,38 @@
 
             </section>
 
+            <!-- 신고 내역 -->
+            <section class="mypage-card" id="reports">
+
+                <div class="card-heading compact">
+                    <div>
+                        <span>REPORTS</span>
+                        <h2>오류·누락 신고 내역</h2>
+                        <p>내가 접수한 오류·누락 신고를 확인할 수 있습니다.</p>
+                    </div>
+
+                    <a th:href="@{/reports}">
+                        신고하러 가기 →
+                    </a>
+                </div>
+
+                <div
+                        id="reports-list"
+                        class="policy-card-list">
+                </div>
+
+                <p
+                        id="emptyReportMessage"
+                        style="display:none;
+               color:#6b7b99;
+               font-weight:700;
+               padding:20px 0;">
+
+                    아직 접수한 신고가 없습니다.
+                </p>
+
+            </section>
+
             <!-- 계정 보안 -->
             <section class="mypage-card security-card"
                      id="account-security">
@@ -865,6 +935,9 @@
         // 관심 정책 불러오기
         loadFavorites();
 
+        // 신고 내역 불러오기
+        loadReports();
+
         // ===========================
         // 관심 정책 삭제 확인 모달
         // ===========================
@@ -1034,6 +1107,89 @@
         pendingRemoveButton = btn;
         openFavoriteConfirmModal();
 
+    }
+
+    // ===========================
+    // 신고 내역 조회
+    // ===========================
+    async function loadReports() {
+
+        try {
+
+            const response =
+                await fetch(`/api/users/${currentUserId}/reports`);
+
+            const data =
+                await response.json();
+
+            const container =
+                document.getElementById("reports-list");
+
+            const empty =
+                document.getElementById("emptyReportMessage");
+
+            if (data.length === 0) {
+
+                container.innerHTML = "";
+
+                empty.style.display = "block";
+
+                return;
+            }
+
+            empty.style.display = "none";
+
+            container.innerHTML =
+                data.map(item => `
+
+<div class="policy-card">
+
+    <div class="policy-card-body">
+
+        <span class="policy-card-category">
+            ${item.reportTypeLabel}
+        </span>
+
+        <h4 class="policy-card-title">
+            ${item.title}
+        </h4>
+
+        <p class="report-card-meta" ${item.policyTitle ? "" : "style=\"display:none;\""}>
+            관련 정책: ${item.policyTitle ? item.policyTitle : ""}
+        </p>
+
+        <p class="report-card-meta">
+            접수일 ${formatReportDate(item.createdAt)}
+        </p>
+
+    </div>
+
+    <span class="policy-card-status ${reportStatusCssClass(item.status)}">
+        ${item.statusLabel}
+    </span>
+
+</div>
+
+`).join("");
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+
+    }
+
+    function reportStatusCssClass(status) {
+        if (status === "IN_REVIEW") return "in-review";
+        if (status === "COMPLETED") return "completed";
+        return "received";
+    }
+
+    function formatReportDate(createdAt) {
+        if (!createdAt) return "";
+        // "2026-07-23T13:38:50" 형태의 문자열에서 날짜 부분만 사용
+        return String(createdAt).slice(0, 10);
     }
 
 </script>

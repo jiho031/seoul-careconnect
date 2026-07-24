@@ -124,9 +124,7 @@ public class MissingPolicyReportController {
         return "redirect:/reports";
     }
 
-    // 아래 3개 메서드는 PolicyController.resolveCurrentUser와 동일한 로직입니다.
-    // (프로젝트에 공용 유틸/베이스 컨트롤러가 없어서 그대로 복제했습니다.
-    //  나중에 여러 컨트롤러에서 반복되면 공용 클래스로 뽑는 걸 추천드려요.)
+
     private User resolveCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("로그인이 필요합니다.");
