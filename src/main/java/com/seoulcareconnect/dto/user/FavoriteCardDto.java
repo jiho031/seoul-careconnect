@@ -18,6 +18,7 @@ public class FavoriteCardDto {
     private Long policyId;
     private String title;
     private String categoryLabel;
+    private String agency;
     private String summary;
     private String target;
     private String ageGroupDisplay;
