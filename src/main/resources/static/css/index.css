@@ -1393,6 +1393,8 @@
 .deadline-grid .policy-card .policy-status {
   width: 50px;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .deadline-grid .policy-card .policy-meta-label {
@@ -1838,5 +1840,40 @@ body.large-text-mode .popular-policy-preview-guide {
   body.large-text-mode .popular-policy-preview-info dt,
   body.large-text-mode .popular-policy-preview-info dd {
     font-size: 20px !important;
+  }
+}
+
+/* 메인 하단 정책 카드 최종 정렬 */
+.deadline-grid,
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+
+  /* 카드가 보드 전체 높이로 늘어나지 않도록 함 */
+  align-content: start;
+  grid-auto-rows: auto;
+}
+
+/* 카드 높이는 내용만큼만 사용 */
+.deadline-grid .policy-card,
+.recent-grid .recent-card {
+  width: 100%;
+  height: auto;
+  min-height: 108px;
+  align-self: start;
+  box-sizing: border-box;
+}
+
+/* 이전에 적용한 전체 너비 설정 무효화 */
+.deadline-grid .policy-card {
+  grid-column: auto;
+}
+
+/* 모바일에서는 한 줄에 한 개 */
+@media (max-width: 760px) {
+  .deadline-grid,
+  .recent-grid {
+    grid-template-columns: 1fr;
   }
 }

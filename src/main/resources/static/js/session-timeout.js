@@ -6,6 +6,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    const rememberMeEnabled =
+        modal.dataset.rememberMe === "true";
+
+    if (rememberMeEnabled) {
+        return;
+    }
+
     const remainingText =
         document.getElementById("sessionRemainingText");
 

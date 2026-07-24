@@ -197,6 +197,22 @@ input {
     background: #fff;
 }
 
+.detail-report-action {
+    border-color: #e7a2a2;
+    color: #c83f46;
+    background: #fff7f7;
+    transition:
+            background-color 0.18s ease,
+            border-color 0.18s ease,
+            color 0.18s ease;
+}
+
+.detail-report-action:hover {
+    border-color: #d64545;
+    color: #ffffff;
+    background: #d64545;
+}
+
 .ghost-action {
     border: 0;
     color: var(--muted);

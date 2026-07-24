@@ -24,7 +24,7 @@ public class Work24TrainingClient extends AbstractWork24TrainingClient {
             @Value("${app.external.work24.training.sort:ASC}") String sort,
             @Value("${app.external.work24.training.sort-column:2}") String sortColumn,
             @Value("${app.external.work24.training.max-pages:10}") int maxPages,
-            @Value("${app.policy.collect.lookback-days:365}") int lookbackDays,
+            @Value("${app.external.work24.training.lookback-days:0}") int lookbackDays,
             @Value("${app.policy.collect.future-months:12}") int futureMonths,
             @Value("${app.policy.sync.zone-id:Asia/Seoul}") String zoneId
     ) {

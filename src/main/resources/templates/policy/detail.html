@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,8 +57,9 @@
 
                 <div class="detail-action-box" aria-label="정책 바로가기 버튼">
                     <button type="button"
-                            class="primary-action"
-                            title="관심 정책 기능은 추후 연결됩니다.">
+                            class="primary-action policy-save-btn"
+                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
 
@@ -72,6 +75,11 @@
                           aria-disabled="true">
                         공식 사이트 정보 없음
                     </span>
+                    <a sec:authorize="hasRole('USER') and !hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+                       th:href="@{/reports(policyId=${policy.policyId})}"
+                       class="outline-action detail-report-action">
+                        누락 신고
+                    </a>
                 </div>
             </div>
         </div>
@@ -218,7 +226,7 @@
                     <h2>신청 정보</h2>
                     <dl class="side-info-list">
                         <div>
-                            <dt>신청 기간</dt>
+                            <dt th:text="${policy.periodLabel}">신청 기간</dt>
                             <dd th:text="${policy.applyPeriod}">공고 확인</dd>
                         </div>
                         <div>
@@ -273,8 +281,9 @@
                     </span>
 
                     <button type="button"
-                            class="side-save-button"
-                            title="관심 정책 기능은 추후 연결됩니다.">
+                            class="side-save-button policy-save-btn"
+                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
                 </div>
@@ -290,6 +299,46 @@
         </div>
     </section>
 </main>
+<script>
+    function handleFavoriteClick(btn) {
+        const userId = btn.dataset.userId;
+        const policyId = btn.dataset.policyId;
+        addFavorite(userId, policyId, policyId);
+    }
+
+    function addFavorite(userId, policyId) {
+        if (!userId) {
+            alert("로그인 후 이용 가능합니다.");
+            return;
+        }
+
+        fetch(`/api/users/${userId}/favorites/${policyId}`, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok || response.status === 409) {
+                    markSaved(policyId);
+                    if (response.status === 409) {
+                        alert("이미 관심 정책으로 등록된 정책입니다.");
+                    } else {
+                        alert("관심 정책에 추가되었습니다!");
+                    }
+                } else {
+                    alert("오류가 발생했습니다.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function markSaved(policyId) {
+        document.querySelectorAll('.policy-save-btn').forEach(btn => {
+            if (btn.dataset.policyId === String(policyId)) {
+                btn.innerText = "찜 완료";
+                btn.disabled = true;
+            }
+        });
+    }
+</script>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>

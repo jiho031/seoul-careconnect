@@ -2151,7 +2151,6 @@ body.large-text-mode .hero-city {
   opacity: 0.4 !important;
   filter: blur(0.6px) !important;
 
-  /* 오른쪽과 아래쪽이 배경에 자연스럽게 섞이도록 처리 */
   -webkit-mask-image:
           linear-gradient(
                   to right,
@@ -2216,4 +2215,57 @@ body.large-text-mode .policy-empty {
   padding: 18px 4px 8px !important;
   font-size: 18px !important;
   line-height: 1.7 !important;
+}
+
+body.large-text-mode .policy-result-card .summary {
+  max-height: none;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-meta {
+  grid-template-columns:
+    max-content max-content 1px minmax(0, 1fr) !important;
+
+  column-gap: 9px;
+  row-gap: 0;
+  align-items: center;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-status {
+  width: auto !important;
+  min-width: 0;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-meta-label {
+  white-space: nowrap;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-meta-divider {
+  display: block !important;
+  width: 1px;
+  height: 18px;
+  background: #cbdbea;
+}
+
+body.large-text-mode
+.deadline-grid
+.policy-card
+.policy-date {
+  min-width: 0;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }

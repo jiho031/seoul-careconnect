@@ -16,6 +16,133 @@
           th:href="@{/css/mypage.css}"
           href="/css/mypage.css">
     <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+    <!-- 신고 페이지 / 정책 목록 페이지와 동일한 모달 디자인을 재사용 -->
+    <style>
+        .info-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 30, 50, 0.45);
+        }
+
+        .info-modal.is-open {
+            display: flex;
+        }
+
+        .info-modal-box {
+            width: min(360px, 100%);
+            padding: 34px 28px 28px;
+            border-radius: 22px;
+            background: #ffffff;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.25);
+        }
+
+        .info-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .info-modal-icon.success {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .info-modal-icon.notice {
+            background: #fdeeee;
+            color: #d64545;
+        }
+
+        .info-modal-box h3 {
+            margin: 0 0 8px;
+            color: #071947;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .info-modal-box p {
+            margin: 0 0 22px;
+            color: #65758e;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .info-modal-box button {
+            width: 100%;
+            padding: 13px;
+            border: 0;
+            border-radius: 12px;
+            background: #164ce0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .info-modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-modal-actions button {
+            flex: 1;
+        }
+
+        .info-modal-actions .info-modal-cancel {
+            background: #eef1f7;
+            color: #4a5a75;
+        }
+
+        .info-modal-actions .info-modal-danger {
+            background: #d64545;
+        }
+
+        /* 신고 내역 카드 상태 배지 */
+        .policy-card-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .policy-card-status.received {
+            background: #eef1f7;
+            color: #4a5a75;
+        }
+
+        .policy-card-status.in-review {
+            background: #fff4e5;
+            color: #b26b00;
+        }
+
+        .policy-card-status.completed {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .report-card-meta {
+            margin: 4px 0 0;
+            color: #6b7b99;
+            font-size: 13px;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
@@ -112,6 +239,14 @@
 
                 <a href="#profile-edit" class="active">
                     회원정보 수정
+                </a>
+
+                <a href="#favorites">
+                    관심 정책
+                </a>
+
+                <a href="#reports">
+                    신고 내역
                 </a>
 
                 <a href="#accessibility-setting">
@@ -445,6 +580,69 @@
                 </form>
             </section>
 
+            <section class="mypage-card" id="favorites">
+
+                <div class="card-heading compact">
+                    <div>
+                        <span>FAVORITES</span>
+                        <h2>관심 정책</h2>
+                        <p>관심 있는 정책을 모아 확인할 수 있습니다.</p>
+                    </div>
+
+                    <a th:href="@{/favorites}">
+                        전체보기 →
+                    </a>
+                </div>
+
+                <div
+                        id="favorites-list"
+                        class="policy-card-list">
+                </div>
+
+                <p
+                        id="emptyFavoriteMessage"
+                        style="display:none;
+               color:#6b7b99;
+               font-weight:700;
+               padding:20px 0;">
+
+                    아직 관심 정책이 없습니다.
+                </p>
+
+            </section>
+
+            <!-- 신고 내역 -->
+            <section class="mypage-card" id="reports">
+
+                <div class="card-heading compact">
+                    <div>
+                        <span>REPORTS</span>
+                        <h2>오류·누락 신고 내역</h2>
+                        <p>내가 접수한 오류·누락 신고를 확인할 수 있습니다.</p>
+                    </div>
+
+                    <a th:href="@{/reports}">
+                        신고하러 가기 →
+                    </a>
+                </div>
+
+                <div
+                        id="reports-list"
+                        class="policy-card-list">
+                </div>
+
+                <p
+                        id="emptyReportMessage"
+                        style="display:none;
+               color:#6b7b99;
+               font-weight:700;
+               padding:20px 0;">
+
+                    아직 접수한 신고가 없습니다.
+                </p>
+
+            </section>
+
             <!-- 계정 보안 -->
             <section class="mypage-card security-card"
                      id="account-security">
@@ -511,8 +709,7 @@
                                 <input id="currentPassword"
                                        type="password"
                                        th:field="*{currentPassword}"
-                                       autocomplete="current-password"
-                                       required>
+                                       autocomplete="current-password">
 
                                 <small class="field-error"
                                        th:if="${#fields.hasErrors('currentPassword')}"
@@ -531,17 +728,8 @@
                                     <input id="newPassword"
                                            type="password"
                                            th:field="*{newPassword}"
-                                           minlength="8"
-                                           maxlength="20"
-                                           pattern="(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&amp;*])\S{8,20}"
-                                           title="8~20자의 영문, 숫자, 특수문자를 각각 1개 이상 포함해주세요."
                                            autocomplete="new-password"
-                                           placeholder="영문·숫자·특수문자 포함"
-                                           required>
-
-                                    <small class="password-guide">
-                                        8~20자의 영문, 숫자, 특수문자(!@#$%^&amp;*)를 각각 1개 이상 포함해주세요.
-                                    </small>
+                                           placeholder="8자 이상 입력">
 
                                     <small class="field-error"
                                            th:if="${#fields.hasErrors('newPassword')}"
@@ -558,11 +746,7 @@
                                     <input id="newPasswordConfirm"
                                            type="password"
                                            th:field="*{newPasswordConfirm}"
-                                           minlength="8"
-                                           maxlength="20"
-                                           autocomplete="new-password"
-                                           placeholder="새 비밀번호를 다시 입력하세요"
-                                           required>
+                                           autocomplete="new-password">
 
                                     <small class="field-error"
                                            th:if="${#fields.hasErrors('newPasswordConfirm')}"
@@ -618,10 +802,10 @@
                         </summary>
 
                         <form class="security-form"
+                              id="withdrawForm"
                               th:action="@{/mypage/withdraw}"
                               th:object="${withdrawRequest}"
-                              method="post"
-                              onsubmit="return confirm('정말 회원 탈퇴를 진행하시겠습니까?');">
+                              method="post">
 
                             <div class="form-alert error"
                                  th:if="${#fields.hasGlobalErrors()}">
@@ -682,7 +866,333 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<!-- 관심 정책 삭제 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
+<div class="info-modal" id="favoriteConfirmModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon notice">!</div>
+        <h3>관심 정책에서 삭제하시겠습니까?</h3>
+        <p>삭제하면 목록에서 바로 사라지며, 다시 보려면 관심 등록을 새로 해야 해요.</p>
+        <div class="info-modal-actions">
+            <button type="button" id="favoriteConfirmCancelButton" class="info-modal-cancel">취소</button>
+            <button type="button" id="favoriteConfirmOkButton" class="info-modal-danger">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 회원 탈퇴 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
+<div class="info-modal" id="withdrawConfirmModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon notice">!</div>
+        <h3>정말 회원 탈퇴를 진행하시겠습니까?</h3>
+        <p>탈퇴 후 계정은 즉시 비활성화되며 로그인이 제한됩니다.</p>
+        <div class="info-modal-actions">
+            <button type="button" id="withdrawConfirmCancelButton" class="info-modal-cancel">취소</button>
+            <button type="button" id="withdrawConfirmOkButton" class="info-modal-danger">확인</button>
+        </div>
+    </div>
+</div>
+
 </body>
+
+<script th:inline="javascript">
+
+    const currentUserId = /*[[${user.userId}]]*/ 1;
+
+    let pendingRemovePolicyId = null;
+    let pendingRemoveButton = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ===========================
+        // 마이페이지 사이드 메뉴
+        // ===========================
+        const menuLinks = document.querySelectorAll(".mypage-side-nav a");
+
+        menuLinks.forEach(link => {
+
+            link.addEventListener("click", function (e) {
+
+                e.preventDefault();
+
+                // active 변경
+                menuLinks.forEach(item => item.classList.remove("active"));
+                this.classList.add("active");
+
+                // 해당 위치로 이동
+                const target = document.querySelector(this.getAttribute("href"));
+
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 100,
+                        behavior: "smooth"
+                    });
+                }
+
+            });
+
+        });
+
+        // 관심 정책 불러오기
+        loadFavorites();
+
+        // 신고 내역 불러오기
+        loadReports();
+
+        // ===========================
+        // 관심 정책 삭제 확인 모달
+        // ===========================
+        const confirmModal = document.getElementById("favoriteConfirmModal");
+        const cancelButton = document.getElementById("favoriteConfirmCancelButton");
+        const okButton = document.getElementById("favoriteConfirmOkButton");
+
+        cancelButton.addEventListener("click", closeFavoriteConfirmModal);
+
+        confirmModal.addEventListener("click", function (event) {
+            if (event.target === confirmModal) {
+                closeFavoriteConfirmModal();
+            }
+        });
+
+        okButton.addEventListener("click", function () {
+            if (!pendingRemovePolicyId) {
+                closeFavoriteConfirmModal();
+                return;
+            }
+
+            const policyId = pendingRemovePolicyId;
+            const btn = pendingRemoveButton;
+
+            fetch(`/api/users/${currentUserId}/favorites/${policyId}`, {
+                method: "DELETE"
+            }).then(res => {
+                if (res.ok && btn) {
+                    btn.closest(".policy-card").remove();
+
+                    if (document.querySelectorAll(".policy-card").length === 0) {
+                        document.getElementById("emptyFavoriteMessage").style.display = "block";
+                    }
+                }
+
+                closeFavoriteConfirmModal();
+            });
+        });
+
+        // ===========================
+        // 회원 탈퇴 확인 모달
+        // ===========================
+        const withdrawForm = document.getElementById("withdrawForm");
+        const withdrawConfirmModal = document.getElementById("withdrawConfirmModal");
+        const withdrawCancelButton = document.getElementById("withdrawConfirmCancelButton");
+        const withdrawOkButton = document.getElementById("withdrawConfirmOkButton");
+
+        function openWithdrawConfirmModal() {
+            withdrawConfirmModal.classList.add("is-open");
+            withdrawConfirmModal.setAttribute("aria-hidden", "false");
+        }
+
+        function closeWithdrawConfirmModal() {
+            withdrawConfirmModal.classList.remove("is-open");
+            withdrawConfirmModal.setAttribute("aria-hidden", "true");
+        }
+
+        if (withdrawForm) {
+            withdrawForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                openWithdrawConfirmModal();
+            });
+        }
+
+        withdrawCancelButton.addEventListener("click", closeWithdrawConfirmModal);
+
+        withdrawConfirmModal.addEventListener("click", function (event) {
+            if (event.target === withdrawConfirmModal) {
+                closeWithdrawConfirmModal();
+            }
+        });
+
+        withdrawOkButton.addEventListener("click", function () {
+            closeWithdrawConfirmModal();
+            // form.submit()은 submit 이벤트 리스너를 다시 거치지 않으므로
+            // 여기서 안전하게 실제 제출을 진행한다.
+            withdrawForm.submit();
+        });
+
+    });
+
+    function openFavoriteConfirmModal() {
+        const modal = document.getElementById("favoriteConfirmModal");
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeFavoriteConfirmModal() {
+        const modal = document.getElementById("favoriteConfirmModal");
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        pendingRemovePolicyId = null;
+        pendingRemoveButton = null;
+    }
+
+    // ===========================
+    // 관심 정책 조회
+    // ===========================
+    async function loadFavorites() {
+
+        try {
+
+            const response =
+                await fetch(`/api/users/${currentUserId}/favorites`);
+
+            const data =
+                await response.json();
+
+            const container =
+                document.getElementById("favorites-list");
+
+            const empty =
+                document.getElementById("emptyFavoriteMessage");
+
+            if (data.length === 0) {
+
+                container.innerHTML = "";
+
+                empty.style.display = "block";
+
+                return;
+            }
+
+            empty.style.display = "none";
+
+            container.innerHTML =
+                data.map(item => `
+
+<div class="policy-card">
+
+    <div class="policy-card-body">
+
+        <span class="policy-card-category">
+            ${item.category}
+        </span>
+
+        <h4 class="policy-card-title">
+            ${item.title}
+        </h4>
+
+    </div>
+
+    <button
+        class="policy-card-remove"
+        onclick="removeFavorite(${item.policyId}, this)">
+        삭제
+    </button>
+
+</div>
+
+`).join("");
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+
+    }
+
+    // ===========================
+    // 관심 정책 삭제 (확인 모달을 먼저 띄운다)
+    // ===========================
+    function removeFavorite(policyId, btn) {
+
+        pendingRemovePolicyId = policyId;
+        pendingRemoveButton = btn;
+        openFavoriteConfirmModal();
+
+    }
+
+    // ===========================
+    // 신고 내역 조회
+    // ===========================
+    async function loadReports() {
+
+        try {
+
+            const response =
+                await fetch(`/api/users/${currentUserId}/reports`);
+
+            const data =
+                await response.json();
+
+            const container =
+                document.getElementById("reports-list");
+
+            const empty =
+                document.getElementById("emptyReportMessage");
+
+            if (data.length === 0) {
+
+                container.innerHTML = "";
+
+                empty.style.display = "block";
+
+                return;
+            }
+
+            empty.style.display = "none";
+
+            container.innerHTML =
+                data.map(item => `
+
+<div class="policy-card">
+
+    <div class="policy-card-body">
+
+        <span class="policy-card-category">
+            ${item.reportTypeLabel}
+        </span>
+
+        <h4 class="policy-card-title">
+            ${item.title}
+        </h4>
+
+        <p class="report-card-meta" ${item.policyTitle ? "" : "style=\"display:none;\""}>
+            관련 정책: ${item.policyTitle ? item.policyTitle : ""}
+        </p>
+
+        <p class="report-card-meta">
+            접수일 ${formatReportDate(item.createdAt)}
+        </p>
+
+    </div>
+
+    <span class="policy-card-status ${reportStatusCssClass(item.status)}">
+        ${item.statusLabel}
+    </span>
+
+</div>
+
+`).join("");
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+
+    }
+
+    function reportStatusCssClass(status) {
+        if (status === "IN_REVIEW") return "in-review";
+        if (status === "COMPLETED") return "completed";
+        return "received";
+    }
+
+    function formatReportDate(createdAt) {
+        if (!createdAt) return "";
+        // "2026-07-23T13:38:50" 형태의 문자열에서 날짜 부분만 사용
+        return String(createdAt).slice(0, 10);
+    }
+
+</script>
 
 <script>
     function updateAgeGroup() {
@@ -729,5 +1239,4 @@
     );
 </script>
 
-</body>
 </html>

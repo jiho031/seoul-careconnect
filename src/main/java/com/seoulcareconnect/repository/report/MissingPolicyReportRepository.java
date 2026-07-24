@@ -13,7 +13,6 @@ public interface MissingPolicyReportRepository
         JpaSpecificationExecutor<MissingPolicyReport> {
 
     // 마이페이지에서 내가 신고한 내역 조회
-    // User 엔티티의 PK 필명이 userId가 아니면 실제 필드명에 맞게 변경
     List<MissingPolicyReport> findByUser_UserIdOrderByCreatedAtDesc(Long userId);
 
     // 관리자 페이지 전체 목록

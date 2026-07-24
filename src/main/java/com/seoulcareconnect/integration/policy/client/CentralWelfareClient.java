@@ -106,7 +106,8 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                         "serviceKey", serviceKey,
                         "callTp", listCallType,
                         "pageNo", pageNo,
-                        "numOfRows", maxDetailCount
+                        "numOfRows", maxDetailCount,
+                        "srchKeyCode", "001"
                 )
         );
 
@@ -262,13 +263,27 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                 "benefit"
         );
 
-        String target = first(
+        String targetGroup = first(
                 detailItem,
                 listItem,
+                "trgterIndvdlNmArray",
                 "trgterIndvdlNm",
                 "trgterIndvdl",
                 "supportTarget",
                 "target"
+        );
+
+        String supportTarget = first(
+                detailItem,
+                listItem,
+                "sprtTrgtCn",
+                "supportTargetContent"
+        );
+
+        String target = reader.joinNonBlank(
+                "\n",
+                targetGroup,
+                supportTarget
         );
 
         String criteria = first(
@@ -354,8 +369,7 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                 listItem,
                 "servStts",
                 "serviceStatus",
-                "status",
-                "onapPsbltYn"
+                "status"
         );
 
         String documents = first(

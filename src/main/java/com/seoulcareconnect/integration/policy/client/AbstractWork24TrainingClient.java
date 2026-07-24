@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 abstract class AbstractWork24TrainingClient implements ExternalPolicyClient {
 
@@ -106,14 +107,12 @@ abstract class AbstractWork24TrainingClient implements ExternalPolicyClient {
         String id = reader.firstText(item, "trprId", "TRPR_ID");
         String degree = reader.firstText(item, "trprDegr", "TRPR_DEGR");
 
-        String cost = reader.joinNonBlank(" / ",
-                reader.firstText(item, "courseMan", "COURSE_MAN"),
-                reader.firstText(item, "realMan", "REAL_MAN")
-        );
+        String cost = buildTrainingCost(item);
 
-        String benefit = reader.joinNonBlank("\n",
+        String benefit = reader.joinNonBlank(
+                "\n",
                 summary,
-                cost == null ? null : "훈련비: " + cost
+                cost
         );
 
         return ExternalPolicyItem.builder()
@@ -128,15 +127,88 @@ abstract class AbstractWork24TrainingClient implements ExternalPolicyClient {
                 .district(classifier.district(address))
                 .startDate(dateParser.parseSingle(reader.firstText(item, "traStartDate", "TRA_START_DATE")))
                 .endDate(dateParser.parseSingle(reader.firstText(item, "traEndDate", "TRA_END_DATE")))
+                .applicationInfoAvailable(false)
                 .applyMethod("고용24 공식 페이지에서 신청")
                 .officialUrl(reader.firstText(item, "titleLink", "TITLE_LINK", "subTitleLink", "SUB_TITLE_LINK"))
-                .contact(reader.stripHtml(reader.joinNonBlank(" / ",
-                        reader.firstText(item, "telNo", "TEL_NO"),
-                        reader.firstText(item, "instCd", "INST_CD")
-                )))
+                .contact(reader.stripHtml(
+                        reader.firstText(item, "telNo", "TEL_NO")
+                ))
                 .benefit(reader.stripHtml(benefit))
                 .contentText(reader.stripHtml(reader.joinNonBlank("\n", benefit, address, target)))
                 .rawXml(rawXml).httpStatus(200)
                 .build();
     }
+
+    private String buildTrainingCost(JsonNode item) {
+        String courseFee = formatMoney(
+                reader.firstText(
+                        item,
+                        "courseMan",
+                        "COURSE_MAN"
+                )
+        );
+
+        String actualFee = formatMoney(
+                reader.firstText(
+                        item,
+                        "realMan",
+                        "REAL_MAN"
+                )
+        );
+
+        if (isZeroAmount(courseFee) && actualFee != null) {
+            return "훈련비: " + actualFee;
+        }
+
+        if (isZeroAmount(actualFee) && courseFee != null) {
+            return "훈련비: " + courseFee;
+        }
+
+        if (courseFee == null) {
+            return actualFee == null
+                    ? null
+                    : "훈련비: " + actualFee;
+        }
+
+        if (actualFee == null || courseFee.equals(actualFee)) {
+            return "훈련비: " + courseFee;
+        }
+
+        return reader.joinNonBlank(
+                "\n",
+                "수강비: " + courseFee,
+                "실제 훈련비: " + actualFee
+        );
+    }
+
+    private String formatMoney(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String digits = value.replaceAll("[^0-9]", "");
+
+        if (digits.isBlank()) {
+            return value.trim();
+        }
+
+        try {
+            long amount = Long.parseLong(digits);
+
+            return String.format(
+                    Locale.KOREA,
+                    "%,d원",
+                    amount
+            );
+        } catch (NumberFormatException ignored) {
+            return value.trim();
+        }
+    }
+
+    private boolean isZeroAmount(String value) {
+        return value != null
+                && value.replaceAll("[^0-9]", "")
+                .matches("0+");
+    }
+
 }

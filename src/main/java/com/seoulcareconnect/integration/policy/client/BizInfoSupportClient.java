@@ -64,22 +64,68 @@ public class BizInfoSupportClient implements ExternalPolicyClient {
     @Override
     public List<ExternalPolicyItem> fetch() {
         Map<String, Object> params = new LinkedHashMap<>();
+
         params.put("crtfcKey", apiKey);
         params.put("dataType", dataType);
         params.put("searchCnt", searchCount);
-        params.put("hashtags", hashtags);
         params.put("pageUnit", pageUnit);
         params.put("pageIndex", pageIndex);
-        params.put("searchLclasId", categoryCode);
+
+        // 선택 파라미터는 값이 존재할 때만 전달
+        if (hashtags != null && !hashtags.isBlank()) {
+            params.put("hashtags", hashtags.trim());
+        }
+
+        if (categoryCode != null && !categoryCode.isBlank()) {
+            params.put("searchLclasId", categoryCode.trim());
+        }
 
         String raw = api.get(url, params);
         JsonNode root = api.readJson(raw);
-        List<JsonNode> items = reader.findObjectsContainingAny(root, "pblancId", "seq").stream()
-                .filter(item -> reader.firstText(item, "pblancNm", "title") != null)
-                .toList();
+
+        String requestError = reader.firstText(
+                root,
+                "reqErr",
+                "error",
+                "errorMessage",
+                "message"
+        );
+
+        if (requestError != null && !requestError.isBlank()) {
+            throw new IllegalStateException(
+                    sourceName() + " API 오류: " + requestError
+            );
+        }
+
+        JsonNode jsonArray = root.get("jsonArray");
+
+        if (jsonArray == null || !jsonArray.isArray()) {
+            String preview = raw.replaceAll("\\s+", " ");
+
+            if (preview.length() > 1000) {
+                preview = preview.substring(0, 1000);
+            }
+
+            throw new IllegalStateException(
+                    sourceName()
+                            + " API 응답에 jsonArray 배열이 없습니다. 응답 일부: "
+                            + preview
+            );
+        }
 
         List<ExternalPolicyItem> result = new ArrayList<>();
-        items.forEach(item -> result.add(mapItem(item, raw)));
+
+        for (JsonNode item : jsonArray) {
+            String externalId = reader.firstText(item, "pblancId", "seq");
+            String title = reader.firstText(item, "pblancNm", "title");
+
+            if (externalId == null || title == null) {
+                continue;
+            }
+
+            result.add(mapItem(item, raw));
+        }
+
         return result;
     }
 
@@ -89,11 +135,40 @@ public class BizInfoSupportClient implements ExternalPolicyClient {
         String method = reader.firstText(item, "reqstMthPapersCn");
         String target = reader.firstText(item, "trgetNm");
         String category = reader.firstText(item, "pldirSportRealmLclasCodeNm", "lcategory");
-        String area = reader.firstText(item, "areaNm", "regionNm");
-        String hashTags = reader.firstText(item, "hashTags");
-        String agencyName = reader.joinNonBlank(" / ",
-                reader.firstText(item, "jrsdInsttNm", "author"),
-                reader.firstText(item, "excInsttNm")
+        String area = reader.firstText(
+                item,
+                "areaNm",
+                "regionNm"
+        );
+
+        String hashTags = reader.firstText(
+                item,
+                "hashtags",
+                "hashTags"
+        );
+
+        String jurisdiction = reader.firstText(
+                item,
+                "jrsdInsttNm",
+                "author"
+        );
+
+        String executingAgency = reader.firstText(
+                item,
+                "excInsttNm"
+        );
+
+        String region = resolveBizInfoRegion(
+                area,
+                title,
+                jurisdiction,
+                executingAgency
+        );
+
+        String agencyName = reader.joinNonBlank(
+                " / ",
+                jurisdiction,
+                executingAgency
         );
 
         ExternalDateParser.DateRange range = dateParser.parseRange(
@@ -108,8 +183,18 @@ public class BizInfoSupportClient implements ExternalPolicyClient {
                 .summary(reader.stripHtml(summary))
                 .category(classifier.category(PolicyCategory.JOB, category, title, summary))
                 .target(reader.stripHtml(target))
-                .region(area == null ? "서울특별시" : area)
-                .district(classifier.district(area, hashTags, title, summary))
+                .region(region)
+                .district(
+                        "서울특별시".equals(region)
+                                ? classifier.district(
+                                area,
+                                title,
+                                summary,
+                                jurisdiction,
+                                executingAgency
+                        )
+                                : null
+                )
                 .startDate(range.startDate())
                 .endDate(range.endDate())
                 .statusText(reader.firstText(item, "status", "rceptSttus"))
@@ -119,11 +204,118 @@ public class BizInfoSupportClient implements ExternalPolicyClient {
                         agencyName, reader.firstText(item, "refrncNm")
                 )))
                 .benefit(reader.stripHtml(summary))
-                .requiredDocumentsText(reader.stripHtml(method))
-                .contentText(reader.stripHtml(reader.joinNonBlank("\n",
-                        summary, target, method, agencyName, hashTags
+                .requiredDocumentsText(null)
+                .contentText(reader.stripHtml(reader.joinNonBlank(
+                        "\n",
+                        summary,
+                        target,
+                        method
                 )))
-                .rawJson(rawJson).httpStatus(200)
+                .rawJson(rawJson)
+                .httpStatus(200)
                 .build();
+    }
+    private String resolveBizInfoRegion(String... values) {
+        String text = reader.joinNonBlank(" ", values);
+
+        if (text == null || text.isBlank()) {
+            return "전국";
+        }
+
+        String normalized = text.replaceAll("\\s+", "");
+
+        if (containsAny(normalized, "서울특별시", "서울시", "[서울]")) {
+            return "서울특별시";
+        }
+
+        if (containsAny(normalized, "경기도", "[경기]")) {
+            return "경기도";
+        }
+
+        if (containsAny(normalized, "인천광역시", "[인천]")) {
+            return "인천광역시";
+        }
+
+        if (containsAny(normalized, "부산광역시", "[부산]")) {
+            return "부산광역시";
+        }
+
+        if (containsAny(normalized, "대구광역시", "[대구]")) {
+            return "대구광역시";
+        }
+
+        if (containsAny(normalized, "광주광역시", "[광주]", "[전남광주]")) {
+            return "광주광역시";
+        }
+
+        if (containsAny(normalized, "대전광역시", "[대전]")) {
+            return "대전광역시";
+        }
+
+        if (containsAny(normalized, "울산광역시", "[울산]")) {
+            return "울산광역시";
+        }
+
+        if (containsAny(normalized, "세종특별자치시", "[세종]")) {
+            return "세종특별자치시";
+        }
+
+        if (containsAny(
+                normalized,
+                "강원특별자치도",
+                "강원도",
+                "강원영동",
+                "영동권",
+                "[강원]"
+        )) {
+            return "강원특별자치도";
+        }
+
+        if (containsAny(normalized, "충청북도", "[충북]")) {
+            return "충청북도";
+        }
+
+        if (containsAny(normalized, "충청남도", "[충남]")) {
+            return "충청남도";
+        }
+
+        if (containsAny(normalized, "전북특별자치도", "전라북도", "[전북]")) {
+            return "전북특별자치도";
+        }
+
+        if (containsAny(normalized, "전라남도", "[전남]")) {
+            return "전라남도";
+        }
+
+        if (containsAny(normalized, "경상북도", "[경북]")) {
+            return "경상북도";
+        }
+
+        if (containsAny(normalized, "경상남도", "[경남]")) {
+            return "경상남도";
+        }
+
+        if (containsAny(normalized, "제주특별자치도", "제주도", "[제주]")) {
+            return "제주특별자치도";
+        }
+
+        /*
+         * 지역 제한이 확인되지 않는 중앙부처 사업은
+         * 서울 사용자도 신청 가능한 전국 사업으로 처리합니다.
+         */
+        return "전국";
+    }
+
+    private boolean containsAny(
+            String text,
+            String... keywords
+    ) {
+        for (String keyword : keywords) {
+            if (text.contains(keyword)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
