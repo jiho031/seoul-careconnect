@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,6 +75,11 @@
                           aria-disabled="true">
                         공식 사이트 정보 없음
                     </span>
+                    <a sec:authorize="hasRole('USER') and !hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+                       th:href="@{/reports(policyId=${policy.policyId})}"
+                       class="outline-action detail-report-action">
+                        누락 신고
+                    </a>
                 </div>
             </div>
         </div>
