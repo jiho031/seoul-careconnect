@@ -88,6 +88,7 @@ public class FavoriteService {
                     .policyId(f.getPolicyId())
                     .title(dto.getTitle())
                     .categoryLabel(dto.getCategoryLabel())
+                    .agency(dto.getAgency())
                     .summary(dto.getSummary())
                     .target(dto.getTarget())
                     .ageGroupDisplay(dto.getAgeGroupDisplay())
