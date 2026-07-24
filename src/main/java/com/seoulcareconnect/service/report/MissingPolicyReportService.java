@@ -1,5 +1,9 @@
+// 실제 프로젝트 경로: src/main/java/com/seoulcareconnect/service/report/MissingPolicyReportService.java
+// [수정] getMyReports()가 엔티티를 그대로 반환하던 것을, 마이페이지 카드 표시용
+// MissingPolicyReportCardDto 리스트를 반환하도록 변경했습니다. (FavoriteService.getFavoriteCards()와 동일한 패턴)
 package com.seoulcareconnect.service.report;
 
+import com.seoulcareconnect.dto.report.MissingPolicyReportCardDto;
 import com.seoulcareconnect.dto.report.MissingPolicyReportRequestDto;
 import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.entity.report.MissingPolicyReport;
@@ -14,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +28,9 @@ public class MissingPolicyReportService {
     private final MissingPolicyReportRepository missingPolicyReportRepository;
     private final UserRepository userRepository;
     private final PolicyRepository policyRepository;
-
     @Transactional
     public Long submitReport(MissingPolicyReportRequestDto requestDto) {
-        // userId는 클라이언트(hidden input)에서 넘어오는 값이라 위조 가능성이 있어
-        // 실제 존재하는 회원인지 조회로 검증합니다.
+
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
 
@@ -47,7 +50,7 @@ public class MissingPolicyReportService {
         return missingPolicyReportRepository.save(report).getReportId();
     }
 
-    // 엔티티에 policyName/region 전용 컬럼이 없어서 상세 설명 앞에 붙여서 저장합니다.
+
     private String buildContent(MissingPolicyReportRequestDto requestDto) {
         StringBuilder sb = new StringBuilder();
         if (requestDto.getPolicyName() != null && !requestDto.getPolicyName().isBlank()) {
@@ -60,8 +63,49 @@ public class MissingPolicyReportService {
         return sb.toString();
     }
 
-    // 마이페이지 등에서 "내가 신고한 내역" 보여줄 때 사용 (필요 시 활용)
-    public List<MissingPolicyReport> getMyReports(Long userId) {
-        return missingPolicyReportRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+    // 마이페이지 "신고 내역" 카드 목록용
+    public List<MissingPolicyReportCardDto> getMyReports(Long userId) {
+        return missingPolicyReportRepository.findByUser_UserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toCardDto)
+                .collect(Collectors.toList());
+    }
+
+    private MissingPolicyReportCardDto toCardDto(MissingPolicyReport report) {
+        return MissingPolicyReportCardDto.builder()
+                .reportId(report.getReportId())
+                .title(report.getTitle())
+                .reportType(report.getReportType())
+                .reportTypeLabel(reportTypeLabel(report.getReportType()))
+                .status(report.getStatus())
+                .statusLabel(statusLabel(report.getStatus()))
+                .policyTitle(report.getPolicy() != null ? report.getPolicy().getTitle() : null)
+                .createdAt(report.getCreatedAt())
+                .build();
+    }
+
+    private String reportTypeLabel(String reportType) {
+        if (reportType == null) {
+            return "미분류";
+        }
+        return switch (reportType) {
+            case "MISSING" -> "누락 정책";
+            case "INFO_ERROR" -> "정보 오류";
+            case "DEADLINE_ERROR" -> "마감일 오류";
+            case "LINK_ERROR" -> "링크 오류";
+            default -> "미분류";
+        };
+    }
+
+    private String statusLabel(String status) {
+        if (status == null) {
+            return "접수";
+        }
+        return switch (status) {
+            case "RECEIVED" -> "접수";
+            case "IN_REVIEW" -> "확인 중";
+            case "COMPLETED" -> "반영 완료";
+            default -> "접수";
+        };
     }
 }
