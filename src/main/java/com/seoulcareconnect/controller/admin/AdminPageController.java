@@ -11,24 +11,14 @@ public class AdminPageController {
         return "redirect:/admin/dashboard";
     }
 
-    @GetMapping("/admin/policy-errors")
-    public String policyErrors() {
-        return "admin/policy-errors";
-    }
+//    @GetMapping("/admin/policy-errors")
+//    public String policyErrors() {
+//        return "admin/policy-errors";
+//    }
 
     @GetMapping("/admin/duplicates")
     public String duplicates() {
         return "admin/duplicates";
-    }
-
-    @GetMapping("/admin/reports")
-    public String reports() {
-        return "admin/reports";
-    }
-
-    @GetMapping("/admin/policies")
-    public String policies() {
-        return "admin/policies";
     }
 
     @GetMapping("/admin/policies/new")

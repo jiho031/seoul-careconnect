@@ -146,4 +146,10 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
             @Param("hideBefore") LocalDate hideBefore,
             @Param("now") LocalDateTime now
     );
+
+    long countByStatus(PolicyStatus status);
+
+    long countByStatusIn(Collection<PolicyStatus> statuses);
+
+    long countByApplyStatus(ApplyStatus applyStatus);
 }

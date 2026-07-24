@@ -438,3 +438,24 @@
     gap: 10px;
     margin-top: 10px;
 }
+
+.api-status-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.api-status-actions form {
+    margin: 0;
+}
+
+.api-collect-btn {
+    padding: 7px 12px;
+    white-space: nowrap;
+}
+
+.api-collect-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
