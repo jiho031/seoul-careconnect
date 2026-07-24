@@ -197,29 +197,6 @@
                     <div class="api-status-list">
 
                         <div class="api-status-item"
-                             th:each="sourceName : ${availableSources}">
-
-                            <div class="api-status-info">
-                                <strong th:text="${sourceName}">
-                                    API 출처명
-                                </strong>
-                                <span class="api-status-meta">개별 수집 가능</span>
-                            </div>
-
-                            <form th:action="@{/admin/collection/run-source}"
-                                  method="post">
-                                <input type="hidden"
-                                       name="sourceName"
-                                       th:value="${sourceName}">
-                                <button class="table-action"
-                                        type="submit"
-                                        onclick="return confirm('선택한 API만 재수집하시겠습니까?');">
-                                    이 API 수집
-                                </button>
-                            </form>
-                        </div>
-
-                        <div class="api-status-item"
                              th:each="source : ${sourceStatuses}">
 
                             <div class="api-status-info">
@@ -228,24 +205,35 @@
                                 </strong>
 
                                 <span class="api-status-meta">
-                                    마지막 수집:
-
-                                    <b th:text="${source.latestStartedAt != null
-                                            ? #temporals.format(
-                                                source.latestStartedAt,
-                                                'yyyy.MM.dd HH:mm'
-                                              )
+                                        마지막 수집:
+                                        <b th:text="${source.latestStartedAt != null
+                                            ? #temporals.format(source.latestStartedAt, 'yyyy.MM.dd HH:mm')
                                             : '수집 이력 없음'}">
-                                        수집 이력 없음
-                                    </b>
-                                </span>
-                            </div>
+                                            수집 이력 없음
+                                        </b>
+                                    </span>
+                                                    </div>
 
-                            <span class="admin-tag"
-                                  th:classappend="${source.statusCssClass}"
-                                  th:text="${source.statusLabel}">
-                                정상
-                            </span>
+                                                    <div class="api-status-actions">
+
+                                    <span class="admin-tag"
+                                          th:classappend="${source.statusCssClass}"
+                                          th:text="${source.statusLabel}">
+                                        정상
+                                    </span>
+
+                                <form th:action="@{/admin/collection/run/{sourceId}(sourceId=${source.sourceId})}"
+                                      method="post">
+
+                                    <button type="submit"
+                                            class="admin-btn api-collect-btn"
+                                            th:disabled="${!source.active}"
+                                            onclick="return confirm('이 API만 수동으로 수집하시겠습니까?');">
+                                        이 API 수집
+                                    </button>
+                                </form>
+
+                            </div>
                         </div>
 
                         <div class="admin-empty"

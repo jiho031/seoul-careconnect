@@ -493,10 +493,6 @@
     table-layout: fixed;
 }
 
-.policy-table td {
-    vertical-align: middle;
-    white-space: nowrap;
-}
 
 .policy-table td:first-child {
     white-space: normal;
@@ -997,9 +993,6 @@
     white-space: pre-wrap;
 }
 
-.activity-log-modal-content {
-    max-width: 900px;
-}
 
 .activity-modal-list {
     display: flex;
@@ -1034,4 +1027,476 @@ button.admin-link {
     font: inherit;
     font-weight: 700;
     cursor: pointer;
+}
+
+/* =========================
+   관리자 페이지 전체 반응형
+========================= */
+
+.admin-page {
+    width: 100%;
+    min-height: calc(100vh - 70px);
+}
+
+.admin-layout {
+    display: flex;
+    width: 100%;
+    min-height: calc(100vh - 70px);
+}
+
+/* 사이드바 */
+.admin-side {
+    width: 220px;
+    flex: 0 0 220px;
+    box-sizing: border-box;
+}
+
+/* 관리자 본문 */
+.admin-content {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 32px clamp(24px, 3vw, 56px) 60px;
+    box-sizing: border-box;
+}
+
+/* 본문이 지나치게 넓어지는 것을 방지 */
+.admin-content > * {
+    width: 100%;
+    max-width: 1680px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* =========================
+   공통 통계 카드
+========================= */
+
+.admin-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(14px, 1.5vw, 24px);
+}
+
+.admin-stat-card {
+    min-width: 0;
+    height: auto;
+    min-height: 120px;
+    box-sizing: border-box;
+}
+
+/* =========================
+   대시보드 내부 레이아웃
+========================= */
+
+/* 최근 회원 + 우선 처리 큐 */
+.admin-dashboard-top,
+.dashboard-top-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
+    gap: clamp(16px, 1.8vw, 28px);
+    align-items: stretch;
+}
+
+/* 주간 수집 현황 + 관리자 공지 */
+.admin-bottom-grid,
+.dashboard-bottom-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.9fr);
+    gap: clamp(16px, 1.8vw, 28px);
+    align-items: stretch;
+}
+
+/* 카드 내부가 고정폭으로 막히지 않도록 */
+.admin-card,
+.dashboard-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* 표가 카드 폭을 자연스럽게 사용 */
+.admin-table {
+    width: 100%;
+    table-layout: auto;
+}
+
+/* 최근 활동 영역 */
+.admin-activity-list,
+.activity-list {
+    width: 100%;
+}
+
+/* =========================
+   큰 화면
+========================= */
+
+@media (min-width: 1600px) {
+    .admin-side {
+        width: 240px;
+        flex-basis: 240px;
+    }
+
+    .admin-content {
+        padding-left: 64px;
+        padding-right: 64px;
+    }
+
+    .admin-content > * {
+        max-width: 1760px;
+    }
+
+    .admin-stat-grid {
+        gap: 26px;
+    }
+}
+
+/* =========================
+   노트북 / 중간 화면
+========================= */
+
+@media (max-width: 1280px) {
+    .admin-side {
+        width: 190px;
+        flex-basis: 190px;
+    }
+
+    .admin-content {
+        padding: 28px 28px 50px;
+    }
+
+    .admin-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-dashboard-top,
+    .dashboard-top-grid {
+        grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
+    }
+
+    .admin-bottom-grid,
+    .dashboard-bottom-grid {
+        grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr);
+    }
+}
+
+/* =========================
+   태블릿
+========================= */
+
+@media (max-width: 1024px) {
+    .admin-layout {
+        display: block;
+    }
+
+    .admin-side {
+        width: 100%;
+        min-height: auto;
+        flex-basis: auto;
+        position: static;
+    }
+
+    .admin-menu {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .admin-menu a {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .admin-content {
+        width: 100%;
+        padding: 24px;
+    }
+
+    .admin-dashboard-top,
+    .dashboard-top-grid,
+    .admin-bottom-grid,
+    .dashboard-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================
+   모바일
+========================= */
+
+@media (max-width: 768px) {
+    .admin-content {
+        padding: 20px 16px 40px;
+    }
+
+    .admin-head {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .admin-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .admin-actions .admin-btn {
+        flex: 1;
+        min-width: 130px;
+    }
+
+    .admin-stat-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .admin-stat-card {
+        min-height: 105px;
+    }
+
+    .admin-card {
+        overflow-x: auto;
+    }
+
+    .admin-table {
+        min-width: 760px;
+    }
+}
+
+/* 아주 작은 화면 */
+@media (max-width: 480px) {
+    .admin-content {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .admin-head h1 {
+        font-size: 24px;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+    }
+
+    .admin-actions .admin-btn {
+        width: 100%;
+    }
+}
+
+.dashboard-container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.policy-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.policy-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.table-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 26px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 8px;
+    background: #f4f8fb;
+    color: #248c8f;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.table-action-button:hover,
+.table-actions a:hover {
+    background: #e8f7f5;
+}
+
+.table-action-button.danger-text {
+    color: #c34733;
+}
+
+.admin-pagination span.disabled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid #d8e4ef;
+    border-radius: 10px;
+    background: #fff;
+    color: #041b4d;
+    font-size: 13px;
+    font-weight: 900;
+    opacity: 0.4;
+}
+
+.admin-empty {
+    padding: 36px 16px !important;
+    text-align: center;
+    color: #66758f !important;
+}
+
+.admin-alert {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.admin-alert.success {
+    background: #e9f8f1;
+    color: #257552;
+}
+
+.admin-alert.error {
+    background: #fff0ed;
+    color: #bd4e3f;
+}
+
+.admin-tag.expired {
+    background: #edf1f5;
+    color: #66758f;
+}
+
+.admin-tag.hidden {
+    background: #e6f0ff;
+    color: #2b66c7;
+}
+
+@media (max-width: 1280px) {
+    .policy-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .policy-filter .admin-input {
+        grid-column: 1 / -1;
+    }
+
+    .policy-table {
+        min-width: 1180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .policy-filter {
+        grid-template-columns: 1fr;
+    }
+
+    .policy-filter .admin-input {
+        grid-column: auto;
+    }
+}
+
+/* 정책 목록 표 깨짐 방지 */
+.policy-table {
+    width: 100%;
+    min-width: 1180px;
+    table-layout: fixed;
+}
+
+.policy-table th,
+.policy-table td {
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+/* 기존 white-space: nowrap 무효화 */
+.policy-table td {
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+/* 정책명 */
+.policy-table th:nth-child(1),
+.policy-table td:nth-child(1) {
+    width: 22%;
+}
+
+/* 기관 */
+.policy-table th:nth-child(2),
+.policy-table td:nth-child(2) {
+    width: 12%;
+}
+
+/* 분야 */
+.policy-table th:nth-child(3),
+.policy-table td:nth-child(3) {
+    width: 8%;
+}
+
+/* 지원 대상 */
+.policy-table th:nth-child(4),
+.policy-table td:nth-child(4) {
+    width: 18%;
+}
+
+/* 신청 기간 */
+.policy-table th:nth-child(5),
+.policy-table td:nth-child(5) {
+    width: 14%;
+}
+
+/* 상태 */
+.policy-table th:nth-child(6),
+.policy-table td:nth-child(6) {
+    width: 8%;
+    text-align: center;
+}
+
+/* 출처 */
+.policy-table th:nth-child(7),
+.policy-table td:nth-child(7) {
+    width: 7%;
+    text-align: center;
+}
+
+/* 관리 */
+.policy-table th:nth-child(8),
+.policy-table td:nth-child(8) {
+    width: 11%;
+    text-align: center;
+}
+
+.policy-table td:nth-child(4) {
+    line-height: 1.45;
+}
+
+.policy-target-text {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.policy-table .table-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    white-space: normal;
 }
