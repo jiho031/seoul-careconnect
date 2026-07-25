@@ -70,6 +70,12 @@
                        class="outline-action">
                         공식 사이트 확인
                     </a>
+                    <button type="button"
+                            class="outline-action detail-ai-action"
+                            data-ai-assistant-open
+                            data-ai-assistant-prompt="이 정책의 지원 대상과 신청할 때 주의할 점을 쉽게 설명해 주세요.">
+                        이 정책에 대해 AI에게 질문
+                    </button>
                     <span th:unless="${policy.officialUrl != null}"
                           class="outline-action"
                           aria-disabled="true">

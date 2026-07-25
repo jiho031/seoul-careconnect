@@ -190,16 +190,20 @@
           </div>
 
           <div class="ai-list">
-            <a href="#">
+            <button type="button"
+                    data-ai-assistant-open
+                    data-ai-assistant-prompt="내 상황에 맞는 서울 정책을 쉽게 찾아서 설명해 주세요.">
               <em class="mint">▤</em>
               <span><b>정책 쉽게 설명받기</b><small>내 상황에 맞는 정책을 쉽고 명확하게 설명해드려요.</small></span>
               <i>›</i>
-            </a>
-            <a href="#">
+            </button>
+            <button type="button"
+                    data-ai-assistant-open
+                    data-ai-assistant-prompt="신청할 때 필요한 서류를 확인할 수 있는 정책을 찾아주세요.">
               <em class="blue">▤</em>
               <span><b>필요 서류 확인하기</b><small>신청에 필요한 서류와 준비물을 한눈에 확인하세요.</small></span>
               <i>›</i>
-            </a>
+            </button>
               <a th:href="@{/guides}">
                   <em class="purple">☑</em>
                   <span>

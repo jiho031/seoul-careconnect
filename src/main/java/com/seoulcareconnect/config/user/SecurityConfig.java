@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/password/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
+                                "/api/ai/assistant",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",

@@ -25,6 +25,38 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
     Optional<Policy> findWithSourceAndDetailByPolicyId(Long policyId);
 
     @EntityGraph(attributePaths = {"source", "detail"})
+    @Query("""
+            select p
+            from Policy p
+            where p.status in :statuses
+              and p.applyStatus <> :expired
+              and (p.startDate is null or p.startDate <= :today)
+              and (p.endDate is null or p.endDate >= :today)
+            """)
+    List<Policy> findAssistantCandidates(
+            @Param("statuses") Collection<PolicyStatus> statuses,
+            @Param("expired") ApplyStatus expired,
+            @Param("today") LocalDate today
+    );
+
+    @EntityGraph(attributePaths = {"source", "detail"})
+    @Query("""
+            select p
+            from Policy p
+            where p.policyId = :policyId
+              and p.status in :statuses
+              and p.applyStatus <> :expired
+              and (p.startDate is null or p.startDate <= :today)
+              and (p.endDate is null or p.endDate >= :today)
+            """)
+    Optional<Policy> findAssistantPolicy(
+            @Param("policyId") Long policyId,
+            @Param("statuses") Collection<PolicyStatus> statuses,
+            @Param("expired") ApplyStatus expired,
+            @Param("today") LocalDate today
+    );
+
+    @EntityGraph(attributePaths = {"source", "detail"})
     List<Policy> findAllByPolicyIdInAndStatusInAndApplyStatusNot(
             Collection<Long> policyIds,
             Collection<PolicyStatus> statuses,
