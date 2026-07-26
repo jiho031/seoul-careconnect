@@ -2269,3 +2269,46 @@ body.large-text-mode
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
+
+body.large-text-mode .mypage-side-nav {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 18px !important;
+  transform: translateX(-50%) !important;
+  z-index: 500 !important;
+
+  width: min(760px, calc(100% - 28px)) !important;
+
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 10px !important;
+
+  padding: 14px !important;
+  background: #ffffff !important;
+  border: 2px solid #cbdbea !important;
+  border-radius: 20px !important;
+  box-shadow: 0 14px 34px rgba(20, 60, 90, 0.22) !important;
+}
+
+body.large-text-mode .mypage-side-nav a {
+  flex: 1 1 130px !important;
+  min-height: 60px !important;
+  padding: 8px 10px !important;
+  font-size: 16px !important;
+  text-align: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+/* 하단 고정 메뉴에 콘텐츠 마지막 부분이 가려지지 않도록 여백 확보 */
+body.large-text-mode .mypage-page {
+  padding-bottom: 130px !important;
+}
+
+@media (max-width: 640px) {
+  body.large-text-mode .mypage-side-nav a {
+    flex: 1 1 45% !important;
+    font-size: 15px !important;
+  }
+}
