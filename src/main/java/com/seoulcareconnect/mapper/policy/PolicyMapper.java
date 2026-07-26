@@ -7,6 +7,7 @@ import com.seoulcareconnect.entity.policy.PolicyDetail;
 import com.seoulcareconnect.entity.policy.enums.AgeGroup;
 import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyCategory;
+import com.seoulcareconnect.integration.policy.ExternalPolicyClassifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +24,14 @@ import java.util.Set;
 @Component
 public class PolicyMapper {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
+    private final ExternalPolicyClassifier classifier;
+
+    public PolicyMapper(ExternalPolicyClassifier classifier) {
+        this.classifier = classifier;
+    }
 
     @Value("${app.policy.sync.zone-id:Asia/Seoul}")
     private String zoneId;
@@ -47,14 +55,14 @@ public class PolicyMapper {
                         ? null
                         : policy.getCategory().name())
                 .categoryLabel(categoryLabel(policy.getCategory()))
-                .target(valueOr(policy.getTarget(), "공식 공고 확인"))
+                .target(valueOr(displayTarget(policy.getTarget()), "공식 공고 확인"))
                 .ageGroupDisplay(ageGroupDisplay(policy.getTarget()))
                 .regionDisplay(regionDisplay(policy))
                 .applyStatus(policy.getApplyStatus() == null
                         ? null
                         : policy.getApplyStatus().name())
                 .applyStatusLabel(
-                        applyStatusLabel(policy.getApplyStatus())
+                        displayApplyStatusLabel(policy)
                 )
                 .applyPeriod(applyPeriod(
                         policy.getStartDate(),
@@ -96,10 +104,23 @@ public class PolicyMapper {
 
     public PolicyDetailDTO toDetailDto(Policy policy) {
         PolicyDetail detail = policy.getDetail();
-        String benefit = detail == null ? null : normalizeBlock(detail.getBenefit());
-        String documents = detail == null ? null : normalizeBlock(detail.getRequiredDocumentsText());
+        String benefit = detail == null
+                ? null
+                : normalizeBlock(detail.getBenefit());
+        String documents = detail == null
+                ? null
+                : normalizeBlock(detail.getRequiredDocumentsText());
         String application = normalizeBlock(policy.getApplyMethod());
-        String content = detail == null ? null : normalizeBlock(detail.getContentText());
+        String content = detail == null
+                ? null
+                : normalizeBlock(detail.getContentText());
+        String selectionCriteria = detail == null
+                ? null
+                : normalizeBlock(detail.getSelectionCriteria());
+
+        if (isKStartupPolicy(policy)) {
+            selectionCriteria = null;
+        }
 
         return PolicyDetailDTO.builder()
                 .policyId(policy.getPolicyId())
@@ -108,27 +129,45 @@ public class PolicyMapper {
                 .summary(resolveSummary(policy, detail))
                 .sourceName(policy.getSource() == null
                         ? "공식 제공기관"
-                        : valueOr(policy.getSource().getSourceName(), "공식 제공기관"))
+                        : valueOr(
+                        policy.getSource().getSourceName(),
+                        "공식 제공기관"
+                ))
                 .categoryLabel(categoryLabel(policy.getCategory()))
                 .ageGroupDisplay(ageGroupDisplay(policy.getTarget()))
-                .target(valueOr(policy.getTarget(), "지원 대상은 공식 공고에서 확인해 주세요."))
+                .target(valueOr(
+                        displayTarget(policy.getTarget()),
+                        "지원 대상은 공식 공고에서 확인해 주세요."
+                ))
                 .regionDisplay(regionDisplay(policy))
-                .applyStatusLabel(applyStatusLabel(policy.getApplyStatus()))
-                .dDayLabel(dDayLabel(policy.getEndDate(), policy.getApplyStatus(), today()))
-                .applyPeriod(applyPeriod(policy.getStartDate(), policy.getEndDate(), policy.getApplyStatus()))
-                .applyMethod(valueOr(application, "신청 방법은 공식 공고에서 확인해 주세요."))
+                .applyStatusLabel(displayApplyStatusLabel(policy))
+                .dDayLabel(dDayLabel(
+                        policy.getEndDate(),
+                        policy.getApplyStatus(),
+                        today()
+                ))
+                .periodLabel(periodLabel(policy))
+                .applyPeriod(displayPeriod(policy))
+                .applyMethod(valueOr(
+                        application,
+                        "신청 방법은 공식 공고에서 확인해 주세요."
+                ))
                 .officialUrl(safeUrl(policy.getOfficialUrl()))
                 .contact(normalizeInline(policy.getContact()))
-                .benefit(valueOr(benefit, resolveSummary(policy, detail)))
-                .selectionCriteria(detail == null ? null : normalizeBlock(detail.getSelectionCriteria()))
+                .benefit(valueOr(
+                        benefit,
+                        resolveSummary(policy, detail)
+                ))
+                .selectionCriteria(selectionCriteria)
                 .requiredDocumentsText(documents)
-                .contentText(detail == null ? null : normalizeBlock(detail.getContentText()))
+                .contentText(content)
                 .benefitLines(splitLines(benefit))
                 .documentLines(splitLines(documents))
                 .applicationLines(splitLines(application))
                 .contentLines(splitLines(content))
                 .build();
     }
+
 
     public String categoryLabel(PolicyCategory category) {
         return category == null ? "생활지원" : category.getLabel();
@@ -153,6 +192,29 @@ public class PolicyMapper {
             if (sourceName != null) return sourceName;
         }
         return "공식 제공기관";
+    }
+
+    private String displayApplyStatusLabel(Policy policy) {
+        ApplyStatus status = policy == null
+                ? null
+                : policy.getApplyStatus();
+
+        if (status != ApplyStatus.INFORMATION_ONLY) {
+            return applyStatusLabel(status);
+        }
+
+        String sourceName = sourceName(policy);
+
+        if ("고용24-국민내일배움카드훈련".equals(sourceName)
+                || "고용24-사업주훈련".equals(sourceName)) {
+            return "훈련 정보 확인";
+        }
+
+        if ("고용24-구직자취업역량강화프로그램".equals(sourceName)) {
+            return "프로그램 정보 확인";
+        }
+
+        return applyStatusLabel(status);
     }
 
     private String resolveSummary(
@@ -198,6 +260,10 @@ public class PolicyMapper {
         );
     }
 
+    private boolean isKStartupPolicy(Policy policy) {
+        return "K-Startup-지원사업공고".equals(sourceName(policy));
+    }
+
     private boolean isMyHomePolicy(
             Policy policy
     ) {
@@ -215,16 +281,27 @@ public class PolicyMapper {
     private String ageGroupDisplay(String target) {
         String value = normalizeInline(target);
         if (value == null) return AgeGroup.ALL.getLabel();
+        return classifier.ageGroupDisplay(value);
+    }
 
-        List<String> labels = Arrays.stream(AgeGroup.values())
-                .map(AgeGroup::getLabel)
-                .filter(value::contains)
-                .filter(label -> !AgeGroup.ALL.getLabel().equals(label))
-                .toList();
+    private String displayTarget(String target) {
+        String value = normalizeInline(target);
+        if (value == null) return null;
 
-        if (!labels.isEmpty()) return String.join(", ", labels);
-        if (value.contains(AgeGroup.ALL.getLabel())) return AgeGroup.ALL.getLabel();
-        return AgeGroup.ALL.getLabel();
+        int separator = value.indexOf(" | ");
+        if (separator < 0) return value;
+
+        String firstSegment = value.substring(0, separator);
+
+        boolean generatedAgePrefix = firstSegment.matches(
+                "(?:30대 이하|40대|50대|60대 이상|전 연령)"
+                        + "(?:, (?:30대 이하|40대|50대|60대 이상))*"
+        );
+
+        if (!generatedAgePrefix) return value;
+
+        return classifier.ageGroupDisplay(value)
+                + value.substring(separator);
     }
 
     private String regionDisplay(Policy policy) {
@@ -233,6 +310,80 @@ public class PolicyMapper {
         if (district != null) return valueOr(region, "서울") + " " + district;
         if (region == null || "서울".equals(region) || "서울특별시".equals(region)) return "서울시 전체";
         return region;
+    }
+
+    private String periodLabel(Policy policy) {
+        String sourceName = sourceName(policy);
+
+        if ("고용24-국민내일배움카드훈련".equals(sourceName)
+                || "고용24-사업주훈련".equals(sourceName)) {
+            return "훈련 기간";
+        }
+
+        if ("고용24-구직자취업역량강화프로그램".equals(sourceName)) {
+            return "프로그램 기간";
+        }
+
+        return "신청 기간";
+    }
+
+    private String displayPeriod(Policy policy) {
+        String sourceName = sourceName(policy);
+
+        boolean operationPeriodSource =
+                "고용24-국민내일배움카드훈련".equals(sourceName)
+                        || "고용24-사업주훈련".equals(sourceName)
+                        || "고용24-구직자취업역량강화프로그램".equals(sourceName);
+
+        /*
+         * 고용24 날짜는 신청기간이 아니라 훈련 또는 프로그램
+         * 운영기간이므로 INFORMATION_ONLY여도 날짜를 표시합니다.
+         */
+        if (operationPeriodSource
+                && (policy.getStartDate() != null
+                || policy.getEndDate() != null)) {
+            return dateRange(
+                    policy.getStartDate(),
+                    policy.getEndDate()
+            );
+        }
+
+        return applyPeriod(
+                policy.getStartDate(),
+                policy.getEndDate(),
+                policy.getApplyStatus()
+        );
+    }
+
+    private String dateRange(
+            LocalDate start,
+            LocalDate end
+    ) {
+        if (start == null && end == null) {
+            return "공식 안내 확인";
+        }
+
+        if (start == null) {
+            return "~ " + end.format(DATE_FORMAT);
+        }
+
+        if (end == null) {
+            return start.format(DATE_FORMAT) + " ~";
+        }
+
+        return start.format(DATE_FORMAT)
+                + " ~ "
+                + end.format(DATE_FORMAT);
+    }
+
+    private String sourceName(Policy policy) {
+        if (policy == null || policy.getSource() == null) {
+            return null;
+        }
+
+        return normalizeInline(
+                policy.getSource().getSourceName()
+        );
     }
 
     private String applyPeriod(LocalDate start, LocalDate end, ApplyStatus status) {
@@ -311,6 +462,10 @@ public class PolicyMapper {
                 .map(line -> line
                         .replaceFirst(
                                 "^\\s*(?:[-–—]\\s+|\\d{1,2}[.)]\\s+)",
+                                ""
+                        )
+                        .replaceFirst(
+                                "^\\s*(?:~{1,3}|※)\\s*",
                                 ""
                         )
                         .trim()

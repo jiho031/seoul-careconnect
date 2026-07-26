@@ -281,132 +281,12 @@ img {
 }
 
 @media (max-width: 1180px) {
-  .nav-inner {
-    width: min(100% - 40px, 1120px);
-    grid-template-columns: 190px minmax(300px, 1fr) auto;
-    gap: 16px;
-  }
-
-  .nav-menu {
-    gap: 24px;
-    font-size: 16px;
-  }
-
-  .nav-actions {
-    gap: 8px;
-  }
-
-  .nav-actions a,
-  .nav-actions button {
-    padding-left: 12px;
-    padding-right: 12px;
-    font-size: 15px;
-  }
-
-  .admin-page-button {
-    min-width: 100px !important;
-  }
-
   .footer-inner {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 860px) {
-  .site-header {
-    height: 72px;
-  }
-
-  .nav-inner {
-    width: calc(100% - 32px);
-    grid-template-columns: 1fr 44px;
-    gap: 12px;
-  }
-
-  .brand,
-  .brand img {
-    width: 170px;
-    min-width: 170px;
-  }
-
-  .nav-toggle {
-    display: block;
-  }
-
-  .nav-menu,
-  .nav-actions {
-    display: none;
-  }
-
-  body.nav-open .nav-menu,
-  body.nav-open .nav-actions {
-    position: fixed;
-    left: 16px;
-    right: 16px;
-    z-index: 110;
-    background: #fff;
-    border: 1px solid #d7e4f0;
-    box-shadow: var(--shadow);
-  }
-
-  body.nav-open .nav-menu {
-    top: 84px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    border-radius: 16px 16px 0 0;
-    overflow: hidden;
-  }
-
-  body.nav-open .nav-menu a {
-    min-height: 60px;
-    padding: 18px 22px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #edf3f8;
-  }
-
-  /* 메뉴 3개 × 60px + 시작 위치 84px */
-  body.nav-open .nav-actions {
-    top: 264px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 16px;
-    border-top: 0;
-    border-radius: 0 0 16px 16px;
-  }
-
-  body.nav-open .nav-actions a,
-  body.nav-open .nav-actions button {
-    width: 100%;
-    min-width: 0;
-    height: 46px;
-    margin: 0;
-  }
-
-  /* 누락 신고는 첫 줄 전체 사용 */
-  body.nav-open .nav-actions .nav-report-button {
-    grid-column: 1 / -1;
-    width: 100%;
-    margin: 0;
-  }
-
-  /* 로그아웃이 form 안에 있다면 */
-  body.nav-open .nav-actions form {
-    width: 100%;
-    margin: 0;
-  }
-
-  body.nav-open .nav-actions form button {
-    border: 1px solid #00777d;
-    border-radius: 8px;
-    background: linear-gradient(180deg, #008e94 0%, #00757b 100%);
-    color: #fff;
-    font-weight: 900;
-  }
-
   .footer-inner,
   .footer-bottom {
     width: calc(100% - 32px);
@@ -470,11 +350,308 @@ img {
   white-space: nowrap;
 }
 
-@media (max-width: 768px) {
-  .nav-report-button {
-    width: 100%;
-    height: 44px;
-    margin: 0;
+
+/* =========================================================
+   네비게이션 반응형
+   1320px 이하: 햄버거 메뉴
+   1321px 이상: 데스크톱 메뉴
+========================================================= */
+
+/* 데스크톱 메뉴를 확실하게 고정 */
+@media (min-width: 1321px) {
+  .site-header {
+    height: 78px !important;
+    overflow: visible !important;
+  }
+
+  .nav-inner {
+    width: min(1480px, calc(100% - 72px)) !important;
+    height: 100% !important;
+    display: grid !important;
+    grid-template-columns: 220px minmax(360px, 1fr) auto !important;
+    grid-template-rows: 1fr !important;
+    align-items: center !important;
+    gap: 24px !important;
+  }
+
+  .nav-toggle {
+    display: none !important;
+  }
+
+  .nav-menu {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: clamp(34px, 3.4vw, 58px) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  .nav-actions {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+}
+
+/* 태블릿 및 모바일 */
+@media (max-width: 1320px) {
+  body.nav-open {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .site-header {
+    height: auto !important;
+    min-height: 78px !important;
+    overflow: visible !important;
+  }
+
+  .nav-inner {
+    position: relative !important;
+    width: calc(100% - 32px) !important;
+    height: auto !important;
+    min-height: 78px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 48px !important;
+    grid-template-rows: 78px auto auto !important;
+    align-items: center !important;
+    gap: 0 !important;
+  }
+
+  .brand {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 190px !important;
+    min-width: 0 !important;
+    height: 58px !important;
+  }
+
+  .brand img {
+    display: block !important;
+    width: 190px !important;
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .nav-toggle {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: block !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 !important;
+  }
+
+  /* 닫힌 상태에서는 메뉴와 회원 버튼을 모두 숨김 */
+  .nav-menu,
+  .nav-actions,
+  body.large-text-mode .nav-menu,
+  body.large-text-mode .nav-actions {
+    display: none !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  body.nav-open .nav-menu,
+  body.large-text-mode.nav-open .nav-menu {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    margin: 10px 0 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid #cfdeed !important;
+    border-bottom: 0 !important;
+    border-radius: 18px 18px 0 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 14px 34px rgba(31, 70, 104, 0.10) !important;
+  }
+
+  body.nav-open .nav-menu a,
+  body.large-text-mode.nav-open .nav-menu a {
+    width: 100% !important;
+    min-height: 72px !important;
+    padding: 0 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    border-bottom: 1px solid #dce7f2 !important;
+    color: #071947 !important;
+    background: #ffffff !important;
+    font-size: 20px !important;
+    font-weight: 900 !important;
+    line-height: 1.35 !important;
+    text-align: left !important;
+    white-space: normal !important;
+  }
+
+  body.nav-open .nav-menu a:last-child,
+  body.large-text-mode.nav-open .nav-menu a:last-child {
+    border-bottom: 1px solid #dce7f2 !important;
+  }
+
+  body.nav-open .nav-actions,
+  body.large-text-mode.nav-open .nav-actions {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin: 0 0 14px !important;
+    padding: 16px 18px 18px !important;
+    border: 1px solid #cfdeed !important;
+    border-top: 0 !important;
+    border-radius: 0 0 18px 18px !important;
+    background: #ffffff !important;
+    box-shadow: 0 18px 38px rgba(31, 70, 104, 0.14) !important;
+  }
+
+  /* 누락 신고 또는 관리자페이지는 첫 줄 전체 사용 */
+  body.nav-open .nav-actions > .nav-report-button,
+  body.nav-open .nav-actions > .admin-page-button,
+  body.large-text-mode.nav-open .nav-actions > .nav-report-button,
+  body.large-text-mode.nav-open .nav-actions > .admin-page-button {
+    grid-column: 1 / -1 !important;
+  }
+
+  body.nav-open .nav-actions > a,
+  body.nav-open .nav-actions .nav-logout-form,
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.nav-open .nav-actions > a,
+  body.nav-open .nav-actions .nav-logout-form button,
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    padding: 0 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 82px !important;
+    font-size: 23px !important;
+  }
+
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    height: 66px !important;
+    min-height: 66px !important;
+    font-size: 21px !important;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 560px) {
+  .site-header {
+    min-height: 74px !important;
+  }
+
+  .nav-inner {
+    width: calc(100% - 24px) !important;
+    min-height: 74px !important;
+    grid-template-columns: minmax(0, 1fr) 46px !important;
+    grid-template-rows: 74px auto auto !important;
+  }
+
+  .brand {
+    width: 170px !important;
+    height: 56px !important;
+  }
+
+  .brand img {
+    width: 170px !important;
+  }
+
+  .nav-toggle {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  body.nav-open .nav-menu a,
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 68px !important;
+    padding: 0 20px !important;
+    font-size: 18px !important;
+  }
+
+  body.nav-open .nav-actions,
+  body.large-text-mode.nav-open .nav-actions {
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  body.nav-open .nav-actions > a,
+  body.nav-open .nav-actions .nav-logout-form button,
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 0 8px !important;
+    font-size: 17px !important;
+  }
+
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 76px !important;
+    font-size: 21px !important;
+  }
+
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    height: 62px !important;
+    min-height: 62px !important;
+    font-size: 19px !important;
   }
 }
 

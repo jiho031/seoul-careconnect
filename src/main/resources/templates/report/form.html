@@ -103,6 +103,8 @@
                   th:object="${reportRequest}"
                   method="post">
 
+                <input type="hidden" th:field="*{policyId}">
+
                 <div class="report-card-head">
                     <h2>신고 내용 작성</h2>
                     <p>확인할 수 있는 내용을 최대한 자세히 입력해주세요.</p>
@@ -177,14 +179,11 @@
                     <div class="report-field">
                         <label for="region">지역</label>
                         <select id="region" th:field="*{region}">
-                            <option value="서울시 전체">서울시 전체</option>
-                            <option value="강남구">강남구</option>
-                            <option value="강서구">강서구</option>
-                            <option value="노원구">노원구</option>
-                            <option value="동대문구">동대문구</option>
-                            <option value="마포구">마포구</option>
-                            <option value="송파구">송파구</option>
-                            <option value="종로구">종로구</option>
+                            <option th:each="region : ${regions}"
+                                    th:value="${region}"
+                                    th:text="${region}">
+                                서울시 전체
+                            </option>
                         </select>
                     </div>
 
