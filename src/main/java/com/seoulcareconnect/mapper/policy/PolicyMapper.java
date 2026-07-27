@@ -371,6 +371,10 @@ public class PolicyMapper {
             return start.format(DATE_FORMAT) + " ~";
         }
 
+        if (start.equals(end)) {
+            return start.format(DATE_FORMAT);
+        }
+
         return start.format(DATE_FORMAT)
                 + " ~ "
                 + end.format(DATE_FORMAT);
@@ -392,6 +396,7 @@ public class PolicyMapper {
         if (start == null && end == null) return "공고 확인";
         if (start == null) return "~ " + end.format(DATE_FORMAT);
         if (end == null) return start.format(DATE_FORMAT) + " ~";
+        if (start.equals(end)) return start.format(DATE_FORMAT);
         return start.format(DATE_FORMAT) + " ~ " + end.format(DATE_FORMAT);
     }
 

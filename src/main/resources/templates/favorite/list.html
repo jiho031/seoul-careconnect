@@ -41,7 +41,17 @@
                  th:each="fav : ${favorites}"
                  th:attr="data-policy-id=${fav.policyId}">
 
-                <a class="favorite-card-link" th:href="@{|/policies/${fav.policyId}|}">
+                <a class="favorite-card-link favorite-preview-target"
+                   th:href="@{|/policies/${fav.policyId}|}"
+                   th:attr="
+                       data-preview-title=${fav.title},
+                       data-preview-category=${fav.categoryLabel},
+                       data-preview-agency=${fav.agency},
+                       data-preview-region=${fav.regionDisplay},
+                       data-preview-target=${fav.target},
+                       data-preview-status=${fav.applyStatusLabel},
+                       data-preview-period=${fav.applyPeriod},
+                       aria-label=${fav.title}">
 
                     <div class="policy-card-top">
                         <span class="policy-dday"
@@ -93,9 +103,18 @@
         </div>
 
         <div class="deadline-grid">
-            <a class="policy-card"
+            <a class="policy-card favorite-preview-target"
                th:each="policy : ${recommendedPolicies}"
-               th:href="@{|/policies/${policy.policyId}|}">
+               th:href="@{|/policies/${policy.policyId}|}"
+               th:attr="
+                   data-preview-title=${policy.title},
+                   data-preview-category=${policy.categoryLabel},
+                   data-preview-agency=${policy.agency},
+                   data-preview-region=${policy.regionDisplay},
+                   data-preview-target=${policy.target},
+                   data-preview-status=${policy.applyStatusLabel},
+                   data-preview-period=${policy.applyPeriod},
+                   aria-label=${policy.title}">
 
                 <div class="policy-card-top">
                     <span class="policy-dday"
@@ -125,6 +144,64 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- 관심 정책 카드 간단 미리보기 -->
+<aside class="popular-policy-preview"
+       id="favoritePolicyPreview"
+       role="tooltip"
+       aria-hidden="true">
+
+    <div class="popular-policy-preview-head">
+
+        <span class="popular-policy-preview-category"
+              data-preview-field="category">
+            분야
+        </span>
+
+        <span class="popular-policy-preview-status"
+              data-preview-field="status">
+            신청 상태
+        </span>
+
+    </div>
+
+    <strong class="popular-policy-preview-title"
+            data-preview-field="title">
+        정책명
+    </strong>
+
+    <dl class="popular-policy-preview-info">
+
+        <div data-preview-row="agency">
+            <dt>기관</dt>
+            <dd data-preview-field="agency"></dd>
+        </div>
+
+        <div data-preview-row="region">
+            <dt>지역</dt>
+            <dd data-preview-field="region"></dd>
+        </div>
+
+        <div data-preview-row="target">
+            <dt>대상</dt>
+            <dd data-preview-field="target"></dd>
+        </div>
+
+        <div data-preview-row="period">
+            <dt>신청 기간</dt>
+            <dd data-preview-field="period"></dd>
+        </div>
+
+    </dl>
+
+    <p class="popular-policy-preview-guide">
+        클릭하면 정책 상세 내용을 확인할 수 있습니다.
+    </p>
+
+</aside>
+
+<script th:src="@{/js/favorite.js}"
+        src="/js/favorite.js"></script>
 
 <script th:inline="javascript">
     const currentUserId = /*[[${user.userId}]]*/ 1;

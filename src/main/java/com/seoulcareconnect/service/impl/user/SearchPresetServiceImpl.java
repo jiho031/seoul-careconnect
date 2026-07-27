@@ -52,7 +52,7 @@ public class SearchPresetServiceImpl implements SearchPresetService {
     @Transactional
     public void delete(Long userId, Long presetId) {
         SearchPreset preset = searchPresetRepository.findByPresetIdAndUserUserId(presetId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("저장된 프리셋을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("저장된 검색 조건을 찾을 수 없습니다."));
 
         searchPresetRepository.delete(preset);
     }
