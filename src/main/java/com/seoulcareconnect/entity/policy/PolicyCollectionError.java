@@ -36,8 +36,8 @@ public class PolicyCollectionError {
     @JoinColumn(name = "raw_id")
     private RawCollectedItem rawItem;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "source_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_id")
     private PolicySource source;
 
     @Column(name = "external_id", length = 100)

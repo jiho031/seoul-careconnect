@@ -184,4 +184,10 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
     long countByStatusIn(Collection<PolicyStatus> statuses);
 
     long countByApplyStatus(ApplyStatus applyStatus);
+
+    @EntityGraph(attributePaths = {"source", "detail"})
+    List<Policy> findByStatusInOrderByUpdatedAtDescCreatedAtDesc(
+            Collection<PolicyStatus> statuses,
+            Pageable pageable
+    );
 }

@@ -1,14 +1,24 @@
 <!doctype html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>서울 케어넥트 관리자 - 정책 등록/수정</title>
 
-    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
-    <link rel="stylesheet" th:href="@{/css/admin.css}" href="/css/admin.css">
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin.css}"
+          href="/css/admin.css">
 </head>
+
 <body>
+
 <div th:replace="~{fragments/nav :: nav}"></div>
 
 <main class="admin-page">
@@ -16,260 +26,601 @@
 
         <aside class="admin-side">
             <p class="admin-side-title">관리자 메뉴</p>
+
             <nav class="admin-menu">
-                <a th:href="@{/admin/dashboard}" href="/admin/dashboard">📊 대시보드</a>
-                <a th:href="@{/admin/collection}" href="/admin/collection">🔗 API 수집 현황</a>
-                <a th:href="@{/admin/policy-errors}" href="/admin/policy-errors">⚠️ 정책 오류 관리</a>
-                <a th:href="@{/admin/ai-review}" href="/admin/ai-review">🤖 AI 요약 오류 관리</a>
-                <a th:href="@{/admin/reports}" href="/admin/reports">🚨 사용자 신고 관리</a>
-                <a th:href="@{/admin/policies}" href="/admin/policies">📌 정책 목록</a>
-                <a class="active" th:href="@{/admin/policies/new}" href="/admin/policies/new">📝 수동 등록/수정</a>
-                <a th:href="@{/admin/users}" href="/admin/users">👥 회원 관리</a>
-                <a th:href="@{/admin/super}" href="/admin/super">👑 최고 관리자</a>
+                <a th:href="@{/admin/dashboard}">
+                    📊 대시보드
+                </a>
+
+                <a th:href="@{/admin/collection}">
+                    🔗 API 수집 현황
+                </a>
+
+                <a th:href="@{/admin/policy-errors}">
+                    ⚠️ 정책 오류 관리
+                </a>
+
+                <a th:href="@{/admin/ai-review}">
+                    🤖 AI 요약 오류 관리
+                </a>
+
+                <a th:href="@{/admin/reports}">
+                    🚨 사용자 신고 관리
+                </a>
+
+                <a th:href="@{/admin/policies}">
+                    📌 정책 목록
+                </a>
+
+                <a class="active"
+                   th:href="@{/admin/policies/new}">
+                    📝 수동 등록/수정
+                </a>
+
+                <a th:href="@{/admin/users}">
+                    👥 회원 관리
+                </a>
+
             </nav>
         </aside>
 
         <section class="admin-content">
+
             <div class="admin-head">
                 <div>
-                    <h1>정책 등록/수정</h1>
-                    <p>정책 기본 정보, 신청 조건, 필요서류, AI 요약 내용을 입력하고 관리합니다.</p>
+                    <h1 th:text="${editMode}
+                            ? '정책 수정'
+                            : '정책 등록'">
+                        정책 등록
+                    </h1>
+
+                    <p>
+                        정책 기본 정보와 신청 조건,
+                        상세 내용을 입력하고 관리합니다.
+                    </p>
                 </div>
 
                 <div class="admin-actions">
-                    <a class="admin-btn" th:href="@{/admin/policies}" href="/admin/policies">목록으로</a>
-                    <button class="admin-btn">임시 저장</button>
-                    <button class="admin-btn primary" type="submit" form="policyForm">저장하기</button>
+                    <a class="admin-btn"
+                       th:href="@{/admin/policies}">
+                        목록으로
+                    </a>
+
+                    <button class="admin-btn"
+                            type="submit"
+                            form="policyForm"
+                            name="saveAction"
+                            value="DRAFT">
+                        임시 저장
+                    </button>
+
+                    <button class="admin-btn primary"
+                            type="submit"
+                            form="policyForm"
+                            name="saveAction"
+                            value="REVIEW">
+                        저장하기
+                    </button>
                 </div>
             </div>
 
-            <form id="policyForm" class="policy-form" action="#" method="post" onsubmit="return false;">
+            <div class="admin-alert success"
+                 th:if="${successMessage}"
+                 th:text="${successMessage}">
+            </div>
+
+            <form id="policyForm"
+                  class="policy-form"
+                  th:action="@{/admin/policies/save}"
+                  th:object="${policyForm}"
+                  method="post">
+
+                <input type="hidden"
+                       th:field="*{policyId}">
 
                 <div class="admin-grid-2 policy-form-top">
+
                     <section class="admin-card">
                         <div class="admin-card-head">
                             <h2>기본 정보</h2>
-                            <span class="admin-tag wait">작성중</span>
+
+                            <span class="admin-tag wait"
+                                  th:text="${editMode}
+                                        ? '수정중'
+                                        : '작성중'">
+                                작성중
+                            </span>
                         </div>
 
                         <div class="form-grid">
+
                             <label class="form-field wide">
                                 <span>정책명 <b>*</b></span>
-                                <input class="admin-input" type="text" name="title" placeholder="예: 중장년 직업역량 강화 교육">
+
+                                <input class="admin-input"
+                                       type="text"
+                                       th:field="*{title}"
+                                       required
+                                       placeholder="예: 중장년 직업역량 강화 교육">
                             </label>
 
                             <label class="form-field">
                                 <span>제공기관 <b>*</b></span>
-                                <input class="admin-input" type="text" name="agency" placeholder="예: 서울시50플러스재단">
+
+                                <input class="admin-input"
+                                       type="text"
+                                       th:field="*{agency}"
+                                       required
+                                       placeholder="예: 서울시50플러스재단">
                             </label>
 
                             <label class="form-field">
                                 <span>출처 유형</span>
-                                <select class="admin-select" name="sourceType">
-                                    <option value="MANUAL">수동 등록</option>
-                                    <option value="API">API 수집</option>
-                                    <option value="CRAWLING">크롤링</option>
-                                </select>
+
+                                <input class="admin-input"
+                                       type="text"
+                                       value="수동 등록"
+                                       readonly>
                             </label>
 
                             <label class="form-field">
                                 <span>분야 <b>*</b></span>
-                                <select class="admin-select" name="category">
-                                    <option value="">분야 선택</option>
-                                    <option value="JOB">일자리</option>
-                                    <option value="HOUSING">주거</option>
-                                    <option value="HEALTH">건강</option>
-                                    <option value="CARE">돌봄</option>
-                                    <option value="EDUCATION">교육</option>
-                                    <option value="WELFARE">복지</option>
+
+                                <select class="admin-select"
+                                        th:field="*{category}"
+                                        required>
+
+                                    <option value="">
+                                        분야 선택
+                                    </option>
+
+                                    <option th:each="category
+                                                    : ${categories}"
+                                            th:value="${category}"
+                                            th:text="${category.label}">
+                                    </option>
                                 </select>
                             </label>
 
                             <label class="form-field">
-                                <span>지원 대상 <b>*</b></span>
-                                <select class="admin-select" name="target">
-                                    <option value="">지원 대상 선택</option>
-                                    <option value="YOUTH">청년</option>
-                                    <option value="MIDDLE">중장년</option>
-                                    <option value="SENIOR">노년</option>
-                                    <option value="FAMILY">가족</option>
-                                    <option value="SMALL_BUSINESS">소상공인</option>
-                                </select>
+                                <span>지원 대상</span>
+
+                                <input class="admin-input"
+                                       type="text"
+                                       th:field="*{target}"
+                                       placeholder="예: 서울 거주 만 40세 이상 중장년">
                             </label>
 
                             <label class="form-field">
                                 <span>지역</span>
-                                <select class="admin-select" name="region">
-                                    <option value="SEOUL">서울시 전체</option>
-                                    <option value="GANGSEO">강서구</option>
-                                    <option value="NOWON">노원구</option>
-                                    <option value="DONGDAEMUN">동대문구</option>
-                                </select>
+
+                                <input class="admin-input"
+                                       type="text"
+                                       th:field="*{region}"
+                                       placeholder="예: 서울특별시">
                             </label>
 
                             <label class="form-field">
-                                <span>공개 상태</span>
-                                <select class="admin-select" name="status">
-                                    <option value="PENDING_REVIEW">검수대기</option>
-                                    <option value="PUBLISHED">공개</option>
-                                    <option value="HIDDEN">숨김</option>
-                                    <option value="CLOSED">마감</option>
+                                <span>자치구</span>
+
+                                <select class="admin-select"
+                                        th:field="*{district}">
+
+                                    <option value="">
+                                        서울시 전체
+                                    </option>
+                                    <option value="강남구">강남구</option>
+                                    <option value="강동구">강동구</option>
+                                    <option value="강북구">강북구</option>
+                                    <option value="강서구">강서구</option>
+                                    <option value="관악구">관악구</option>
+                                    <option value="광진구">광진구</option>
+                                    <option value="구로구">구로구</option>
+                                    <option value="금천구">금천구</option>
+                                    <option value="노원구">노원구</option>
+                                    <option value="도봉구">도봉구</option>
+                                    <option value="동대문구">동대문구</option>
+                                    <option value="동작구">동작구</option>
+                                    <option value="마포구">마포구</option>
+                                    <option value="서대문구">서대문구</option>
+                                    <option value="서초구">서초구</option>
+                                    <option value="성동구">성동구</option>
+                                    <option value="성북구">성북구</option>
+                                    <option value="송파구">송파구</option>
+                                    <option value="양천구">양천구</option>
+                                    <option value="영등포구">영등포구</option>
+                                    <option value="용산구">용산구</option>
+                                    <option value="은평구">은평구</option>
+                                    <option value="종로구">종로구</option>
+                                    <option value="중구">중구</option>
+                                    <option value="중랑구">중랑구</option>
                                 </select>
                             </label>
+
                         </div>
                     </section>
 
                     <section class="admin-card">
+
                         <div class="admin-card-head">
                             <h2>신청 정보</h2>
-                            <a class="admin-link" href="#">기간 자동계산</a>
                         </div>
 
                         <div class="form-grid">
+
                             <label class="form-field">
                                 <span>신청 시작일</span>
-                                <input class="admin-input" type="date" name="startDate">
+
+                                <input class="admin-input"
+                                       type="date"
+                                       th:field="*{startDate}">
                             </label>
 
                             <label class="form-field">
                                 <span>신청 마감일</span>
-                                <input class="admin-input" type="date" name="endDate">
+
+                                <input class="admin-input"
+                                       type="date"
+                                       th:field="*{endDate}">
+                            </label>
+
+                            <label class="form-field">
+                                <span>신청 상태</span>
+
+                                <select class="admin-select"
+                                        th:field="*{applyStatus}">
+
+                                    <option th:each="status
+                                                    : ${applyStatuses}"
+                                            th:value="${status}"
+                                            th:text="${status.label}">
+                                    </option>
+                                </select>
                             </label>
 
                             <label class="form-field">
                                 <span>신청 방법</span>
-                                <select class="admin-select" name="applyMethodType">
-                                    <option value="ONLINE">온라인</option>
-                                    <option value="VISIT">방문</option>
-                                    <option value="PHONE">전화</option>
-                                    <option value="MIXED">복합</option>
+
+                                <select class="admin-select"
+                                        th:field="*{applyMethod}">
+
+                                    <option value="온라인">온라인</option>
+                                    <option value="방문">방문</option>
+                                    <option value="전화">전화</option>
+                                    <option value="온라인 또는 방문">
+                                        온라인 또는 방문
+                                    </option>
+                                    <option value="공식 홈페이지 확인">
+                                        공식 홈페이지 확인
+                                    </option>
                                 </select>
                             </label>
 
                             <label class="form-field">
                                 <span>문의처</span>
-                                <input class="admin-input" type="text" name="contact" placeholder="예: 02-0000-0000">
+
+                                <input class="admin-input"
+                                       type="text"
+                                       th:field="*{contact}"
+                                       placeholder="예: 02-0000-0000">
                             </label>
 
                             <label class="form-field wide">
                                 <span>공식 URL</span>
-                                <input class="admin-input" type="url" name="officialUrl" placeholder="https://example.go.kr">
+
+                                <input class="admin-input"
+                                       type="url"
+                                       th:field="*{officialUrl}"
+                                       placeholder="https://example.go.kr">
                             </label>
 
                             <label class="form-field wide">
                                 <span>담당자 메모</span>
-                                <textarea class="admin-textarea" name="adminMemo" rows="4" placeholder="관리자만 확인하는 내부 메모를 입력하세요."></textarea>
+
+                                <textarea class="admin-textarea"
+                                          th:field="*{adminMemo}"
+                                          rows="4"
+                                          placeholder="현재 관리자 메모는 화면 입력만 지원하며 DB에는 저장되지 않습니다.">
+                                </textarea>
                             </label>
+
                         </div>
                     </section>
                 </div>
 
                 <section class="admin-card">
+
                     <div class="admin-card-head">
                         <h2>정책 상세 내용</h2>
-                        <span class="admin-list-count">사용자 화면에 노출되는 내용</span>
+
+                        <span class="admin-list-count">
+                            사용자 화면에 노출되는 내용
+                        </span>
                     </div>
 
                     <div class="form-grid detail-form-grid">
+
                         <label class="form-field wide">
                             <span>지원 내용 <b>*</b></span>
-                            <textarea class="admin-textarea" name="benefit" rows="5" placeholder="정책을 통해 제공되는 지원 내용과 혜택을 입력하세요."></textarea>
+
+                            <textarea class="admin-textarea"
+                                      th:field="*{benefit}"
+                                      rows="5"
+                                      required
+                                      placeholder="지원 내용과 혜택을 입력하세요.">
+                            </textarea>
                         </label>
 
                         <label class="form-field wide">
                             <span>신청 자격</span>
-                            <textarea class="admin-textarea" name="qualification" rows="4" placeholder="나이, 소득, 거주지, 가구 조건 등 신청 자격을 입력하세요."></textarea>
+
+                            <textarea class="admin-textarea"
+                                      th:field="*{selectionCriteria}"
+                                      rows="4"
+                                      placeholder="나이, 소득, 거주지 등 신청 자격을 입력하세요.">
+                            </textarea>
                         </label>
 
                         <label class="form-field wide">
                             <span>필요 서류</span>
-                            <textarea class="admin-textarea" name="documents" rows="4" placeholder="신분증, 신청서, 소득증빙 등 필요한 서류를 입력하세요."></textarea>
+
+                            <textarea class="admin-textarea"
+                                      th:field="*{requiredDocumentsText}"
+                                      rows="4"
+                                      placeholder="필요한 서류를 입력하세요.">
+                            </textarea>
                         </label>
 
                         <label class="form-field wide">
                             <span>신청 절차</span>
-                            <textarea class="admin-textarea" name="process" rows="4" placeholder="신청 접수 → 서류 확인 → 대상자 선정 → 결과 안내 등 절차를 입력하세요."></textarea>
+
+                            <textarea class="admin-textarea"
+                                      th:field="*{contentText}"
+                                      rows="4"
+                                      placeholder="신청 절차를 입력하세요.">
+                            </textarea>
                         </label>
+
                     </div>
                 </section>
 
                 <div class="admin-grid-2 policy-form-ai">
+
                     <section class="admin-card">
+
                         <div class="admin-card-head">
                             <h2>AI 쉬운 설명</h2>
-                            <button class="mini-btn" type="button">AI 요약 생성</button>
+
+                            <button class="mini-btn"
+                                    type="button"
+                                    disabled>
+                                AI 요약 생성
+                            </button>
                         </div>
 
                         <label class="form-field">
                             <span>쉬운 정책 설명</span>
-                            <textarea class="admin-textarea" name="easySummary" rows="4" placeholder="고령층도 이해하기 쉬운 표현으로 정책을 설명하세요."></textarea>
+
+                            <textarea class="admin-textarea"
+                                      th:field="*{easySummary}"
+                                      rows="4"
+                                      placeholder="AI 기능 구현 후 연동할 영역입니다.">
+                            </textarea>
                         </label>
 
                         <label class="form-field">
                             <span>신청 전 확인사항</span>
-                            <textarea class="admin-textarea" name="checkPoint" rows="3" placeholder="신청 전에 꼭 확인해야 하는 내용을 입력하세요."></textarea>
+
+                            <textarea class="admin-textarea"
+                                      th:field="*{checkPoint}"
+                                      rows="3"
+                                      placeholder="AI 기능 구현 후 연동할 영역입니다.">
+                            </textarea>
                         </label>
+
                     </section>
 
                     <section class="admin-card">
+
                         <div class="admin-card-head">
                             <h2>미리보기</h2>
-                            <a class="admin-link" href="#">사용자 화면 보기 ›</a>
                         </div>
 
                         <div class="policy-preview">
-                            <span class="admin-tag ok">신청가능</span>
-                            <h3>중장년 직업역량 강화 교육</h3>
-                            <p>서울 거주 중장년층이 직업 교육과 취업 상담을 받을 수 있는 정책입니다.</p>
+
+                            <span class="admin-tag ok"
+                                  id="previewApplyStatus">
+                                신청 가능
+                            </span>
+
+                            <h3 id="previewTitle">
+                                정책명을 입력해 주세요
+                            </h3>
+
+                            <p id="previewBenefit">
+                                지원 내용을 입력하면 이곳에 표시됩니다.
+                            </p>
 
                             <dl>
                                 <div>
                                     <dt>분야</dt>
-                                    <dd>일자리</dd>
+                                    <dd id="previewCategory">-</dd>
                                 </div>
+
                                 <div>
                                     <dt>대상</dt>
-                                    <dd>중장년</dd>
+                                    <dd id="previewTarget">-</dd>
                                 </div>
+
                                 <div>
                                     <dt>기간</dt>
-                                    <dd>2025.07.01 ~ 2025.07.10</dd>
+                                    <dd id="previewPeriod">-</dd>
                                 </div>
                             </dl>
 
-                            <div class="preview-actions">
-                                <button type="button">정책 쉽게 설명받기</button>
-                                <button type="button">필요 서류 확인하기</button>
-                            </div>
                         </div>
                     </section>
                 </div>
 
                 <section class="admin-card">
+
                     <div class="admin-card-head">
                         <h2>저장 및 검수 처리</h2>
-                        <span class="admin-tag info">관리자 전용</span>
+
+                        <span class="admin-tag info">
+                            관리자 전용
+                        </span>
                     </div>
 
                     <div class="submit-panel">
+
                         <div>
                             <strong>저장 후 처리 상태</strong>
-                            <p>정책을 바로 공개하거나 검수 대기 상태로 저장할 수 있습니다.</p>
+
+                            <p>
+                                임시 저장, 검수 대기 또는
+                                승인 공개 상태로 저장할 수 있습니다.
+                            </p>
                         </div>
 
                         <div class="admin-actions">
-                            <button class="admin-btn" type="button">임시 저장</button>
-                            <button class="admin-btn" type="button">검수 대기로 저장</button>
-                            <button class="admin-btn primary" type="submit">승인 후 공개</button>
+
+                            <button class="admin-btn"
+                                    type="submit"
+                                    name="saveAction"
+                                    value="DRAFT">
+                                임시 저장
+                            </button>
+
+                            <button class="admin-btn"
+                                    type="submit"
+                                    name="saveAction"
+                                    value="REVIEW">
+                                검수 대기로 저장
+                            </button>
+
+                            <button class="admin-btn primary"
+                                    type="submit"
+                                    name="saveAction"
+                                    value="APPROVE">
+                                승인 후 공개
+                            </button>
+
                         </div>
                     </div>
                 </section>
+
             </form>
         </section>
     </div>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-<script th:src="@{/js/common.js}" src="/js/common.js"></script>
+
+<script th:src="@{/js/common.js}"
+        src="/js/common.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const titleInput =
+            document.querySelector("[name='title']");
+
+        const benefitInput =
+            document.querySelector("[name='benefit']");
+
+        const categoryInput =
+            document.querySelector("[name='category']");
+
+        const targetInput =
+            document.querySelector("[name='target']");
+
+        const startDateInput =
+            document.querySelector("[name='startDate']");
+
+        const endDateInput =
+            document.querySelector("[name='endDate']");
+
+        const applyStatusInput =
+            document.querySelector("[name='applyStatus']");
+
+        const previewTitle =
+            document.getElementById("previewTitle");
+
+        const previewBenefit =
+            document.getElementById("previewBenefit");
+
+        const previewCategory =
+            document.getElementById("previewCategory");
+
+        const previewTarget =
+            document.getElementById("previewTarget");
+
+        const previewPeriod =
+            document.getElementById("previewPeriod");
+
+        const previewApplyStatus =
+            document.getElementById("previewApplyStatus");
+
+        function selectedText(selectElement) {
+            if (!selectElement
+                || selectElement.selectedIndex < 0) {
+                return "-";
+            }
+
+            return selectElement.options[
+                selectElement.selectedIndex
+                ].text;
+        }
+
+        function updatePreview() {
+            previewTitle.textContent =
+                titleInput.value.trim()
+                || "정책명을 입력해 주세요";
+
+            previewBenefit.textContent =
+                benefitInput.value.trim()
+                || "지원 내용을 입력하면 이곳에 표시됩니다.";
+
+            previewCategory.textContent =
+                selectedText(categoryInput);
+
+            previewTarget.textContent =
+                targetInput.value.trim() || "-";
+
+            const startDate =
+                startDateInput.value || "-";
+
+            const endDate =
+                endDateInput.value || "-";
+
+            previewPeriod.textContent =
+                startDate + " ~ " + endDate;
+
+            previewApplyStatus.textContent =
+                selectedText(applyStatusInput);
+        }
+
+        document
+            .querySelectorAll(
+                "#policyForm input, "
+                + "#policyForm textarea, "
+                + "#policyForm select"
+            )
+            .forEach(function (element) {
+                element.addEventListener(
+                    "input",
+                    updatePreview
+                );
+
+                element.addEventListener(
+                    "change",
+                    updatePreview
+                );
+            });
+
+        updatePreview();
+    });
+</script>
+
 </body>
 </html>

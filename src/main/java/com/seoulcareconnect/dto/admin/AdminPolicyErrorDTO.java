@@ -69,7 +69,9 @@ public class AdminPolicyErrorDTO {
         this.processedAt = processedAt;
     }
 
-    public static AdminPolicyErrorDTO from(PolicyCollectionError error) {
+    public static AdminPolicyErrorDTO from(
+            PolicyCollectionError error
+    ) {
         Long policyId = error.getPolicy() != null
                 ? error.getPolicy().getPolicyId()
                 : null;
@@ -78,9 +80,13 @@ public class AdminPolicyErrorDTO {
                 ? error.getSource().getSourceId()
                 : null;
 
+        /*
+         * 누락 정책 신고는 수집 출처가 없을 수 있으므로
+         * 사용자 직접 신고로 표시한다.
+         */
         String sourceName = error.getSource() != null
                 ? error.getSource().getSourceName()
-                : "-";
+                : "사용자 직접 신고";
 
         String policyTitle = resolvePolicyTitle(error);
         String externalId = resolveExternalId(error);
@@ -96,11 +102,15 @@ public class AdminPolicyErrorDTO {
                 policyTitle,
                 sourceName,
                 errorType,
-                errorType != null ? errorType.getLabel() : "-",
+                errorType != null
+                        ? errorType.getLabel()
+                        : "-",
                 getErrorTypeCssClass(errorType),
                 error.getErrorMessage(),
                 status,
-                status != null ? status.getLabel() : "-",
+                status != null
+                        ? status.getLabel()
+                        : "-",
                 getStatusCssClass(status),
                 error.getAdminMemo(),
                 error.getCreatedAt(),
@@ -108,37 +118,47 @@ public class AdminPolicyErrorDTO {
         );
     }
 
-    private static String resolvePolicyTitle(PolicyCollectionError error) {
+    private static String resolvePolicyTitle(
+            PolicyCollectionError error
+    ) {
         if (error.getPolicyTitle() != null
                 && !error.getPolicyTitle().isBlank()) {
+
             return error.getPolicyTitle();
         }
 
         if (error.getPolicy() != null
                 && error.getPolicy().getTitle() != null
                 && !error.getPolicy().getTitle().isBlank()) {
+
             return error.getPolicy().getTitle();
         }
 
         return "정책명 없음";
     }
 
-    private static String resolveExternalId(PolicyCollectionError error) {
+    private static String resolveExternalId(
+            PolicyCollectionError error
+    ) {
         if (error.getExternalId() != null
                 && !error.getExternalId().isBlank()) {
+
             return error.getExternalId();
         }
 
         if (error.getPolicy() != null
                 && error.getPolicy().getExternalId() != null
                 && !error.getPolicy().getExternalId().isBlank()) {
+
             return error.getPolicy().getExternalId();
         }
 
         return "-";
     }
 
-    private static String getErrorTypeCssClass(PolicyErrorType errorType) {
+    private static String getErrorTypeCssClass(
+            PolicyErrorType errorType
+    ) {
         if (errorType == null) {
             return "";
         }
@@ -151,7 +171,9 @@ public class AdminPolicyErrorDTO {
         };
     }
 
-    private static String getStatusCssClass(PolicyErrorStatus status) {
+    private static String getStatusCssClass(
+            PolicyErrorStatus status
+    ) {
         if (status == null) {
             return "";
         }

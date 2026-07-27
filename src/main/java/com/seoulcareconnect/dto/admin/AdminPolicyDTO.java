@@ -5,9 +5,13 @@ import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyCategory;
 import com.seoulcareconnect.entity.policy.enums.PolicyStatus;
 import lombok.Getter;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.List;
 
 @Getter
 public class AdminPolicyDTO {
@@ -212,4 +216,5 @@ public class AdminPolicyDTO {
             default -> "manual";
         };
     }
+
 }

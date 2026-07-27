@@ -166,14 +166,14 @@
                         id="openPresetModal"
                         type="button"
                         title="저장한 검색 조건을 관리합니다.">
-                  프리셋
+                  검색 조건 저장
                 </button>
 
                 <a sec:authorize="isAnonymous()"
                    th:href="@{/login}"
                    title="로그인 후 검색 조건을 저장할 수 있습니다.">
                   <span aria-hidden="true">□</span>
-                  프리셋
+                  검색 조건 저장
                 </a>
               </div>
             </div>
@@ -406,14 +406,14 @@
              aria-labelledby="presetModalTitle">
       <div class="preset-dialog-head">
         <div>
-          <h2 id="presetModalTitle">검색 프리셋</h2>
+          <h2 id="presetModalTitle">검색 조건 저장</h2>
           <p>현재 검색 조건을 저장하거나 다시 불러올 수 있어요.</p>
         </div>
-        <button class="preset-close" type="button" aria-label="프리셋 창 닫기" data-preset-close>×</button>
+        <button class="preset-close" type="button" aria-label="검색 조건 저장 창 닫기" data-preset-close>×</button>
       </div>
 
       <form class="preset-save-form" id="presetSaveForm">
-        <label for="presetName">프리셋 이름</label>
+        <label for="presetName">검색 조건 이름</label>
         <div>
           <input id="presetName"
                  name="presetName"
@@ -426,7 +426,7 @@
       </form>
 
       <div class="preset-list-wrap">
-        <h3>저장한 프리셋</h3>
+        <h3>저장한 검색 조건</h3>
         <div class="preset-list" id="presetList" aria-live="polite"></div>
       </div>
     </section>
