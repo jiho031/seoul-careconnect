@@ -1,7 +1,7 @@
 package com.seoulcareconnect.repository.ai;
 
 import com.seoulcareconnect.entity.ai.AiPolicyExplanation;
-import com.seoulcareconnect.entity.ai.AiReviewStatus;
+import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +16,7 @@ public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExp
     @EntityGraph(attributePaths = "policy")
     Optional<AiPolicyExplanation> findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
             Long policyId,
-            AiReviewStatus reviewStatus
+            ReviewStatus reviewStatus
     );
 
     @EntityGraph(attributePaths = "policy")
@@ -27,21 +27,21 @@ public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExp
     );
 
     @EntityGraph(attributePaths = "policy")
-    List<AiPolicyExplanation> findTop100ByReviewStatusOrderByCreatedAtDesc(AiReviewStatus reviewStatus);
+    List<AiPolicyExplanation> findTop100ByReviewStatusOrderByCreatedAtDesc(ReviewStatus reviewStatus);
 
     @EntityGraph(attributePaths = "policy")
-    List<AiPolicyExplanation> findTop100ByReviewStatusNotOrderByCreatedAtDesc(AiReviewStatus reviewStatus);
+    List<AiPolicyExplanation> findTop100ByReviewStatusNotOrderByCreatedAtDesc(ReviewStatus reviewStatus);
 
     List<AiPolicyExplanation> findByPolicyPolicyIdAndReviewStatus(
             Long policyId,
-            AiReviewStatus reviewStatus
+            ReviewStatus reviewStatus
     );
 
     @EntityGraph(attributePaths = "policy")
     List<AiPolicyExplanation> findByPolicyPolicyIdInAndReviewStatus(
             Collection<Long> policyIds,
-            AiReviewStatus reviewStatus
+            ReviewStatus reviewStatus
     );
 
-    long countByReviewStatus(AiReviewStatus reviewStatus);
+    long countByReviewStatus(ReviewStatus reviewStatus);
 }

@@ -1,12 +1,13 @@
-package com.seoulcareconnect.service.impl.ai;
+package com.seoulcareconnect.service.ai;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seoulcareconnect.config.ai.AiProperties;
 import com.seoulcareconnect.dto.ai.AiAssistantRequest;
 import com.seoulcareconnect.dto.ai.AiAssistantResponse;
-import com.seoulcareconnect.dto.ai.AiAssistantUserContext;
-import com.seoulcareconnect.integration.client.ai.OpenAiAssistantClient;
+import com.seoulcareconnect.repository.ai.AiPolicyEmbeddingRepository;
 import com.seoulcareconnect.repository.ai.AiPolicyExplanationRepository;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
+import com.seoulcareconnect.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,12 +20,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AiPolicyAssistantServiceImplTest {
+class AiPolicyAssistantServiceTest {
 
     @Mock
     private PolicyRepository policyRepository;
@@ -33,24 +33,25 @@ class AiPolicyAssistantServiceImplTest {
     private AiPolicyExplanationRepository explanationRepository;
 
     @Mock
-    private PolicyQuestionFilter questionFilter;
+    private AiPolicyEmbeddingRepository embeddingRepository;
 
     @Mock
-    private AiPolicyEmbeddingService embeddingService;
+    private UserRepository userRepository;
 
     @Mock
-    private OpenAiAssistantClient assistantClient;
+    private AiModelGateway modelGateway;
 
-    private AiPolicyAssistantServiceImpl service;
+    private AiPolicyAssistantService service;
 
     @BeforeEach
     void setUp() {
-        service = new AiPolicyAssistantServiceImpl(
+        service = new AiPolicyAssistantService(
                 policyRepository,
                 explanationRepository,
-                questionFilter,
-                embeddingService,
-                assistantClient,
+                embeddingRepository,
+                userRepository,
+                modelGateway,
+                new ObjectMapper(),
                 new AiProperties()
         );
         ReflectionTestUtils.setField(service, "zoneId", "Asia/Seoul");
@@ -58,19 +59,32 @@ class AiPolicyAssistantServiceImplTest {
 
     @Test
     void returnsGroundingFailureWithoutCallingAi() {
-        when(questionFilter.enrichWithProfile(any(), any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
         when(policyRepository.findAssistantCandidates(anyList(), any(), any()))
                 .thenReturn(List.of());
 
         AiAssistantResponse response = service.ask(
                 new AiAssistantRequest("정책을 찾아주세요.", null, List.of()),
-                AiAssistantUserContext.empty()
+                null
         );
 
         assertThat(response.grounded()).isFalse();
         assertThat(response.sources()).isEmpty();
-        verify(assistantClient, never()).answer(any(), anyList(), anyList());
-        verify(embeddingService, never()).rank(any(), anyList());
+        verifyNoInteractions(modelGateway);
+    }
+
+    @Test
+    void embeddingProfileDoesNotMixOpenAiAndOllamaVectors() {
+        AiModelGateway.EmbeddingProfile openAi = new AiModelGateway.EmbeddingProfile(
+                AiModelGateway.Provider.OPENAI,
+                "text-embedding-3-small",
+                512
+        );
+        AiModelGateway.EmbeddingProfile ollama = new AiModelGateway.EmbeddingProfile(
+                AiModelGateway.Provider.OLLAMA,
+                "embeddinggemma",
+                768
+        );
+
+        assertThat(openAi.matches(ollama)).isFalse();
     }
 }

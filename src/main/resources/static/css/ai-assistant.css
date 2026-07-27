@@ -4,7 +4,12 @@
     bottom: 28px;
     z-index: 1400;
     color: #10224b;
-    font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-family: inherit;
+}
+
+.ai-assistant button,
+.ai-assistant textarea {
+    font: inherit;
 }
 
 .ai-assistant-launcher {
@@ -19,7 +24,7 @@
     background: linear-gradient(135deg, #087b78 0%, #05626b 100%);
     box-shadow: 0 16px 34px rgba(5, 98, 107, .28);
     font-size: 16px;
-    font-weight: 900;
+    font-weight: 800;
 }
 
 .ai-assistant-launcher:hover,
@@ -38,7 +43,7 @@
     color: #087b78;
     background: #ffffff;
     font-size: 14px;
-    font-weight: 950;
+    font-weight: 800;
 }
 
 .ai-assistant-panel {
@@ -75,22 +80,22 @@
     margin-bottom: 4px;
     color: #c9f5ef;
     font-size: 12px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .ai-assistant-header h2 {
     margin: 0;
     font-size: 23px;
-    font-weight: 950;
-    letter-spacing: -.045em;
+    font-weight: 800;
+    letter-spacing: -.025em;
 }
 
 .ai-assistant-header p {
     margin: 7px 0 0;
     color: #e3f8f5;
     font-size: 13px;
-    font-weight: 650;
-    line-height: 1.4;
+    font-weight: 500;
+    line-height: 1.55;
 }
 
 .ai-assistant-close {
@@ -142,8 +147,8 @@
     margin: 0;
     color: inherit;
     font-size: 14px;
-    font-weight: 650;
-    line-height: 1.62;
+    font-weight: 500;
+    line-height: 1.7;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
@@ -159,7 +164,7 @@
     color: #ffffff;
     background: #087b78;
     font-size: 11px;
-    font-weight: 950;
+    font-weight: 800;
 }
 
 .ai-assistant-message.is-loading > div {
@@ -186,14 +191,14 @@
     margin-bottom: 4px;
     color: #086f71;
     font-size: 13px;
-    font-weight: 900;
+    font-weight: 800;
 }
 
 .ai-assistant-source span,
 .ai-assistant-source small {
     display: block;
     font-size: 12px;
-    line-height: 1.45;
+    line-height: 1.55;
 }
 
 .ai-assistant-source small {
@@ -211,7 +216,7 @@
 .ai-assistant-source-links a {
     color: #087b78;
     font-size: 12px;
-    font-weight: 850;
+    font-weight: 700;
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -233,7 +238,7 @@
     color: #096f71;
     background: #f4fbfb;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .ai-assistant-form {
@@ -273,7 +278,7 @@
     color: #ffffff;
     background: #087b78;
     font-size: 13px;
-    font-weight: 900;
+    font-weight: 800;
 }
 
 .ai-assistant-form button:disabled,
@@ -288,8 +293,8 @@
     color: #667888;
     background: #ffffff;
     font-size: 11px;
-    font-weight: 650;
-    line-height: 1.45;
+    font-weight: 500;
+    line-height: 1.55;
 }
 
 body.large-text-mode .ai-assistant-launcher,

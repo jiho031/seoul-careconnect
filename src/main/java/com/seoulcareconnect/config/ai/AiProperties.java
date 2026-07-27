@@ -3,9 +3,11 @@ package com.seoulcareconnect.config.ai;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
+@Component
 @ConfigurationProperties(prefix = "app.ai")
 public class AiProperties {
 
@@ -20,4 +22,9 @@ public class AiProperties {
     private int assistantCandidateLimit = 80;
     private int assistantTopK = 5;
     private int assistantMaxOutputTokens = 900;
+    private boolean ollamaEnabled = true;
+    private String ollamaBaseUrl = "http://localhost:11434";
+    private String ollamaModel = "llama3.2";
+    private String ollamaEmbeddingModel = "embeddinggemma";
+    private int ollamaEmbeddingDimensions = 0;
 }

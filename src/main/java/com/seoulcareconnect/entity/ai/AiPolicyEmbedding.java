@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -40,6 +41,9 @@ public class AiPolicyEmbedding {
     @JoinColumn(name = "policy_id", nullable = false)
     private Policy policy;
 
+    @Column(name = "provider_name", length = 30)
+    private String providerName;
+
     @Column(name = "model_name", nullable = false, length = 100)
     private String modelName;
 
@@ -61,6 +65,7 @@ public class AiPolicyEmbedding {
 
     public static AiPolicyEmbedding create(
             Policy policy,
+            String providerName,
             String modelName,
             int dimensions,
             String contentHash,
@@ -68,24 +73,32 @@ public class AiPolicyEmbedding {
     ) {
         AiPolicyEmbedding embedding = new AiPolicyEmbedding();
         embedding.policy = policy;
-        embedding.update(modelName, dimensions, contentHash, vectorJson);
+        embedding.update(providerName, modelName, dimensions, contentHash, vectorJson);
         return embedding;
     }
 
     public void update(
+            String providerName,
             String modelName,
             int dimensions,
             String contentHash,
             String vectorJson
     ) {
+        this.providerName = providerName;
         this.modelName = modelName;
         this.dimensions = dimensions;
         this.contentHash = contentHash;
         this.vectorJson = vectorJson;
     }
 
-    public boolean matches(String modelName, int dimensions, String contentHash) {
-        return this.modelName.equals(modelName)
+    public boolean matches(
+            String providerName,
+            String modelName,
+            int dimensions,
+            String contentHash
+    ) {
+        return Objects.equals(this.providerName, providerName)
+                && Objects.equals(this.modelName, modelName)
                 && this.dimensions == dimensions
                 && this.contentHash.equals(contentHash);
     }
