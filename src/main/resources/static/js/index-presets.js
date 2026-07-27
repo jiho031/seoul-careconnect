@@ -42,7 +42,7 @@
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || '프리셋을 처리하지 못했습니다.');
+      throw new Error(error.message || '검색 조건을 처리하지 못했습니다.');
     }
 
     return response.status === 204 ? null : response.json();
@@ -63,7 +63,7 @@
     if (!presets.length) {
       const empty = document.createElement('p');
       empty.className = 'preset-empty';
-      empty.textContent = '저장된 프리셋이 없습니다.';
+      empty.textContent = '저장된 검색 조건이 없습니다.';
       presetList.append(empty);
       return;
     }
@@ -105,7 +105,7 @@
   };
 
   const loadPresets = async () => {
-    presetList.textContent = '프리셋을 불러오는 중입니다.';
+    presetList.textContent = '검색 조건을 불러오는 중입니다.';
 
     try {
       renderPresets(await request('/api/search-presets'));
