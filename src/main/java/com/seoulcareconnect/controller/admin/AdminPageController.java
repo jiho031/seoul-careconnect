@@ -21,24 +21,20 @@ public class AdminPageController {
         return "admin/duplicates";
     }
 
-    @GetMapping("/admin/policies/new")
-    public String policyForm() {
-        return "admin/policy-form";
-    }
+//    @GetMapping("/admin/policies/new")
+//    public String policyForm() {
+//        return "admin/policy-form";
+//    }
 
-    @GetMapping("/admin/policies/{id}/edit")
-    public String policyEdit() {
-        return "admin/policy-form";
-    }
+//    @GetMapping("/admin/policies/{id}/edit")
+//    public String policyEdit() {
+//        return "admin/policy-form";
+//    }
 
-    @GetMapping("/admin/users")
-    public String users() {
-        return "admin/users";
-    }
+//    @GetMapping("/admin/users")
+//    public String users() {
+//        return "admin/users";
+//    }
 
-    @GetMapping("/admin/super")
-    public String superAdmin() {
-        return "admin/super-admin";
-    }
 
 }

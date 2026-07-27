@@ -65,6 +65,11 @@ public class AdminPolicyController {
         model.addAttribute("policies", policyPage.getContent());
 
         model.addAttribute(
+                "recentReviewPolicies",
+                adminPolicyService.getRecentReviewPolicies()
+        );
+
+        model.addAttribute(
                 "totalPolicyCount",
                 adminPolicyService.getTotalPolicyCount()
         );

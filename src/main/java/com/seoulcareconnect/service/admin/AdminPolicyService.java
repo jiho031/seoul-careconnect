@@ -328,4 +328,24 @@ public class AdminPolicyService {
             );
         };
     }
+
+    public List<AdminPolicyDTO> getRecentReviewPolicies() {
+
+        Pageable pageable = PageRequest.of(
+                0,
+                20
+        );
+
+        return policyRepository
+                .findByStatusInOrderByUpdatedAtDescCreatedAtDesc(
+                        List.of(
+                                PolicyStatus.PENDING_REVIEW,
+                                PolicyStatus.NEEDS_UPDATE
+                        ),
+                        pageable
+                )
+                .stream()
+                .map(AdminPolicyDTO::from)
+                .toList();
+    }
 }
