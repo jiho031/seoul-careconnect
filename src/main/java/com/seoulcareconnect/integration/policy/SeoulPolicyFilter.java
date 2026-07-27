@@ -18,6 +18,29 @@ public class SeoulPolicyFilter {
             "고용24-사업주"
     );
 
+    private static final List<String> AD_EDUCATION_PROVIDER_WORDS = List.of(
+            "학원",
+            "아카데미",
+            "캠퍼스",
+            "평생교육원",
+            "직업전문학교",
+            "직업훈련기관"
+    );
+
+    private static final List<String> AD_EDUCATION_COURSE_WORDS = List.of(
+            "강좌",
+            "교육과정",
+            "훈련과정",
+            "실무과정",
+            "양성과정",
+            "수강생 모집",
+            "교육생 모집",
+            "수강신청",
+            "개강",
+            "부트캠프",
+            "자격증 과정"
+    );
+
     private static final List<String> BIZINFO_SOURCES = List.of(
             "기업마당"
     );
@@ -123,6 +146,10 @@ public class SeoulPolicyFilter {
             ExternalPolicyItem item
     ) {
         if (item == null) {
+            return false;
+        }
+
+        if (isAdvertisementLikeEducation(item)) {
             return false;
         }
 
@@ -256,6 +283,39 @@ public class SeoulPolicyFilter {
         }
 
         return clean(item.getRegion());
+    }
+
+    private boolean isAdvertisementLikeEducation(
+            ExternalPolicyItem item
+    ) {
+        String providerText = join(
+                item.getAgencyName(),
+                item.getContact(),
+                item.getTitle()
+        );
+
+        String courseText = join(
+                item.getTitle(),
+                item.getSummary(),
+                item.getBenefit(),
+                item.getContentText(),
+                item.getApplyMethod()
+        );
+
+        boolean privateEducationProvider =
+                containsAny(
+                        providerText,
+                        AD_EDUCATION_PROVIDER_WORDS
+                );
+
+        boolean individualCourse =
+                containsAny(
+                        courseText,
+                        AD_EDUCATION_COURSE_WORDS
+                );
+
+        return privateEducationProvider
+                && individualCourse;
     }
 
     private boolean isRelevantBizInfo(
