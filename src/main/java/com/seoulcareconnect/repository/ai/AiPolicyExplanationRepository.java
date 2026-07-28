@@ -1,23 +1,23 @@
 package com.seoulcareconnect.repository.ai;
 
 import com.seoulcareconnect.entity.ai.AiPolicyExplanation;
-import com.seoulcareconnect.entity.ai.AiReviewStatus;
+import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Modifying;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Collection;
 
 public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExplanation, Long> {
 
     @EntityGraph(attributePaths = "policy")
     Optional<AiPolicyExplanation> findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
             Long policyId,
-            AiReviewStatus reviewStatus
+            ReviewStatus reviewStatus
     );
 
     @EntityGraph(attributePaths = "policy")
@@ -28,17 +28,23 @@ public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExp
     );
 
     @EntityGraph(attributePaths = "policy")
-    List<AiPolicyExplanation> findTop100ByReviewStatusOrderByCreatedAtDesc(AiReviewStatus reviewStatus);
+    List<AiPolicyExplanation> findTop100ByReviewStatusOrderByCreatedAtDesc(ReviewStatus reviewStatus);
 
     @EntityGraph(attributePaths = "policy")
-    List<AiPolicyExplanation> findTop100ByReviewStatusNotOrderByCreatedAtDesc(AiReviewStatus reviewStatus);
+    List<AiPolicyExplanation> findTop100ByReviewStatusNotOrderByCreatedAtDesc(ReviewStatus reviewStatus);
 
     List<AiPolicyExplanation> findByPolicyPolicyIdAndReviewStatus(
             Long policyId,
-            AiReviewStatus reviewStatus
+            ReviewStatus reviewStatus
     );
 
-    long countByReviewStatus(AiReviewStatus reviewStatus);
+    @EntityGraph(attributePaths = "policy")
+    List<AiPolicyExplanation> findByPolicyPolicyIdInAndReviewStatus(
+            Collection<Long> policyIds,
+            ReviewStatus reviewStatus
+    );
+
+    long countByReviewStatus(ReviewStatus reviewStatus);
 
     @Modifying(flushAutomatically = true)
     @Query("""

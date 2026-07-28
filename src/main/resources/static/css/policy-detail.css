@@ -207,6 +207,18 @@ input {
             color 0.18s ease;
 }
 
+.detail-ai-action {
+    border-color: #79b8b6;
+    color: #087b78;
+    background: #f1fbfa;
+}
+
+.detail-ai-action:hover {
+    border-color: #087b78;
+    color: #ffffff;
+    background: #087b78;
+}
+
 .detail-report-action:hover {
     border-color: #d64545;
     color: #ffffff;

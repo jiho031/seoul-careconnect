@@ -1,6 +1,6 @@
 package com.seoulcareconnect.controller.ai;
 
-import com.seoulcareconnect.entity.ai.AiReviewStatus;
+import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
 import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -22,19 +22,19 @@ public class AdminAiReviewController {
 
     @GetMapping
     public String page(
-            @RequestParam(required = false) AiReviewStatus status,
+            @RequestParam(required = false) ReviewStatus status,
             Model model
     ) {
         model.addAttribute("items", explanationService.findRecent(status));
         model.addAttribute("selectedStatus", status);
-        model.addAttribute("reviewStatuses", new AiReviewStatus[]{
-                AiReviewStatus.DRAFT,
-                AiReviewStatus.APPROVED,
-                AiReviewStatus.REJECTED
+        model.addAttribute("reviewStatuses", new ReviewStatus[]{
+                ReviewStatus.DRAFT,
+                ReviewStatus.APPROVED,
+                ReviewStatus.REJECTED
         });
-        model.addAttribute("draftCount", explanationService.count(AiReviewStatus.DRAFT));
-        model.addAttribute("approvedCount", explanationService.count(AiReviewStatus.APPROVED));
-        model.addAttribute("rejectedCount", explanationService.count(AiReviewStatus.REJECTED));
+        model.addAttribute("draftCount", explanationService.count(ReviewStatus.DRAFT));
+        model.addAttribute("approvedCount", explanationService.count(ReviewStatus.APPROVED));
+        model.addAttribute("rejectedCount", explanationService.count(ReviewStatus.REJECTED));
         model.addAttribute("aiEnabled", explanationService.isEnabled());
         model.addAttribute("aiModel", explanationService.modelName());
         return "admin/ai-review";

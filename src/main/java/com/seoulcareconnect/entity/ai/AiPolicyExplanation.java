@@ -1,10 +1,10 @@
 package com.seoulcareconnect.entity.ai;
 
-import com.seoulcareconnect.dto.ai.AiPolicyExplanationContent;
 import com.seoulcareconnect.entity.policy.Policy;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -32,7 +32,7 @@ public class AiPolicyExplanation {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "review_status", nullable = false, length = 30)
-    private AiReviewStatus reviewStatus = AiReviewStatus.DRAFT;
+    private ReviewStatus reviewStatus = ReviewStatus.DRAFT;
 
     @Lob
     @Column(name = "easy_summary", nullable = false, columnDefinition = "TEXT")
@@ -84,7 +84,7 @@ public class AiPolicyExplanation {
 
     public static AiPolicyExplanation draft(
             Policy policy,
-            AiPolicyExplanationContent content,
+            Content content,
             String modelName,
             String promptVersion
     ) {
@@ -100,32 +100,32 @@ public class AiPolicyExplanation {
         explanation.sourceUpdatedAt = policy.getUpdatedAt() != null
                 ? policy.getUpdatedAt()
                 : policy.getCreatedAt();
-        explanation.reviewStatus = AiReviewStatus.DRAFT;
+        explanation.reviewStatus = ReviewStatus.DRAFT;
         return explanation;
     }
 
     public void approve(String reviewer, String comment) {
-        reviewStatus = AiReviewStatus.APPROVED;
+        reviewStatus = ReviewStatus.APPROVED;
         reviewedBy = reviewer;
         reviewComment = normalize(comment);
         reviewedAt = LocalDateTime.now();
     }
 
     public void reject(String reviewer, String comment) {
-        reviewStatus = AiReviewStatus.REJECTED;
+        reviewStatus = ReviewStatus.REJECTED;
         reviewedBy = reviewer;
         reviewComment = normalize(comment);
         reviewedAt = LocalDateTime.now();
     }
 
     public void supersede() {
-        reviewStatus = AiReviewStatus.SUPERSEDED;
+        reviewStatus = ReviewStatus.SUPERSEDED;
         updatedAt = LocalDateTime.now();
     }
 
     @PrePersist
     public void prePersist() {
-        if (reviewStatus == null) reviewStatus = AiReviewStatus.DRAFT;
+        if (reviewStatus == null) reviewStatus = ReviewStatus.DRAFT;
         if (createdAt == null) createdAt = LocalDateTime.now();
     }
 
@@ -136,5 +136,25 @@ public class AiPolicyExplanation {
 
     private String normalize(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public enum ReviewStatus {
+        DRAFT("검수 대기"),
+        APPROVED("승인"),
+        REJECTED("반려"),
+        SUPERSEDED("이전 버전");
+
+        private final String label;
+    }
+
+    public record Content(
+            String easySummary,
+            String eligibilitySummary,
+            String benefitSummary,
+            String applicationSummary,
+            String cautionSummary
+    ) {
     }
 }

@@ -303,4 +303,7 @@
       </form>
     </section>
   </div>
+
+  <div th:if="${aiAssistantVisible}"
+       th:replace="~{fragments/ai-assistant :: assistant}"></div>
 </header>

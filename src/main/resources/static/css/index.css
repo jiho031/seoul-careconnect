@@ -694,13 +694,20 @@
   color: #10224b;
 }
 
-.ai-list a {
+.ai-list a,
+.ai-list button {
+  width: 100%;
+  padding: 0;
   min-height: 83px;
   display: grid;
   grid-template-columns: 54px 1fr 24px;
   gap: 16px;
   align-items: center;
+  border: 0;
   border-bottom: 1px solid #dde7f0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
 }
 
 .ai-list em {
@@ -1227,7 +1234,8 @@
     padding: 16px 16px 10px;
   }
 
-  .ai-list a {
+  .ai-list a,
+  .ai-list button {
     grid-template-columns: 46px 1fr 18px;
     gap: 12px;
   }

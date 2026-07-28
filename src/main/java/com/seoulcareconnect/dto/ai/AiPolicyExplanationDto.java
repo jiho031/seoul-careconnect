@@ -1,6 +1,6 @@
 package com.seoulcareconnect.dto.ai;
 
-import com.seoulcareconnect.entity.ai.AiReviewStatus;
+import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
 
 import java.time.LocalDateTime;
 
@@ -8,7 +8,7 @@ public record AiPolicyExplanationDto(
         Long explanationId,
         Long policyId,
         String policyTitle,
-        AiReviewStatus reviewStatus,
+        ReviewStatus reviewStatus,
         String reviewStatusLabel,
         String easySummary,
         String eligibilitySummary,
