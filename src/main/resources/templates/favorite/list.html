@@ -11,6 +11,73 @@
     <link rel="stylesheet" th:href="@{/css/index.css}" href="/css/index.css">
     <link rel="stylesheet" th:href="@{/css/favorite.css}" href="/css/favorite.css">
     <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+    <!-- [추가] 삭제된 정책 안내 모달 스타일 (다른 페이지들과 동일한 디자인) -->
+    <style>
+        .info-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 30, 50, 0.45);
+        }
+
+        .info-modal.is-open {
+            display: flex;
+        }
+
+        .info-modal-box {
+            width: min(360px, 100%);
+            padding: 34px 28px 28px;
+            border-radius: 22px;
+            background: #ffffff;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.25);
+        }
+
+        .info-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+            background: #fdeeee;
+            color: #d64545;
+        }
+
+        .info-modal-box h3 {
+            margin: 0 0 8px;
+            color: #071947;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .info-modal-box p {
+            margin: 0 0 22px;
+            color: #65758e;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .info-modal-box button {
+            width: 100%;
+            padding: 13px;
+            border: 0;
+            border-radius: 12px;
+            background: #164ce0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
@@ -51,6 +118,7 @@
                        data-preview-target=${fav.target},
                        data-preview-status=${fav.applyStatusLabel},
                        data-preview-period=${fav.applyPeriod},
+                       data-deleted=${fav.deleted},
                        aria-label=${fav.title}">
 
                     <div class="policy-card-top">
@@ -200,6 +268,16 @@
 
 </aside>
 
+<!-- [추가] 삭제된 정책 안내 모달 -->
+<div class="info-modal" id="deletedPolicyModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon">!</div>
+        <h3>삭제된 정책입니다</h3>
+        <p>기간이 지났거나 더 이상 제공되지 않는 정책이에요. 마이페이지에서 관심 목록을 정리할 수 있어요.</p>
+        <button type="button" id="deletedPolicyModalCloseButton">확인</button>
+    </div>
+</div>
+
 <script th:src="@{/js/favorite.js}"
         src="/js/favorite.js"></script>
 
@@ -225,6 +303,39 @@
                 }
             });
     }
+
+    // ===========================
+    // [추가] 삭제된 정책 카드 클릭 시 상세 페이지(404/500) 대신 안내 모달 표시
+    // ===========================
+    document.addEventListener("DOMContentLoaded", function () {
+        const deletedModal = document.getElementById("deletedPolicyModal");
+        const deletedModalCloseButton = document.getElementById("deletedPolicyModalCloseButton");
+
+        function openDeletedPolicyModal() {
+            deletedModal.classList.add("is-open");
+            deletedModal.setAttribute("aria-hidden", "false");
+        }
+
+        function closeDeletedPolicyModal() {
+            deletedModal.classList.remove("is-open");
+            deletedModal.setAttribute("aria-hidden", "true");
+        }
+
+        deletedModalCloseButton.addEventListener("click", closeDeletedPolicyModal);
+
+        deletedModal.addEventListener("click", function (event) {
+            if (event.target === deletedModal) {
+                closeDeletedPolicyModal();
+            }
+        });
+
+        document.querySelectorAll('.favorite-card-link[data-deleted="true"]').forEach(function (link) {
+            link.addEventListener("click", function (event) {
+                event.preventDefault();
+                openDeletedPolicyModal();
+            });
+        });
+    });
 </script>
 
 </body>

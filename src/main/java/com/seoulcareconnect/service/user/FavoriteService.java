@@ -1,3 +1,6 @@
+// 실제 프로젝트 경로: src/main/java/com/seoulcareconnect/service/user/FavoriteService.java
+// [수정] getFavoriteCards()에서 삭제된 정책 카드에 .deleted(true)만 추가했습니다.
+// 나머지 메서드/로직은 전부 기존 그대로입니다.
 package com.seoulcareconnect.service.user;
 
 import com.seoulcareconnect.dto.policy.PolicyDTO;
@@ -78,6 +81,7 @@ public class FavoriteService {
                         .title("삭제된 정책입니다")
                         .categoryLabel("미분류")
                         .favoritedAt(f.getCreatedAt())
+                        .deleted(true) // [추가]
                         .build();
             }
 
@@ -88,7 +92,6 @@ public class FavoriteService {
                     .policyId(f.getPolicyId())
                     .title(dto.getTitle())
                     .categoryLabel(dto.getCategoryLabel())
-                    .agency(dto.getAgency())
                     .summary(dto.getSummary())
                     .target(dto.getTarget())
                     .ageGroupDisplay(dto.getAgeGroupDisplay())
@@ -98,6 +101,7 @@ public class FavoriteService {
                     .dDayLabel(dto.getDDayLabel())
                     .dDayCssClass(dto.getDDayCssClass())
                     .favoritedAt(f.getCreatedAt())
+                    .deleted(false) // [추가]
                     .build();
         }).collect(Collectors.toList());
     }
