@@ -21,21 +21,41 @@ public class AdminPolicyFormController {
     private final AdminPolicyFormService
             adminPolicyFormService;
 
-    /**
-     * 신규 정책 등록 화면
-     */
     @GetMapping("/admin/policies/new")
     public String createForm(
+            @RequestParam(required = false)
+            Long reportId,
+
             Model model
     ) {
+        AdminPolicyFormDTO policyForm;
+
+        if (reportId != null) {
+            policyForm =
+                    adminPolicyFormService
+                            .createFormFromReport(reportId);
+        } else {
+            policyForm =
+                    adminPolicyFormService
+                            .createEmptyForm();
+        }
+
         model.addAttribute(
                 "policyForm",
-                adminPolicyFormService.createEmptyForm()
+                policyForm
+        );
+
+        model.addAttribute(
+                "reportId",
+                reportId
         );
 
         addFormOptions(model);
 
-        model.addAttribute("editMode", false);
+        model.addAttribute(
+                "editMode",
+                false
+        );
 
         return "admin/policy-form";
     }
@@ -45,7 +65,9 @@ public class AdminPolicyFormController {
      */
     @GetMapping("/admin/policies/{policyId}/edit")
     public String editForm(
-            @PathVariable Long policyId,
+            @PathVariable
+            Long policyId,
+
             Model model
     ) {
         model.addAttribute(
@@ -56,7 +78,10 @@ public class AdminPolicyFormController {
 
         addFormOptions(model);
 
-        model.addAttribute("editMode", true);
+        model.addAttribute(
+                "editMode",
+                true
+        );
 
         return "admin/policy-form";
     }

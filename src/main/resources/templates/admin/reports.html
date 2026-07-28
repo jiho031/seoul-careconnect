@@ -71,7 +71,6 @@
                    href="/admin/users">
                     👥 회원 관리
                 </a>
-
             </nav>
         </aside>
 
@@ -153,7 +152,6 @@
 
                     <small>관리자 확인 완료</small>
                 </article>
-
             </div>
 
             <!-- 신고 검색 -->
@@ -185,8 +183,8 @@
                             신고 유형 전체
                         </option>
 
-                        <option value="MISSING_POLICY"
-                                th:selected="${selectedReportType == 'MISSING_POLICY'}">
+                        <option value="MISSING"
+                                th:selected="${selectedReportType == 'MISSING'}">
                             누락 정책 신고
                         </option>
 
@@ -299,7 +297,8 @@
                             </span>
 
                             <span class="report-target-sub"
-                                  th:if="${report.title != null and !report.title.isBlank()}"
+                                  th:if="${report.title != null
+                                      and !report.title.isBlank()}"
                                   th:text="${report.title}">
                                 신고 제목
                             </span>
@@ -325,7 +324,7 @@
                         <!-- 연결 페이지 -->
                         <td>
                             <!-- 누락 정책 신고 -->
-                            <span th:if="${report.reportType == 'MISSING_POLICY'}">
+                            <span th:if="${report.reportType == 'MISSING'}">
                                 수동 등록/수정
                             </span>
 
@@ -355,12 +354,15 @@
                         <td>
                             <div class="table-actions">
 
-                                <!-- 관련 페이지 이동 -->
-                                <a th:if="${report.reportType == 'MISSING_POLICY'}"
-                                   th:href="@{/admin/policies/new}">
+                                <!-- 누락 정책 신고 -->
+                                <a th:if="${report.reportType == 'MISSING'}"
+                                   th:href="@{/admin/policies/new(
+                                    reportId=${report.reportId}
+                                    )}">
                                     이동
                                 </a>
 
+                                <!-- 정책 정보/기간/링크 오류 -->
                                 <a th:if="${report.reportType == 'INFO_ERROR'
                                     or report.reportType == 'DEADLINE_ERROR'
                                     or report.reportType == 'LINK_ERROR'}"
@@ -418,9 +420,9 @@
                     <a th:each="pageNumber :
                             ${#numbers.sequence(0, reportPage.totalPages - 1)}"
                        th:text="${pageNumber + 1}"
-                       th:classappend="${pageNumber == reportPage.number}
+                       th:classappend="${pageNumber == reportPage.number
                             ? 'active'
-                            : ''"
+                            : ''}"
                        th:href="@{/admin/reports(
                            page=${pageNumber},
                            keyword=${keyword},
@@ -498,7 +500,6 @@
                                 API 재수집 필요 여부를 확인합니다.
                             </p>
                         </article>
-
                     </div>
                 </section>
 
@@ -546,10 +547,8 @@
                                 신고 상태를 처리 완료로 변경합니다.
                             </p>
                         </article>
-
                     </div>
                 </section>
-
             </div>
         </section>
     </div>
@@ -649,24 +648,46 @@
 
 <script>
     function openReportModal(button) {
-        const modal = document.getElementById("reportModal");
-        const reportIdInput = document.getElementById("modalReportId");
-        const reportTitle = document.getElementById("modalReportTitle");
-        const statusSelect = document.getElementById("modalReportStatus");
-        const memoTextarea = document.getElementById("modalReportMemo");
+        const modal =
+            document.getElementById("reportModal");
 
-        if (!modal || !reportIdInput || !reportTitle
-            || !statusSelect || !memoTextarea) {
+        const reportIdInput =
+            document.getElementById("modalReportId");
+
+        const reportTitle =
+            document.getElementById("modalReportTitle");
+
+        const statusSelect =
+            document.getElementById("modalReportStatus");
+
+        const memoTextarea =
+            document.getElementById("modalReportMemo");
+
+        if (!modal
+            || !reportIdInput
+            || !reportTitle
+            || !statusSelect
+            || !memoTextarea) {
             return;
         }
 
-        const reportId = button.dataset.reportId;
-        const title = button.dataset.reportTitle;
-        const policyTitle = button.dataset.policyTitle;
-        const status = button.dataset.status;
-        const adminMemo = button.dataset.adminMemo;
+        const reportId =
+            button.dataset.reportId;
 
-        reportIdInput.value = reportId || "";
+        const title =
+            button.dataset.reportTitle;
+
+        const policyTitle =
+            button.dataset.policyTitle;
+
+        const status =
+            button.dataset.status;
+
+        const adminMemo =
+            button.dataset.adminMemo;
+
+        reportIdInput.value =
+            reportId || "";
 
         reportTitle.textContent =
             title || policyTitle || "신고 제목 없음";
@@ -683,26 +704,34 @@
     }
 
     function closeReportModal() {
-        const modal = document.getElementById("reportModal");
+        const modal =
+            document.getElementById("reportModal");
 
         if (modal) {
             modal.classList.remove("open");
         }
     }
 
-    window.addEventListener("click", function (event) {
-        const modal = document.getElementById("reportModal");
+    window.addEventListener(
+        "click",
+        function (event) {
+            const modal =
+                document.getElementById("reportModal");
 
-        if (modal && event.target === modal) {
-            closeReportModal();
+            if (modal && event.target === modal) {
+                closeReportModal();
+            }
         }
-    });
+    );
 
-    window.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") {
-            closeReportModal();
+    window.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key === "Escape") {
+                closeReportModal();
+            }
         }
-    });
+    );
 </script>
 
 </body>

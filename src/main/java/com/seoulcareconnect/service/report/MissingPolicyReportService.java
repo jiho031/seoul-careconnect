@@ -160,6 +160,8 @@ public class MissingPolicyReportService {
         PolicyCollectionError error =
                 new PolicyCollectionError();
 
+        error.setReport(report);
+
         if (policy != null) {
             error.setPolicy(policy);
             error.setRawItem(policy.getRawItem());
@@ -167,16 +169,11 @@ public class MissingPolicyReportService {
             error.setExternalId(policy.getExternalId());
             error.setPolicyTitle(policy.getTitle());
         } else {
-            /*
-             * 누락 정책 신고는 사용자 입력값 사용
-             */
             error.setPolicy(null);
             error.setRawItem(null);
             error.setSource(null);
             error.setExternalId(report.getSourceUrl());
-            error.setPolicyTitle(
-                    resolveMissingPolicyTitle(report)
-            );
+            error.setPolicyTitle(report.getTitle());
         }
 
         error.setErrorType(errorType);

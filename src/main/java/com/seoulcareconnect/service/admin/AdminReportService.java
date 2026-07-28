@@ -1,7 +1,9 @@
 package com.seoulcareconnect.service.admin;
 
 import com.seoulcareconnect.dto.admin.AdminReportDTO;
+import com.seoulcareconnect.entity.policy.enums.PolicyErrorStatus;
 import com.seoulcareconnect.entity.report.MissingPolicyReport;
+import com.seoulcareconnect.repository.policy.PolicyCollectionErrorRepository;
 import com.seoulcareconnect.repository.report.MissingPolicyReportRepository;
 import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
@@ -21,22 +23,29 @@ import java.time.LocalDateTime;
 @Transactional(readOnly = true)
 public class AdminReportService {
 
-    private final MissingPolicyReportRepository missingPolicyReportRepository;
+    private final MissingPolicyReportRepository
+            missingPolicyReportRepository;
+
+    private final PolicyCollectionErrorRepository
+            policyCollectionErrorRepository;
 
     public long getTotalCount() {
         return missingPolicyReportRepository.count();
     }
 
     public long getReceivedCount() {
-        return missingPolicyReportRepository.countByStatus("RECEIVED");
+        return missingPolicyReportRepository
+                .countByStatus("RECEIVED");
     }
 
     public long getInReviewCount() {
-        return missingPolicyReportRepository.countByStatus("IN_REVIEW");
+        return missingPolicyReportRepository
+                .countByStatus("IN_REVIEW");
     }
 
     public long getCompletedCount() {
-        return missingPolicyReportRepository.countByStatus("COMPLETED");
+        return missingPolicyReportRepository
+                .countByStatus("COMPLETED");
     }
 
     public Page<AdminReportDTO> getReports(
@@ -49,11 +58,15 @@ public class AdminReportService {
         Pageable pageable = PageRequest.of(
                 Math.max(page, 0),
                 size,
-                Sort.by(Sort.Direction.DESC, "createdAt")
+                Sort.by(
+                        Sort.Direction.DESC,
+                        "createdAt"
+                )
         );
 
         Specification<MissingPolicyReport> specification =
-                Specification.<MissingPolicyReport>unrestricted()
+                Specification
+                        .<MissingPolicyReport>unrestricted()
                         .and(fetchAssociations())
                         .and(keywordContains(keyword))
                         .and(reportTypeEquals(reportType))
@@ -64,6 +77,11 @@ public class AdminReportService {
                 .map(AdminReportDTO::from);
     }
 
+    /**
+     * 사용자 신고 상태 변경
+     *
+     * 연결된 정책 오류가 있으면 정책 오류 상태도 함께 변경한다.
+     */
     @Transactional
     public void changeStatus(
             Long reportId,
@@ -71,7 +89,8 @@ public class AdminReportService {
             String adminMemo
     ) {
         MissingPolicyReport report =
-                missingPolicyReportRepository.findById(reportId)
+                missingPolicyReportRepository
+                        .findById(reportId)
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
                                         "사용자 신고를 찾을 수 없습니다."
@@ -81,24 +100,122 @@ public class AdminReportService {
         validateStatus(status);
 
         report.setStatus(status);
-        report.setAdminMemo(adminMemo);
+        report.setAdminMemo(
+                trimToNull(adminMemo)
+        );
 
-        if ("COMPLETED".equals(status)
-                || "REJECTED".equals(status)) {
-            report.setProcessedAt(LocalDateTime.now());
-        } else {
-            report.setProcessedAt(null);
-        }
+        LocalDateTime processedAt =
+                resolveProcessedAt(status);
+
+        report.setProcessedAt(processedAt);
+
+        synchronizePolicyErrorStatus(
+                reportId,
+                status,
+                adminMemo,
+                processedAt
+        );
     }
 
-    private Specification<MissingPolicyReport> fetchAssociations() {
+    /**
+     * 사용자 신고 상태를 연결된 정책 오류 상태에 반영한다.
+     *
+     * RECEIVED  -> WAITING
+     * IN_REVIEW -> IN_PROGRESS
+     * COMPLETED -> COMPLETED
+     * REJECTED  -> EXCLUDED
+     */
+    private void synchronizePolicyErrorStatus(
+            Long reportId,
+            String reportStatus,
+            String adminMemo,
+            LocalDateTime processedAt
+    ) {
+        policyCollectionErrorRepository
+                .findByReport_ReportId(reportId)
+                .ifPresent(error -> {
+
+                    PolicyErrorStatus errorStatus =
+                            convertToPolicyErrorStatus(
+                                    reportStatus
+                            );
+
+                    error.setStatus(errorStatus);
+
+                    error.setAdminMemo(
+                            trimToNull(adminMemo)
+                    );
+
+                    if (errorStatus
+                            == PolicyErrorStatus.COMPLETED
+                            || errorStatus
+                            == PolicyErrorStatus.EXCLUDED) {
+
+                        error.setProcessedAt(
+                                processedAt != null
+                                        ? processedAt
+                                        : LocalDateTime.now()
+                        );
+
+                    } else {
+                        error.setProcessedAt(null);
+                    }
+                });
+    }
+
+    private PolicyErrorStatus convertToPolicyErrorStatus(
+            String reportStatus
+    ) {
+        return switch (reportStatus) {
+            case "IN_REVIEW" ->
+                    PolicyErrorStatus.IN_PROGRESS;
+
+            case "COMPLETED" ->
+                    PolicyErrorStatus.COMPLETED;
+
+            case "REJECTED" ->
+                    PolicyErrorStatus.EXCLUDED;
+
+            case "RECEIVED" ->
+                    PolicyErrorStatus.WAITING;
+
+            default ->
+                    throw new IllegalArgumentException(
+                            "정책 오류 상태로 변환할 수 없는 신고 상태입니다."
+                    );
+        };
+    }
+
+    private LocalDateTime resolveProcessedAt(
+            String status
+    ) {
+        if ("COMPLETED".equals(status)
+                || "REJECTED".equals(status)) {
+
+            return LocalDateTime.now();
+        }
+
+        return null;
+    }
+
+    private Specification<MissingPolicyReport>
+    fetchAssociations() {
+
         return (root, query, criteriaBuilder) -> {
             if (query != null
                     && query.getResultType() != Long.class
                     && query.getResultType() != long.class) {
 
-                root.fetch("user", JoinType.LEFT);
-                root.fetch("policy", JoinType.LEFT);
+                root.fetch(
+                        "user",
+                        JoinType.LEFT
+                );
+
+                root.fetch(
+                        "policy",
+                        JoinType.LEFT
+                );
+
                 query.distinct(true);
             }
 
@@ -106,7 +223,8 @@ public class AdminReportService {
         };
     }
 
-    private Specification<MissingPolicyReport> keywordContains(
+    private Specification<MissingPolicyReport>
+    keywordContains(
             String keyword
     ) {
         return (root, query, criteriaBuilder) -> {
@@ -115,38 +233,60 @@ public class AdminReportService {
             }
 
             String searchKeyword =
-                    "%" + keyword.trim().toLowerCase() + "%";
+                    "%"
+                            + keyword.trim().toLowerCase()
+                            + "%";
 
             return criteriaBuilder.or(
                     criteriaBuilder.like(
-                            criteriaBuilder.lower(root.get("title")),
+                            criteriaBuilder.lower(
+                                    root.get("title")
+                            ),
                             searchKeyword
                     ),
-                    criteriaBuilder.like(
-                            criteriaBuilder.lower(root.get("content")),
-                            searchKeyword
-                    ),
-                    criteriaBuilder.like(
-                            criteriaBuilder.lower(root.get("sourceUrl")),
-                            searchKeyword
-                    ),
+
                     criteriaBuilder.like(
                             criteriaBuilder.lower(
-                                    root.join("user", JoinType.LEFT)
+                                    root.get("content")
+                            ),
+                            searchKeyword
+                    ),
+
+                    criteriaBuilder.like(
+                            criteriaBuilder.lower(
+                                    root.get("sourceUrl")
+                            ),
+                            searchKeyword
+                    ),
+
+                    criteriaBuilder.like(
+                            criteriaBuilder.lower(
+                                    root.join(
+                                                    "user",
+                                                    JoinType.LEFT
+                                            )
                                             .get("name")
                             ),
                             searchKeyword
                     ),
+
                     criteriaBuilder.like(
                             criteriaBuilder.lower(
-                                    root.join("user", JoinType.LEFT)
+                                    root.join(
+                                                    "user",
+                                                    JoinType.LEFT
+                                            )
                                             .get("email")
                             ),
                             searchKeyword
                     ),
+
                     criteriaBuilder.like(
                             criteriaBuilder.lower(
-                                    root.join("policy", JoinType.LEFT)
+                                    root.join(
+                                                    "policy",
+                                                    JoinType.LEFT
+                                            )
                                             .get("title")
                             ),
                             searchKeyword
@@ -155,7 +295,8 @@ public class AdminReportService {
         };
     }
 
-    private Specification<MissingPolicyReport> reportTypeEquals(
+    private Specification<MissingPolicyReport>
+    reportTypeEquals(
             String reportType
     ) {
         return (root, query, criteriaBuilder) -> {
@@ -170,7 +311,8 @@ public class AdminReportService {
         };
     }
 
-    private Specification<MissingPolicyReport> statusEquals(
+    private Specification<MissingPolicyReport>
+    statusEquals(
             String status
     ) {
         return (root, query, criteriaBuilder) -> {
@@ -185,7 +327,9 @@ public class AdminReportService {
         };
     }
 
-    private void validateStatus(String status) {
+    private void validateStatus(
+            String status
+    ) {
         if (!"RECEIVED".equals(status)
                 && !"IN_REVIEW".equals(status)
                 && !"COMPLETED".equals(status)
@@ -195,5 +339,15 @@ public class AdminReportService {
                     "올바르지 않은 신고 처리 상태입니다."
             );
         }
+    }
+
+    private String trimToNull(
+            String value
+    ) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+
+        return value.trim();
     }
 }

@@ -8,8 +8,10 @@ import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyCategory;
 import com.seoulcareconnect.entity.policy.enums.PolicyStatus;
 import com.seoulcareconnect.entity.policy.enums.SourceType;
+import com.seoulcareconnect.entity.report.MissingPolicyReport;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
+import com.seoulcareconnect.repository.report.MissingPolicyReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,10 +27,9 @@ public class AdminPolicyFormService {
 
     private final PolicyRepository policyRepository;
     private final PolicySourceRepository policySourceRepository;
+    private final MissingPolicyReportRepository
+            missingPolicyReportRepository;
 
-    /**
-     * 신규 등록 화면 기본값
-     */
     public AdminPolicyFormDTO createEmptyForm() {
         AdminPolicyFormDTO dto =
                 new AdminPolicyFormDTO();
@@ -43,9 +44,6 @@ public class AdminPolicyFormService {
         return dto;
     }
 
-    /**
-     * 수정 화면 데이터 조회
-     */
     public AdminPolicyFormDTO getPolicyForm(
             Long policyId
     ) {
@@ -61,9 +59,6 @@ public class AdminPolicyFormService {
         return AdminPolicyFormDTO.from(policy);
     }
 
-    /**
-     * 정책 등록 또는 수정
-     */
     @Transactional
     public Long savePolicy(
             AdminPolicyFormDTO form,
@@ -104,10 +99,6 @@ public class AdminPolicyFormService {
                 trimToNull(form.getContact())
         );
 
-        /*
-         * 외부 API 식별자가 없는 수동 등록 정책은
-         * 신규 등록 시에만 고유 식별자를 생성한다.
-         */
         if (policy.getExternalId() == null
                 || policy.getExternalId().isBlank()) {
 
@@ -143,10 +134,6 @@ public class AdminPolicyFormService {
                 trimToNull(form.getContentText())
         );
 
-        /*
-         * 수동 입력은 일반 텍스트이므로
-         * contentHtml은 생성하지 않는다.
-         */
         detail.setContentHtml(null);
 
         Policy savedPolicy =
@@ -172,9 +159,6 @@ public class AdminPolicyFormService {
                 );
     }
 
-    /**
-     * 제공기관명을 기준으로 수동 등록용 출처 조회 또는 생성
-     */
     private PolicySource findOrCreateManualSource(
             String agency,
             String officialUrl
@@ -280,5 +264,74 @@ public class AdminPolicyFormService {
         }
 
         return value.trim();
+    }
+
+    public AdminPolicyFormDTO createFormFromReport(
+            Long reportId
+    ) {
+        MissingPolicyReport report =
+                missingPolicyReportRepository
+                        .findById(reportId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "사용자 신고를 찾을 수 없습니다."
+                                )
+                        );
+
+        AdminPolicyFormDTO dto =
+                createEmptyForm();
+
+        dto.setTitle(
+                trimToNull(report.getTitle())
+        );
+
+        dto.setAgency(
+                "사용자 제보"
+        );
+
+        dto.setOfficialUrl(
+                trimToNull(report.getSourceUrl())
+        );
+
+        dto.setBenefit(
+                trimToNull(report.getContent())
+        );
+
+        dto.setContentText(
+                trimToNull(report.getContent())
+        );
+
+        dto.setAdminMemo(
+                createReportMemo(report)
+        );
+
+        return dto;
+    }
+
+    private String createReportMemo(
+            MissingPolicyReport report
+    ) {
+        StringBuilder memo =
+                new StringBuilder();
+
+        memo.append("누락 정책 사용자 신고 #");
+        memo.append(report.getReportId());
+
+        if (report.getContent() != null
+                && !report.getContent().isBlank()) {
+
+            memo.append("\n");
+            memo.append(report.getContent());
+        }
+
+        if (report.getAdminMemo() != null
+                && !report.getAdminMemo().isBlank()) {
+
+            memo.append("\n\n기존 관리자 메모\n");
+            memo.append(report.getAdminMemo());
+        }
+
+        return memo.toString();
     }
 }
