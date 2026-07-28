@@ -6,9 +6,11 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExplanation, Long> {
 
@@ -37,4 +39,14 @@ public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExp
     );
 
     long countByReviewStatus(AiReviewStatus reviewStatus);
+
+    @Modifying(flushAutomatically = true)
+    @Query("""
+        delete from AiPolicyExplanation a
+        where a.policy.policyId in :policyIds
+        """)
+    int deleteByPolicyIds(
+            @Param("policyIds")
+            Collection<Long> policyIds
+    );
 }

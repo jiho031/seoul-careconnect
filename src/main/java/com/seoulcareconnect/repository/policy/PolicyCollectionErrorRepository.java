@@ -5,6 +5,11 @@ import com.seoulcareconnect.entity.policy.enums.PolicyErrorStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyErrorType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Collection;
 
 public interface PolicyCollectionErrorRepository
         extends JpaRepository<PolicyCollectionError, Long>,
@@ -15,5 +20,16 @@ public interface PolicyCollectionErrorRepository
     long countByErrorTypeAndStatusNot(
             PolicyErrorType errorType,
             PolicyErrorStatus status
+    );
+
+    @Modifying(flushAutomatically = true)
+    @Query("""
+        update PolicyCollectionError e
+           set e.policy = null
+         where e.policy.policyId in :policyIds
+        """)
+    int clearPolicyReferences(
+            @Param("policyIds")
+            Collection<Long> policyIds
     );
 }
