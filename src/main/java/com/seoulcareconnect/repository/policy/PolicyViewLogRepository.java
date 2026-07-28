@@ -5,8 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
 
 import java.util.List;
+import java.util.Collection;
 
 public interface PolicyViewLogRepository extends JpaRepository<PolicyViewLog, Long> {
 
@@ -20,5 +22,15 @@ public interface PolicyViewLogRepository extends JpaRepository<PolicyViewLog, Lo
     List<Long> findRecentPolicyIdsByUserId(
             @Param("userId") Long userId,
             Pageable pageable
+    );
+
+    @Modifying(flushAutomatically = true)
+    @Query("""
+        delete from PolicyViewLog v
+        where v.policy.policyId in :policyIds
+        """)
+    int deleteByPolicyIds(
+            @Param("policyIds")
+            Collection<Long> policyIds
     );
 }

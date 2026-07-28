@@ -37,7 +37,7 @@ public class PolicyStartupRunner implements ApplicationRunner {
 
         expirationService.refreshStatuses();
 
-        cleanupService.hideOldExpiredPolicies();
+        cleanupService.deleteOldExpiredPolicies();
 
         log.info("{}", summary.toLogText());
 
