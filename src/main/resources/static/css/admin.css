@@ -1500,3 +1500,124 @@ button.admin-link {
     gap: 5px;
     white-space: normal;
 }
+
+/* 최근 검수 필요 정책 */
+
+.recent-review-card {
+    min-width: 0;
+}
+
+.recent-review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    /* 약 5개까지 표시하고 이후 내부 스크롤 */
+    max-height: 285px;
+    overflow-y: auto;
+
+    padding-right: 6px;
+}
+
+.recent-review-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    min-height: 48px;
+    padding: 10px 12px;
+
+    border: 1px solid #dce7ef;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.recent-review-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.recent-review-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.recent-review-title-row strong {
+    font-size: 12px;
+    color: #187d83;
+}
+
+.recent-review-info p {
+    margin: 0 0 3px;
+
+    font-size: 13px;
+    font-weight: 700;
+    color: #17233b;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recent-review-info small {
+    display: block;
+
+    font-size: 11px;
+    color: #748196;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recent-review-button {
+    flex-shrink: 0;
+
+    padding: 6px 10px;
+
+    border: 1px solid #c8dbe6;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #217d83;
+
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.recent-review-button:hover {
+    border-color: #278b91;
+    background: #edf9f8;
+}
+
+.recent-review-empty {
+    padding: 26px 12px;
+    text-align: center;
+
+    font-size: 12px;
+    color: #7b8798;
+}
+
+/* 카드 내부 스크롤바 */
+
+.recent-review-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.recent-review-list::-webkit-scrollbar-track {
+    background: #f1f5f8;
+    border-radius: 10px;
+}
+
+.recent-review-list::-webkit-scrollbar-thumb {
+    background: #bdced8;
+    border-radius: 10px;
+}
+
+.recent-review-list::-webkit-scrollbar-thumb:hover {
+    background: #91aab8;
+}

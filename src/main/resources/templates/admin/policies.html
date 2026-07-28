@@ -68,10 +68,6 @@
                     👥 회원 관리
                 </a>
 
-                <a th:href="@{/admin/super}"
-                   href="/admin/super">
-                    👑 최고 관리자
-                </a>
             </nav>
         </aside>
 
@@ -178,14 +174,12 @@
                       method="get"
                       th:action="@{/admin/policies}">
 
-                    <!-- 검색어 -->
                     <input class="admin-input"
                            type="search"
                            name="keyword"
                            th:value="${keyword}"
                            placeholder="정책명 / 기관명 / 지원대상 / 정책 ID 검색">
 
-                    <!-- 분야 -->
                     <select class="admin-select"
                             name="category">
 
@@ -201,7 +195,6 @@
                         </option>
                     </select>
 
-                    <!-- 정책 상태 -->
                     <select class="admin-select"
                             name="status">
 
@@ -252,7 +245,6 @@
                         </option>
                     </select>
 
-                    <!-- API 출처 -->
                     <select class="admin-select"
                             name="sourceId">
 
@@ -269,7 +261,6 @@
                         </option>
                     </select>
 
-                    <!-- 지역 -->
                     <select class="admin-select"
                             name="district">
 
@@ -321,10 +312,8 @@
 
                         <tbody>
 
-                        <!-- 실제 정책 목록 -->
                         <tr th:each="policy : ${policies}">
 
-                            <!-- 정책명 -->
                             <td>
                                 <strong class="policy-name"
                                         th:text="${policy.title}">
@@ -347,12 +336,10 @@
                                 </small>
                             </td>
 
-                            <!-- 기관 -->
                             <td th:text="${policy.organization}">
                                 기관명
                             </td>
 
-                            <!-- 분야 -->
                             <td th:text="${policy.categoryLabel}">
                                 생활지원
                             </td>
@@ -368,7 +355,6 @@
                                 </span>
                             </td>
 
-                            <!-- 신청 기간 -->
                             <td>
                                 <span th:text="${policy.applicationPeriodText}">
                                     상시
@@ -381,7 +367,6 @@
                                 </small>
                             </td>
 
-                            <!-- 정책 상태 -->
                             <td>
                                 <span class="admin-tag"
                                       th:classappend="${policy.statusCssClass}"
@@ -390,7 +375,6 @@
                                 </span>
                             </td>
 
-                            <!-- 출처 -->
                             <td>
                                 <span class="source-badge"
                                       th:classappend="${policy.sourceCssClass}"
@@ -399,18 +383,15 @@
                                 </span>
                             </td>
 
-                            <!-- 관리 -->
                             <td>
                                 <div class="table-actions">
 
-                                    <!-- 수정 페이지 -->
-                                    <a th:href="@{/admin/policies/new(
+                                    <a th:href="@{/admin/policies/{policyId}/edit(
                                             policyId=${policy.policyId}
                                         )}">
                                         수정
                                     </a>
 
-                                    <!-- 검수 대기 및 수정 필요 정책 승인 -->
                                     <form th:if="${policy.status.name() == 'PENDING_REVIEW'
                                             or policy.status.name() == 'NEEDS_UPDATE'}"
                                           method="post"
@@ -427,7 +408,6 @@
                                         </button>
                                     </form>
 
-                                    <!-- 공개 정책 숨김 -->
                                     <form th:if="${policy.status.name() == 'AUTO_PUBLISHED'
                                             or policy.status.name() == 'APPROVED'}"
                                           method="post"
@@ -444,7 +424,6 @@
                                         </button>
                                     </form>
 
-                                    <!-- 숨김 정책 복구 -->
                                     <form th:if="${policy.status.name() == 'HIDDEN'}"
                                           method="post"
                                           th:action="@{/admin/policies/unhide}">
@@ -460,7 +439,6 @@
                                         </button>
                                     </form>
 
-                                    <!-- 검수 대기 정책 반려 -->
                                     <form th:if="${policy.status.name() == 'PENDING_REVIEW'
                                             or policy.status.name() == 'NEEDS_UPDATE'}"
                                           method="post"
@@ -477,7 +455,6 @@
                                         </button>
                                     </form>
 
-                                    <!-- 공개 정책 수정 필요 처리 -->
                                     <form th:if="${policy.status.name() == 'AUTO_PUBLISHED'
                                             or policy.status.name() == 'APPROVED'}"
                                           method="post"
@@ -497,7 +474,6 @@
                             </td>
                         </tr>
 
-                        <!-- 데이터가 없을 때 -->
                         <tr th:if="${#lists.isEmpty(policies)}">
                             <td colspan="8"
                                 class="admin-empty">
@@ -509,11 +485,10 @@
                     </table>
                 </div>
 
-                <!-- 페이지네이션 -->
+                <!-- 정책 전체 목록 페이지네이션 -->
                 <div class="admin-pagination"
                      th:if="${policyPage.totalPages > 0}">
 
-                    <!-- 이전 페이지 -->
                     <a th:if="${!policyPage.first}"
                        th:href="@{/admin/policies(
                            page=${policyPage.number - 1},
@@ -531,7 +506,6 @@
                         ‹
                     </span>
 
-                    <!-- 페이지 번호 -->
                     <a th:each="pageNumber :
                             ${#numbers.sequence(0, policyPage.totalPages - 1)}"
                        th:text="${pageNumber + 1}"
@@ -549,7 +523,6 @@
                         1
                     </a>
 
-                    <!-- 다음 페이지 -->
                     <a th:if="${!policyPage.last}"
                        th:href="@{/admin/policies(
                            page=${policyPage.number + 1},
@@ -569,9 +542,10 @@
                 </div>
             </section>
 
-            <!-- 하단 안내 -->
+            <!-- 하단 영역 -->
             <div class="admin-bottom-grid policy-bottom">
 
+                <!-- 정책 처리 기준 -->
                 <section class="admin-card">
 
                     <div class="admin-card-head">
@@ -623,56 +597,71 @@
                     </div>
                 </section>
 
-                <section class="admin-card">
+                <!-- 최근 검수 필요 정책 -->
+                <section class="admin-card recent-review-card">
 
                     <div class="admin-card-head">
-                        <h2>정책 상태 안내</h2>
+                        <h2>최근 검수 필요 정책</h2>
 
-                        <span class="admin-list-count">
-                            노출 상태 기준
+                        <span class="admin-list-count"
+                              th:text="${recentReviewPolicies != null
+                                  ? #lists.size(recentReviewPolicies) + '건'
+                                  : '0건'}">
+                            0건
                         </span>
                     </div>
 
-                    <div class="notice-list">
+                    <!-- 5개 높이 이후 내부 스크롤 -->
+                    <div class="recent-review-list">
 
-                        <article class="notice-item important">
-                            <strong>검수 대기</strong>
+                        <div class="recent-review-empty"
+                             th:if="${recentReviewPolicies == null
+                                 or #lists.isEmpty(recentReviewPolicies)}">
+                            현재 검수가 필요한 정책이 없습니다.
+                        </div>
 
-                            <p>
-                                사용자 공개 전에 관리자의 승인 또는
-                                반려 처리가 필요합니다.
-                            </p>
-                        </article>
+                        <article class="recent-review-item"
+                                 th:each="reviewPolicy : ${recentReviewPolicies}">
 
-                        <article class="notice-item">
-                            <strong>숨김</strong>
+                            <div class="recent-review-info">
 
-                            <p>
-                                사용자 화면에는 노출되지 않지만
-                                관리자 화면과 DB에는 유지됩니다.
-                            </p>
-                        </article>
+                                <div class="recent-review-title-row">
 
-                        <article class="notice-item">
-                            <strong>마감</strong>
+                                    <strong th:text="${'#' + reviewPolicy.policyId}">
+                                        #15
+                                    </strong>
 
-                            <p>
-                                신청 종료일이 지나 자동으로
-                                마감 처리된 정책입니다.
-                            </p>
-                        </article>
+                                    <span class="admin-tag"
+                                          th:classappend="${reviewPolicy.statusCssClass}"
+                                          th:text="${reviewPolicy.statusLabel}">
+                                        검수 대기
+                                    </span>
+                                </div>
 
-                        <article class="notice-item">
-                            <strong>반려</strong>
+                                <p th:text="${reviewPolicy.title}"
+                                   th:title="${reviewPolicy.title}">
+                                    정책명
+                                </p>
 
-                            <p>
-                                정책 정보가 부적절하거나 서비스 대상이 아니어서
-                                공개하지 않는 정책입니다.
-                            </p>
+                                <small th:text="${reviewPolicy.organization != null
+                                    and !reviewPolicy.organization.isBlank()
+                                    ? reviewPolicy.organization
+                                    : '기관 정보 없음'}">
+                                    제공기관
+                                </small>
+                            </div>
+
+                            <a class="recent-review-button"
+                               th:href="@{/admin/policies/{policyId}/edit(
+                                   policyId=${reviewPolicy.policyId}
+                               )}">
+                                수정
+                            </a>
                         </article>
 
                     </div>
                 </section>
+
             </div>
 
         </section>

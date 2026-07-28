@@ -50,6 +50,7 @@ public class ExternalNodeReader {
                 .replace("&lt;", "<")
                 .replace("&gt;", ">")
                 .replace("&quot;", "\"")
+                .replace("&apos;", "'")
                 .replace("&#39;", "'")
                 .replaceAll("[ \\t\\r\\f]+", " ")
                 .replaceAll("\\n{3,}", "\n\n")
