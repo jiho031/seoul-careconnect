@@ -41,9 +41,24 @@ public class PolicySyncScheduler {
         }
 
         try {
-            cleanupService.hideOldExpiredPolicies();
+
+            int deletedCount =
+                    cleanupService.deleteOldExpiredPolicies();
+
+            if (deletedCount > 0) {
+
+                log.info(
+                        "보관 기간이 지난 마감 정책 {}건을 DB에서 삭제했습니다.",
+                        deletedCount
+                );
+            }
+
         } catch (RuntimeException e) {
-            log.error("오래된 마감 정책 숨김 처리 중 오류가 발생했습니다.", e);
+
+            log.error(
+                    "오래된 마감 정책 삭제 중 오류가 발생했습니다.",
+                    e
+            );
         }
     }
 }

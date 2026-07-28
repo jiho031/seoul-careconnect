@@ -5,7 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MissingPolicyReportRepository
@@ -30,5 +34,16 @@ public interface MissingPolicyReportRepository
     long countByReportTypeAndStatusNot(
             String reportType,
             String excludedStatus
+    );
+
+    @Modifying(flushAutomatically = true)
+    @Query("""
+        update MissingPolicyReport r
+           set r.policy = null
+         where r.policy.policyId in :policyIds
+        """)
+    int clearPolicyReferences(
+            @Param("policyIds")
+            Collection<Long> policyIds
     );
 }

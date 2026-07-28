@@ -133,18 +133,17 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
             @Param("now") LocalDateTime now
     );
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
-            update Policy p
-               set p.status = com.seoulcareconnect.entity.policy.enums.PolicyStatus.HIDDEN,
-                   p.updatedAt = :now
-             where p.endDate <= :hideBefore
-               and p.applyStatus = com.seoulcareconnect.entity.policy.enums.ApplyStatus.EXPIRED
-               and p.status = com.seoulcareconnect.entity.policy.enums.PolicyStatus.EXPIRED
-            """)
-    int hideOldExpiredPolicies(
-            @Param("hideBefore") LocalDate hideBefore,
-            @Param("now") LocalDateTime now
+        select p.policyId
+        from Policy p
+        where p.endDate <= :deleteBefore
+          and p.applyStatus = :expired
+          and p.status in :statuses
+        """)
+    List<Long> findOldExpiredPolicyIds(
+            @Param("deleteBefore") LocalDate deleteBefore,
+            @Param("expired") ApplyStatus expired,
+            @Param("statuses") Collection<PolicyStatus> statuses
     );
 
     long countByStatus(PolicyStatus status);
