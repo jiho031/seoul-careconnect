@@ -100,6 +100,7 @@ public class FavoriteService {
                     .title(dto.getTitle())
                     .categoryLabel(dto.getCategoryLabel())
                     .summary(dto.getSummary())
+                    .agency(dto.getAgency())
                     .target(dto.getTarget())
                     .ageGroupDisplay(dto.getAgeGroupDisplay())
                     .regionDisplay(dto.getRegionDisplay())

@@ -21,6 +21,7 @@ public class FavoriteCardDto {
     private String title;
     private String categoryLabel;
     private String summary;
+    private String agency;
     private String target;
     private String ageGroupDisplay;
     private String regionDisplay;
