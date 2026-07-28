@@ -2269,3 +2269,41 @@ body.large-text-mode
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
+
+@media (max-width: 640px) {
+  .mypage-side-nav {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: 18px !important;
+    transform: translateX(-50%) !important;
+    z-index: 500 !important;
+
+    width: calc(100% - 24px) !important;
+
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 12px !important;
+
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 2px solid #cbdbea !important;
+    border-radius: 22px !important;
+    box-shadow: 0 14px 34px rgba(20, 60, 90, 0.22) !important;
+  }
+
+  .mypage-side-nav a {
+    flex: 1 1 45% !important;
+    min-height: 66px !important;
+    padding: 10px 12px !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+  }
+
+  .mypage-page {
+    padding-bottom: 150px !important;
+  }
+}
