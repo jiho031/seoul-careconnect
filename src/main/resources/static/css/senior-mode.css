@@ -372,11 +372,17 @@ body.large-text-mode .board-head a {
 body.large-text-mode .deadline-grid,
 body.large-text-mode .recent-grid {
   gap: 18px;
+  align-items: stretch;
+}
+
+body.large-text-mode .deadline-grid .policy-card,
+body.large-text-mode .recent-grid .recent-card {
+  height: 100%;
+  box-sizing: border-box;
 }
 
 body.large-text-mode .policy-card,
 body.large-text-mode .recent-card {
-  min-height: 150px;
   border-width: 2px;
   border-radius: 16px;
 }
@@ -387,11 +393,20 @@ body.large-text-mode .policy-card {
 
 body.large-text-mode .policy-title,
 body.large-text-mode .recent-card b {
+  display: -webkit-box;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+
   font-size: 20px;
   line-height: 1.5;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 body.large-text-mode .policy-meta {
