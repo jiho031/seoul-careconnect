@@ -1,5 +1,6 @@
 package com.seoulcareconnect.repository.report;
 
+import com.seoulcareconnect.entity.policy.PolicyCollectionError;
 import com.seoulcareconnect.entity.report.MissingPolicyReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface MissingPolicyReportRepository
         extends JpaRepository<MissingPolicyReport, Long>,

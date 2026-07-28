@@ -376,3 +376,92 @@
     background: #fff0ed;
     color: #bd4e3f;
 }
+
+.policy-error-row {
+    cursor: pointer;
+}
+
+.policy-error-row:hover {
+    background: #f8fbfc;
+}
+
+.error-message-preview {
+    display: block;
+    max-width: 320px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.policy-error-modal-content {
+    width: min(680px, calc(100% - 32px));
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.policy-error-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+
+    margin-bottom: 18px;
+}
+
+.policy-error-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    min-width: 0;
+    padding: 12px 14px;
+
+    border: 1px solid #dce7ef;
+    border-radius: 9px;
+    background: #f8fbfc;
+}
+
+.policy-error-detail-item span {
+    font-size: 11px;
+    color: #748196;
+}
+
+.policy-error-detail-item strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 13px;
+    color: #17233b;
+}
+
+.policy-error-message {
+    min-height: 80px;
+    padding: 13px 14px;
+
+    border: 1px solid #dce7ef;
+    border-radius: 9px;
+    background: #f8fbfc;
+
+    font-size: 13px;
+    line-height: 1.65;
+    color: #27364a;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 640px) {
+    .policy-error-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .notice-modal-actions {
+        flex-wrap: wrap;
+    }
+
+    .notice-modal-actions .admin-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}

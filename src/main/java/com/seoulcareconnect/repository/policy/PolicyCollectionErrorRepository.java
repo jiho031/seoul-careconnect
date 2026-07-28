@@ -10,12 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public interface PolicyCollectionErrorRepository
         extends JpaRepository<PolicyCollectionError, Long>,
         JpaSpecificationExecutor<PolicyCollectionError> {
 
-    long countByStatusNot(PolicyErrorStatus status);
+    long countByStatusNot(
+            PolicyErrorStatus status
+    );
 
     long countByErrorTypeAndStatusNot(
             PolicyErrorType errorType,
@@ -31,5 +34,10 @@ public interface PolicyCollectionErrorRepository
     int clearPolicyReferences(
             @Param("policyIds")
             Collection<Long> policyIds
+    );
+
+    Optional<PolicyCollectionError>
+    findByReport_ReportId(
+            Long reportId
     );
 }
