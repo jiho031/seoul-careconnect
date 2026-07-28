@@ -59,6 +59,13 @@ public class FavoriteService {
                     .title(dto.getTitle())
                     .category(dto.getCategoryLabel())
                     .summary(dto.getSummary())
+
+                    .agency(dto.getAgency())
+                    .regionDisplay(dto.getRegionDisplay())
+                    .target(dto.getTarget())
+                    .applyStatusLabel(dto.getApplyStatusLabel())
+                    .applyPeriod(dto.getApplyPeriod())
+
                     .createdAt(f.getCreatedAt())
                     .build();
         }).collect(Collectors.toList());

@@ -16,7 +16,7 @@
           th:href="@{/css/mypage.css}"
           href="/css/mypage.css">
     <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
-    <!-- 신고 페이지 / 정책 목록 페이지와 동일한 모달 디자인을 재사용 -->
+
     <style>
         .info-modal {
             display: none;
@@ -599,6 +599,12 @@
                         class="policy-card-list">
                 </div>
 
+                <!-- 관심 정책 페이지 버튼 -->
+                <div id="favoritePagination"
+                     class="favorite-pagination"
+                     aria-label="관심 정책 페이지">
+                </div>
+
                 <p
                         id="emptyFavoriteMessage"
                         style="display:none;
@@ -610,6 +616,61 @@
                 </p>
 
             </section>
+
+            <!-- 관심 정책 간단 미리보기 -->
+            <aside class="popular-policy-preview"
+                   id="mypageFavoritePreview"
+                   role="tooltip"
+                   aria-hidden="true">
+
+                <div class="popular-policy-preview-head">
+
+        <span class="popular-policy-preview-category"
+              data-preview-field="category">
+            분야
+        </span>
+
+                    <span class="popular-policy-preview-status"
+                          data-preview-field="status">
+            신청 상태
+        </span>
+
+                </div>
+
+                <strong class="popular-policy-preview-title"
+                        data-preview-field="title">
+                    정책명
+                </strong>
+
+                <dl class="popular-policy-preview-info">
+
+                    <div data-preview-row="agency">
+                        <dt>기관</dt>
+                        <dd data-preview-field="agency"></dd>
+                    </div>
+
+                    <div data-preview-row="region">
+                        <dt>지역</dt>
+                        <dd data-preview-field="region"></dd>
+                    </div>
+
+                    <div data-preview-row="target">
+                        <dt>대상</dt>
+                        <dd data-preview-field="target"></dd>
+                    </div>
+
+                    <div data-preview-row="period">
+                        <dt>신청 기간</dt>
+                        <dd data-preview-field="period"></dd>
+                    </div>
+
+                </dl>
+
+                <p class="popular-policy-preview-guide">
+                    클릭하면 정책 상세 내용을 확인할 수 있습니다.
+                </p>
+
+            </aside>
 
             <!-- 신고 내역 -->
             <section class="mypage-card" id="reports">
@@ -901,6 +962,14 @@
     let pendingRemovePolicyId = null;
     let pendingRemoveButton = null;
 
+    let favoritePreviewData = new Map();
+    let favoritePreviewTimer = null;
+
+    let favoriteItems = [];
+    let currentFavoritePage = 1;
+
+    const FAVORITE_PAGE_SIZE = 5;
+
     document.addEventListener("DOMContentLoaded", function () {
 
         // ===========================
@@ -935,6 +1004,9 @@
         // 관심 정책 불러오기
         loadFavorites();
 
+        // 관심 정책 카드 클릭 / hover 미리보기
+        initMypageFavoriteInteractions();
+
         // 신고 내역 불러오기
         loadReports();
 
@@ -966,10 +1038,40 @@
                 method: "DELETE"
             }).then(res => {
                 if (res.ok && btn) {
-                    btn.closest(".policy-card").remove();
 
-                    if (document.querySelectorAll(".policy-card").length === 0) {
-                        document.getElementById("emptyFavoriteMessage").style.display = "block";
+                    favoriteItems =
+                        favoriteItems.filter(
+                            item =>
+                                String(item.policyId) !==
+                                String(policyId)
+                        );
+
+                    favoritePreviewData.delete(
+                        String(policyId)
+                    );
+
+
+                    if (favoriteItems.length === 0) {
+
+                        document.getElementById(
+                            "favorites-list"
+                        ).innerHTML = "";
+
+                        document.getElementById(
+                            "favoritePagination"
+                        ).innerHTML = "";
+
+                        document.getElementById(
+                            "emptyFavoriteMessage"
+                        ).style.display = "block";
+
+                    } else {
+
+                        document.getElementById(
+                            "emptyFavoriteMessage"
+                        ).style.display = "none";
+
+                        renderFavoritePage();
                     }
                 }
 
@@ -1041,32 +1143,122 @@
         try {
 
             const response =
-                await fetch(`/api/users/${currentUserId}/favorites`);
+                await fetch(
+                    `/api/users/${currentUserId}/favorites`
+                );
 
             const data =
                 await response.json();
 
+
+            favoriteItems = data;
+            currentFavoritePage = 1;
+
+
+            favoritePreviewData = new Map(
+                data.map(item => [
+                    String(item.policyId),
+                    item
+                ])
+            );
+
+
             const container =
-                document.getElementById("favorites-list");
+                document.getElementById(
+                    "favorites-list"
+                );
 
             const empty =
-                document.getElementById("emptyFavoriteMessage");
+                document.getElementById(
+                    "emptyFavoriteMessage"
+                );
+
+            const pagination =
+                document.getElementById(
+                    "favoritePagination"
+                );
+
 
             if (data.length === 0) {
 
                 container.innerHTML = "";
+                pagination.innerHTML = "";
 
-                empty.style.display = "block";
+                empty.style.display =
+                    "block";
 
                 return;
             }
 
-            empty.style.display = "none";
 
-            container.innerHTML =
-                data.map(item => `
+            empty.style.display =
+                "none";
 
-<div class="policy-card">
+
+            renderFavoritePage();
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+    }
+
+    // ===========================
+    // 관심 정책 페이지 출력
+    // ===========================
+    function renderFavoritePage() {
+
+        const container =
+            document.getElementById(
+                "favorites-list"
+            );
+
+
+        const totalPages =
+            Math.ceil(
+                favoriteItems.length /
+                FAVORITE_PAGE_SIZE
+            );
+
+
+        if (
+            totalPages > 0 &&
+            currentFavoritePage > totalPages
+        ) {
+
+            currentFavoritePage =
+                totalPages;
+        }
+
+
+        const start =
+            (currentFavoritePage - 1) *
+            FAVORITE_PAGE_SIZE;
+
+        const end =
+            start + FAVORITE_PAGE_SIZE;
+
+
+        const pageItems =
+            favoriteItems.slice(
+                start,
+                end
+            );
+
+
+        container.innerHTML =
+            pageItems.map(item => {
+
+                const deleted =
+                    item.title ===
+                    "삭제된 정책입니다";
+
+                return `
+
+<div class="policy-card ${deleted ? "is-deleted" : ""}"
+     data-policy-id="${item.policyId}"
+     ${deleted ? "" : 'role="link" tabindex="0"'}>
 
     <div class="policy-card-body">
 
@@ -1081,6 +1273,7 @@
     </div>
 
     <button
+        type="button"
         class="policy-card-remove"
         onclick="removeFavorite(${item.policyId}, this)">
         삭제
@@ -1088,14 +1281,471 @@
 
 </div>
 
-`).join("");
+`;
 
-        } catch (e) {
+            }).join("");
 
-            console.error(e);
 
+        renderFavoritePagination();
+    }
+
+    // ===========================
+    // 관심 정책 페이징
+    // ===========================
+    function renderFavoritePagination() {
+
+        const pagination =
+            document.getElementById(
+                "favoritePagination"
+            );
+
+
+        const totalPages =
+            Math.ceil(
+                favoriteItems.length /
+                FAVORITE_PAGE_SIZE
+            );
+
+
+        if (totalPages <= 1) {
+
+            pagination.innerHTML = "";
+            pagination.style.display = "none";
+
+            return;
         }
 
+
+        pagination.style.display =
+            "flex";
+
+
+        let html = "";
+
+
+        // 이전
+        html += `
+        <button
+            type="button"
+            ${currentFavoritePage === 1 ? "disabled" : ""}
+            onclick="changeFavoritePage(${currentFavoritePage - 1})">
+            이전
+        </button>
+    `;
+
+
+        // 페이지 번호
+        for (
+            let page = 1;
+            page <= totalPages;
+            page++
+        ) {
+
+            html += `
+            <button
+                type="button"
+                class="${page === currentFavoritePage ? "active" : ""}"
+                ${page === currentFavoritePage
+                ? 'aria-current="page"'
+                : ""}
+                onclick="changeFavoritePage(${page})">
+                ${page}
+            </button>
+        `;
+        }
+
+
+        // 다음
+        html += `
+        <button
+            type="button"
+            ${currentFavoritePage === totalPages ? "disabled" : ""}
+            onclick="changeFavoritePage(${currentFavoritePage + 1})">
+            다음
+        </button>
+    `;
+
+
+        pagination.innerHTML =
+            html;
+    }
+
+    function changeFavoritePage(page) {
+
+        const totalPages =
+            Math.ceil(
+                favoriteItems.length /
+                FAVORITE_PAGE_SIZE
+            );
+
+        if (
+            page < 1 ||
+            page > totalPages ||
+            page === currentFavoritePage
+        ) {
+            return;
+        }
+
+        hideMypageFavoritePreview();
+
+        currentFavoritePage = page;
+
+        renderFavoritePage();
+    }
+
+    // ===========================
+    // 관심 정책 카드 클릭 / hover 미리보기
+    // ===========================
+    function initMypageFavoriteInteractions() {
+
+        const container =
+            document.getElementById("favorites-list");
+
+        const preview =
+            document.getElementById("mypageFavoritePreview");
+
+        if (!container || !preview) {
+            return;
+        }
+
+        const canHover = window.matchMedia(
+            "(hover: hover) and (pointer: fine)"
+        ).matches;
+
+
+        // 카드 클릭 → 정책 상세페이지 이동
+        container.addEventListener("click", function (event) {
+
+            // 삭제 버튼을 눌렀다면 상세페이지로 이동하지 않는다.
+            if (event.target.closest(".policy-card-remove")) {
+                return;
+            }
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (
+                !card ||
+                card.classList.contains("is-deleted")
+            ) {
+                return;
+            }
+
+            const policyId =
+                card.dataset.policyId;
+
+            if (!policyId) {
+                return;
+            }
+
+            window.location.href =
+                `/policies/${policyId}`;
+        });
+
+
+        // 키보드 Enter로도 상세 이동
+        container.addEventListener("keydown", function (event) {
+
+            if (
+                event.key !== "Enter" &&
+                event.key !== " "
+            ) {
+                return;
+            }
+
+            if (event.target.closest(".policy-card-remove")) {
+                return;
+            }
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (
+                !card ||
+                card.classList.contains("is-deleted")
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const policyId =
+                card.dataset.policyId;
+
+            if (policyId) {
+                window.location.href =
+                    `/policies/${policyId}`;
+            }
+        });
+
+
+        // 터치 기기에서는 hover 기능 사용 안 함
+        if (!canHover) {
+            return;
+        }
+
+
+        // 카드에 마우스가 들어왔을 때
+        container.addEventListener("mouseover", function (event) {
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (
+                !card ||
+                card.classList.contains("is-deleted")
+            ) {
+                return;
+            }
+
+            // 카드 내부 요소 사이를 이동하는 경우는 무시
+            if (
+                event.relatedTarget &&
+                card.contains(event.relatedTarget)
+            ) {
+                return;
+            }
+
+            // 삭제 버튼 위에서는 미리보기 표시 안 함
+            if (event.target.closest(".policy-card-remove")) {
+                return;
+            }
+
+            clearTimeout(favoritePreviewTimer);
+
+            favoritePreviewTimer =
+                window.setTimeout(() => {
+
+                    showMypageFavoritePreview(card);
+
+                }, 500);
+        });
+
+
+        // 카드에서 마우스가 빠져나갔을 때
+        container.addEventListener("mouseout", function (event) {
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (!card) {
+                return;
+            }
+
+            if (
+                event.relatedTarget &&
+                card.contains(event.relatedTarget)
+            ) {
+                return;
+            }
+
+            hideMypageFavoritePreview();
+        });
+
+
+        window.addEventListener(
+            "scroll",
+            hideMypageFavoritePreview,
+            { passive: true }
+        );
+
+        window.addEventListener(
+            "resize",
+            hideMypageFavoritePreview
+        );
+    }
+
+
+    function showMypageFavoritePreview(card) {
+
+        const preview =
+            document.getElementById("mypageFavoritePreview");
+
+        if (!preview) {
+            return;
+        }
+
+        const item =
+            favoritePreviewData.get(
+                String(card.dataset.policyId)
+            );
+
+        if (!item) {
+            return;
+        }
+
+
+        const getField = (name) =>
+            preview.querySelector(
+                `[data-preview-field="${name}"]`
+            );
+
+        const getRow = (name) =>
+            preview.querySelector(
+                `[data-preview-row="${name}"]`
+            );
+
+
+        function setField(name, value) {
+
+            const field = getField(name);
+
+            if (!field) {
+                return;
+            }
+
+            const text =
+                value ? String(value).trim() : "";
+
+            field.textContent = text;
+            field.hidden = !text;
+        }
+
+
+        function setRow(name, value) {
+
+            const row = getRow(name);
+            const field = getField(name);
+
+            if (!row || !field) {
+                return;
+            }
+
+            const text =
+                value ? String(value).trim() : "";
+
+            field.textContent = text;
+            row.hidden = !text;
+        }
+
+
+        setField(
+            "category",
+            item.category || "미분류"
+        );
+
+        setField(
+            "status",
+            item.applyStatusLabel
+        );
+
+        setField(
+            "title",
+            item.title || "정책 정보"
+        );
+
+        setRow(
+            "agency",
+            item.agency
+        );
+
+        setRow(
+            "region",
+            item.regionDisplay
+        );
+
+        setRow(
+            "target",
+            item.target
+        );
+
+        setRow(
+            "period",
+            item.applyPeriod
+        );
+
+
+        const cardRect =
+            card.getBoundingClientRect();
+
+        const margin = 12;
+        const gap = 10;
+
+
+        let left =
+            cardRect.left +
+            cardRect.width / 2 -
+            preview.offsetWidth / 2;
+
+
+        left = Math.max(
+            margin,
+            Math.min(
+                left,
+                window.innerWidth -
+                preview.offsetWidth -
+                margin
+            )
+        );
+
+
+        let top =
+            cardRect.bottom + gap;
+
+
+        if (
+            top + preview.offsetHeight >
+            window.innerHeight - margin
+        ) {
+
+            top =
+                cardRect.top -
+                preview.offsetHeight -
+                gap;
+        }
+
+
+        preview.style.left =
+            `${Math.round(left)}px`;
+
+        preview.style.top =
+            `${Math.max(
+                margin,
+                Math.round(top)
+            )}px`;
+
+
+        preview.classList.add(
+            "is-visible"
+        );
+
+        preview.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+    }
+
+
+    function hideMypageFavoritePreview() {
+
+        if (favoritePreviewTimer !== null) {
+
+            window.clearTimeout(
+                favoritePreviewTimer
+            );
+
+            favoritePreviewTimer = null;
+        }
+
+
+        const preview =
+            document.getElementById(
+                "mypageFavoritePreview"
+            );
+
+        if (!preview) {
+            return;
+        }
+
+
+        preview.classList.remove(
+            "is-visible"
+        );
+
+        preview.setAttribute(
+            "aria-hidden",
+            "true"
+        );
     }
 
     // ===========================
