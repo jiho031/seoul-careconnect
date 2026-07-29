@@ -5,11 +5,9 @@ import com.seoulcareconnect.entity.admin.enums.AdminActivityType;
 import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.entity.policy.PolicyDetail;
 import com.seoulcareconnect.entity.policy.PolicySource;
-import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
-import com.seoulcareconnect.entity.policy.enums.PolicyCategory;
-import com.seoulcareconnect.entity.policy.enums.PolicyStatus;
-import com.seoulcareconnect.entity.policy.enums.SourceType;
+import com.seoulcareconnect.entity.policy.enums.*;
 import com.seoulcareconnect.entity.report.MissingPolicyReport;
+import com.seoulcareconnect.repository.policy.PolicyCollectionErrorRepository;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
 import com.seoulcareconnect.repository.report.MissingPolicyReportRepository;
@@ -19,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -32,6 +31,8 @@ public class AdminPolicyFormService {
             missingPolicyReportRepository;
     private final AdminActivityLogService
             adminActivityLogService;
+    private final PolicyCollectionErrorRepository
+            policyCollectionErrorRepository;
 
     public AdminPolicyFormDTO createEmptyForm() {
         AdminPolicyFormDTO dto =
@@ -73,9 +74,7 @@ public class AdminPolicyFormService {
                 form.getPolicyId() == null;
 
         Policy policy =
-                findOrCreatePolicy(
-                        form.getPolicyId()
-                );
+                findOrCreatePolicy(form);
 
         PolicySource source =
                 findOrCreateManualSource(
@@ -181,6 +180,12 @@ public class AdminPolicyFormService {
         Policy savedPolicy =
                 policyRepository.save(policy);
 
+        completeLinkedReportIfApproved(
+                form.getReportId(),
+                savedPolicy,
+                saveAction
+        );
+
         AdminActivityType activityType =
                 resolvePolicyActivityType(
                         isNewPolicy,
@@ -201,20 +206,51 @@ public class AdminPolicyFormService {
     }
 
     private Policy findOrCreatePolicy(
-            Long policyId
+            AdminPolicyFormDTO form
     ) {
-        if (policyId == null) {
-            return new Policy();
+
+        if (form.getPolicyId() != null) {
+            return policyRepository
+                    .findWithSourceAndDetailByPolicyId(
+                            form.getPolicyId()
+                    )
+                    .orElseThrow(() ->
+                            new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "수정할 정책을 찾을 수 없습니다."
+                            )
+                    );
         }
 
-        return policyRepository
-                .findWithSourceAndDetailByPolicyId(policyId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "수정할 정책을 찾을 수 없습니다."
+        if (form.getReportId() != null) {
+            MissingPolicyReport report =
+                    missingPolicyReportRepository
+                            .findById(
+                                    form.getReportId()
+                            )
+                            .orElseThrow(() ->
+                                    new ResponseStatusException(
+                                            HttpStatus.NOT_FOUND,
+                                            "사용자 신고를 찾을 수 없습니다."
+                                    )
+                            );
+
+            if (report.getPolicy() != null) {
+                return policyRepository
+                        .findWithSourceAndDetailByPolicyId(
+                                report.getPolicy()
+                                        .getPolicyId()
                         )
-                );
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "신고와 연결된 정책을 찾을 수 없습니다."
+                                )
+                        );
+            }
+        }
+
+        return new Policy();
     }
 
     private PolicySource findOrCreateManualSource(
@@ -337,16 +373,28 @@ public class AdminPolicyFormService {
                                 )
                         );
 
+        if (report.getPolicy() != null) {
+            AdminPolicyFormDTO existingForm =
+                    getPolicyForm(
+                            report.getPolicy()
+                                    .getPolicyId()
+                    );
+
+            existingForm.setReportId(reportId);
+
+            return existingForm;
+        }
+
         AdminPolicyFormDTO dto =
                 createEmptyForm();
+
+        dto.setReportId(reportId);
 
         dto.setTitle(
                 trimToNull(report.getTitle())
         );
 
-        dto.setAgency(
-                "사용자 제보"
-        );
+        dto.setAgency("사용자 제보");
 
         dto.setOfficialUrl(
                 trimToNull(report.getSourceUrl())
@@ -435,5 +483,59 @@ public class AdminPolicyFormService {
             default ->
                     "정책 정보를 수정하고 검수 대기로 저장했습니다.";
         };
+    }
+
+    private void completeLinkedReportIfApproved(
+            Long reportId,
+            Policy savedPolicy,
+            String saveAction
+    ) {
+        if (reportId == null) {
+            return;
+        }
+
+        MissingPolicyReport report =
+                missingPolicyReportRepository
+                        .findById(reportId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "사용자 신고를 찾을 수 없습니다."
+                                )
+                        );
+
+        report.setPolicy(savedPolicy);
+
+        if ("APPROVE".equals(saveAction)) {
+            LocalDateTime now =
+                    LocalDateTime.now();
+
+            report.setStatus("COMPLETED");
+            report.setProcessedAt(now);
+
+            policyCollectionErrorRepository
+                    .findByReport_ReportId(reportId)
+                    .ifPresent(error -> {
+                        error.setPolicy(savedPolicy);
+                        error.setStatus(
+                                PolicyErrorStatus.COMPLETED
+                        );
+                        error.setProcessedAt(now);
+                    });
+
+        } else {
+            report.setStatus("IN_REVIEW");
+            report.setProcessedAt(null);
+
+            policyCollectionErrorRepository
+                    .findByReport_ReportId(reportId)
+                    .ifPresent(error -> {
+                        error.setPolicy(savedPolicy);
+                        error.setStatus(
+                                PolicyErrorStatus.IN_PROGRESS
+                        );
+                        error.setProcessedAt(null);
+                    });
+        }
     }
 }

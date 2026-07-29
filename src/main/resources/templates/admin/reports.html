@@ -2,7 +2,9 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>서울 케어넥트 관리자 - 사용자 신고 관리</title>
 
@@ -28,9 +30,13 @@
 
         <!-- 관리자 사이드바 -->
         <aside class="admin-side">
-            <p class="admin-side-title">관리자 메뉴</p>
+
+            <p class="admin-side-title">
+                관리자 메뉴
+            </p>
 
             <nav class="admin-menu">
+
                 <a th:href="@{/admin/dashboard}"
                    href="/admin/dashboard">
                     📊 대시보드
@@ -44,11 +50,6 @@
                 <a th:href="@{/admin/policy-errors}"
                    href="/admin/policy-errors">
                     ⚠️ 정책 오류 관리
-                </a>
-
-                <a th:href="@{/admin/ai-review}"
-                   href="/admin/ai-review">
-                    🤖 AI 요약 오류 관리
                 </a>
 
                 <a class="active"
@@ -71,6 +72,7 @@
                    href="/admin/users">
                     👥 회원 관리
                 </a>
+
             </nav>
         </aside>
 
@@ -79,6 +81,7 @@
 
             <!-- 페이지 헤더 -->
             <div class="admin-head">
+
                 <div>
                     <h1>사용자 신고 관리</h1>
 
@@ -89,10 +92,12 @@
                 </div>
 
                 <div class="admin-actions">
+
                     <button class="admin-btn"
                             type="button">
                         신고 내역 다운로드
                     </button>
+
                 </div>
             </div>
 
@@ -114,6 +119,7 @@
             <div class="admin-stat-grid">
 
                 <article class="admin-stat-card">
+
                     <span>전체 신고</span>
 
                     <strong th:text="${totalCount + '건'}">
@@ -121,9 +127,11 @@
                     </strong>
 
                     <small>누적 신고 건수</small>
+
                 </article>
 
                 <article class="admin-stat-card">
+
                     <span>접수</span>
 
                     <strong th:text="${receivedCount + '건'}">
@@ -131,9 +139,11 @@
                     </strong>
 
                     <small>관리자 확인 대기</small>
+
                 </article>
 
                 <article class="admin-stat-card">
+
                     <span>검토 중</span>
 
                     <strong th:text="${inReviewCount + '건'}">
@@ -141,9 +151,11 @@
                     </strong>
 
                     <small>관리자 처리 진행 중</small>
+
                 </article>
 
                 <article class="admin-stat-card">
+
                     <span>처리 완료</span>
 
                     <strong th:text="${completedCount + '건'}">
@@ -151,18 +163,22 @@
                     </strong>
 
                     <small>관리자 확인 완료</small>
+
                 </article>
+
             </div>
 
             <!-- 신고 검색 -->
             <section class="admin-card">
 
                 <div class="admin-card-head">
+
                     <h2>신고 검색</h2>
 
                     <span class="admin-list-count">
                         사용자 신고 접수 항목
                     </span>
+
                 </div>
 
                 <form class="report-filter"
@@ -183,8 +199,10 @@
                             신고 유형 전체
                         </option>
 
+                        <!-- 현재 신규 신고 값 -->
                         <option value="MISSING"
-                                th:selected="${selectedReportType == 'MISSING'}">
+                                th:selected="${selectedReportType == 'MISSING'
+                                    or selectedReportType == 'MISSING_POLICY'}">
                             누락 정책 신고
                         </option>
 
@@ -202,6 +220,7 @@
                                 th:selected="${selectedReportType == 'LINK_ERROR'}">
                             링크 오류
                         </option>
+
                     </select>
 
                     <!-- 처리 상태 -->
@@ -231,6 +250,7 @@
                                 th:selected="${selectedStatus == 'REJECTED'}">
                             반려
                         </option>
+
                     </select>
 
                     <button class="admin-btn primary"
@@ -242,6 +262,7 @@
                        th:href="@{/admin/reports}">
                         초기화
                     </a>
+
                 </form>
             </section>
 
@@ -249,9 +270,11 @@
             <section class="admin-card report-list-card">
 
                 <div class="admin-card-head">
+
                     <h2>사용자 신고 목록</h2>
 
                     <div class="report-head-actions">
+
                         <span class="admin-list-count"
                               th:text="${'총 ' + reportPage.totalElements + '건'}">
                             총 0건
@@ -263,10 +286,12 @@
                                 onclick="window.location.reload();">
                             ↻
                         </button>
+
                     </div>
                 </div>
 
                 <table class="admin-table report-table">
+
                     <thead>
                     <tr>
                         <th>신고 대상</th>
@@ -286,6 +311,7 @@
 
                         <!-- 신고 대상 -->
                         <td>
+
                             <strong class="report-target-name"
                                     th:text="${report.policyTitle}">
                                 정책명
@@ -302,47 +328,66 @@
                                   th:text="${report.title}">
                                 신고 제목
                             </span>
+
                         </td>
 
                         <!-- 신고 유형 -->
                         <td>
+
                             <span class="report-badge"
                                   th:classappend="${report.reportTypeCssClass}"
                                   th:text="${report.reportTypeLabel}">
                                 정책 정보 오류
                             </span>
+
                         </td>
 
                         <!-- 신고 내용 -->
                         <td>
+
                             <p class="report-content"
                                th:text="${report.content}">
                                 신고 내용
                             </p>
+
                         </td>
 
                         <!-- 연결 페이지 -->
                         <td>
+
                             <!-- 누락 정책 신고 -->
-                            <span th:if="${report.reportType == 'MISSING'}">
+                            <span th:if="${report.reportType == 'MISSING'
+                                or report.reportType == 'MISSING_POLICY'}">
                                 수동 등록/수정
                             </span>
 
-                            <!-- 기존 정책 오류 -->
+                            <!-- 기존 정책 오류 신고 -->
                             <span th:if="${report.reportType == 'INFO_ERROR'
                                 or report.reportType == 'DEADLINE_ERROR'
                                 or report.reportType == 'LINK_ERROR'}">
                                 정책 오류 관리
                             </span>
+
+                            <!-- 알 수 없는 신고 유형 -->
+                            <span th:if="${report.reportType != 'MISSING'
+                                and report.reportType != 'MISSING_POLICY'
+                                and report.reportType != 'INFO_ERROR'
+                                and report.reportType != 'DEADLINE_ERROR'
+                                and report.reportType != 'LINK_ERROR'}">
+                                미분류
+                            </span>
+
                         </td>
 
                         <!-- 상태 -->
                         <td>
+
                             <span class="admin-tag"
                                   th:classappend="${report.statusCssClass}"
                                   th:text="${report.statusLabel}">
                                 접수
                             </span>
+
                         </td>
 
                         <!-- 접수 시간 -->
@@ -352,17 +397,26 @@
 
                         <!-- 관리 -->
                         <td>
+
                             <div class="table-actions">
 
-                                <!-- 누락 정책 신고 -->
-                                <a th:if="${report.reportType == 'MISSING'}"
+                                <!--
+                                    누락 정책 신고:
+                                    신고 ID를 전달하여 수동 등록 화면에서
+                                    신고 정보가 자동 입력되도록 한다.
+                                -->
+                                <a th:if="${report.reportType == 'MISSING'
+                                    or report.reportType == 'MISSING_POLICY'}"
                                    th:href="@{/admin/policies/new(
-                                    reportId=${report.reportId}
-                                    )}">
+                                       reportId=${report.reportId}
+                                   )}">
                                     이동
                                 </a>
 
-                                <!-- 정책 정보/기간/링크 오류 -->
+                                <!--
+                                    기존 정책과 연결된 오류 신고:
+                                    정책 오류 관리 화면으로 이동한다.
+                                -->
                                 <a th:if="${report.reportType == 'INFO_ERROR'
                                     or report.reportType == 'DEADLINE_ERROR'
                                     or report.reportType == 'LINK_ERROR'}"
@@ -376,21 +430,25 @@
                                         th:data-report-id="${report.reportId}"
                                         th:data-report-title="${report.title}"
                                         th:data-policy-title="${report.policyTitle}"
+                                        th:data-report-type="${report.reportType}"
                                         th:data-status="${report.status}"
                                         th:data-admin-memo="${report.adminMemo}"
                                         onclick="openReportModal(this)">
                                     처리
                                 </button>
+
                             </div>
                         </td>
                     </tr>
 
                     <!-- 신고 데이터 없음 -->
                     <tr th:if="${#lists.isEmpty(reports)}">
+
                         <td colspan="7"
                             class="admin-empty">
                             조건에 해당하는 사용자 신고가 없습니다.
                         </td>
+
                     </tr>
 
                     </tbody>
@@ -418,7 +476,10 @@
 
                     <!-- 페이지 번호 -->
                     <a th:each="pageNumber :
-                            ${#numbers.sequence(0, reportPage.totalPages - 1)}"
+                            ${#numbers.sequence(
+                                0,
+                                reportPage.totalPages - 1
+                            )}"
                        th:text="${pageNumber + 1}"
                        th:classappend="${pageNumber == reportPage.number
                             ? 'active'
@@ -447,6 +508,7 @@
                           class="disabled">
                         ›
                     </span>
+
                 </div>
             </section>
 
@@ -456,66 +518,80 @@
                 <section class="admin-card">
 
                     <div class="admin-card-head">
+
                         <h2>신고 분류 기준</h2>
 
                         <span class="admin-list-count">
                             자동 분류 기준
                         </span>
+
                     </div>
 
                     <div class="report-rule-list">
 
                         <article class="report-rule-item">
+
                             <strong>정책 정보 오류</strong>
 
                             <p>
                                 지원 대상, 필요 서류 등 정책 내용 오류는
                                 정책 오류 관리에서 확인합니다.
                             </p>
+
                         </article>
 
                         <article class="report-rule-item">
+
                             <strong>기간 오류</strong>
 
                             <p>
                                 신청 시작일과 마감일이 실제 공고와 다른 경우
                                 정책 오류 관리로 연결합니다.
                             </p>
+
                         </article>
 
                         <article class="report-rule-item">
+
                             <strong>링크 오류</strong>
 
                             <p>
                                 공식 신청 URL이 잘못되었거나 접속되지 않는 경우
                                 정책 오류 관리로 연결합니다.
                             </p>
+
                         </article>
 
                         <article class="report-rule-item">
+
                             <strong>누락 정책 신고</strong>
 
                             <p>
                                 서비스에 없는 정책은 수동 등록 또는
                                 API 재수집 필요 여부를 확인합니다.
                             </p>
+
                         </article>
+
                     </div>
                 </section>
 
                 <section class="admin-card">
 
                     <div class="admin-card-head">
+
                         <h2>처리 흐름</h2>
 
                         <span class="admin-list-count">
                             신고 처리 기준
                         </span>
+
                     </div>
 
                     <div class="report-process-list">
 
                         <article class="report-process-item">
+
                             <span class="admin-tag wait">
                                 접수
                             </span>
@@ -524,9 +600,11 @@
                                 신고가 등록되면 관리자가 신고 내용과
                                 관련 정책을 확인합니다.
                             </p>
+
                         </article>
 
                         <article class="report-process-item">
+
                             <span class="admin-tag ai">
                                 검토 중
                             </span>
@@ -535,9 +613,11 @@
                                 정책 원문, 공식 URL 또는 API 원본 데이터와
                                 신고 내용을 비교합니다.
                             </p>
+
                         </article>
 
                         <article class="report-process-item">
+
                             <span class="admin-tag ok">
                                 처리 완료
                             </span>
@@ -546,9 +626,12 @@
                                 정책 정보 수정 또는 누락 정책 등록이 완료되면
                                 신고 상태를 처리 완료로 변경합니다.
                             </p>
+
                         </article>
+
                     </div>
                 </section>
+
             </div>
         </section>
     </div>
@@ -556,17 +639,30 @@
 
 <!-- 사용자 신고 처리 모달 -->
 <div id="reportModal"
-     class="notice-modal">
+     class="notice-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="reportModalTitle">
 
     <div class="notice-modal-content report-modal-content">
 
         <div class="notice-modal-head">
+
             <div>
-                <h3>사용자 신고 처리</h3>
+
+                <h3 id="reportModalTitle">
+                    사용자 신고 처리
+                </h3>
 
                 <p id="modalReportTitle">
                     신고 제목
                 </p>
+
+                <span id="modalReportType"
+                      class="report-modal-type">
+                    신고 유형
+                </span>
+
             </div>
 
             <button type="button"
@@ -575,6 +671,7 @@
                     onclick="closeReportModal()">
                 ×
             </button>
+
         </div>
 
         <form method="post"
@@ -585,6 +682,7 @@
                    name="reportId">
 
             <div class="notice-form-group">
+
                 <label for="modalReportStatus">
                     처리 상태
                 </label>
@@ -609,10 +707,13 @@
                     <option value="REJECTED">
                         반려
                     </option>
+
                 </select>
+
             </div>
 
             <div class="notice-form-group">
+
                 <label for="modalReportMemo">
                     관리자 메모
                 </label>
@@ -623,9 +724,11 @@
                           rows="5"
                           maxlength="1000"
                           placeholder="처리 내용이나 확인 결과를 입력하세요."></textarea>
+
             </div>
 
             <div class="notice-modal-actions">
+
                 <button type="button"
                         class="admin-btn"
                         onclick="closeReportModal()">
@@ -636,7 +739,9 @@
                         class="admin-btn primary">
                     저장
                 </button>
+
             </div>
+
         </form>
     </div>
 </div>
@@ -657,6 +762,9 @@
         const reportTitle =
             document.getElementById("modalReportTitle");
 
+        const reportTypeElement =
+            document.getElementById("modalReportType");
+
         const statusSelect =
             document.getElementById("modalReportStatus");
 
@@ -666,8 +774,10 @@
         if (!modal
             || !reportIdInput
             || !reportTitle
+            || !reportTypeElement
             || !statusSelect
             || !memoTextarea) {
+
             return;
         }
 
@@ -679,6 +789,9 @@
 
         const policyTitle =
             button.dataset.policyTitle;
+
+        const reportType =
+            button.dataset.reportType;
 
         const status =
             button.dataset.status;
@@ -692,15 +805,23 @@
         reportTitle.textContent =
             title || policyTitle || "신고 제목 없음";
 
+        reportTypeElement.textContent =
+            getReportTypeLabel(reportType);
+
         statusSelect.value =
             status || "RECEIVED";
 
         memoTextarea.value =
-            adminMemo && adminMemo !== "null"
+            adminMemo
+            && adminMemo !== "null"
+            && adminMemo !== "undefined"
                 ? adminMemo
                 : "";
 
         modal.classList.add("open");
+
+        document.body.style.overflow =
+            "hidden";
     }
 
     function closeReportModal() {
@@ -709,6 +830,29 @@
 
         if (modal) {
             modal.classList.remove("open");
+        }
+
+        document.body.style.overflow =
+            "";
+    }
+
+    function getReportTypeLabel(reportType) {
+        switch (reportType) {
+            case "MISSING":
+            case "MISSING_POLICY":
+                return "누락 정책 신고";
+
+            case "INFO_ERROR":
+                return "정책 정보 오류";
+
+            case "DEADLINE_ERROR":
+                return "기간 오류";
+
+            case "LINK_ERROR":
+                return "링크 오류";
+
+            default:
+                return "미분류 신고";
         }
     }
 
