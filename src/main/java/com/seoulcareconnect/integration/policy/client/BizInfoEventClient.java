@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 @Component
 @ConditionalOnProperty(name = "app.external.bizinfo.event.enabled", havingValue = "true")
@@ -170,9 +171,15 @@ public class BizInfoEventClient implements ExternalPolicyClient {
                 .endDate(receiptRange.endDate() != null
                         ? receiptRange.endDate() : eventRange.endDate())
                 .applyMethod("행사 안내 페이지에서 신청 방법 확인")
-                .officialUrl(reader.firstText(item, "originUrlAdres", "originUrl", "bizinfoUrl"))
+                .officialUrl(resolveOfficialUrl(item))
                 .contact(reader.stripHtml(reader.joinNonBlank(" / ", agencyName, reference)))
                 .benefit(reader.stripHtml(summary))
+                .requiredDocumentsText(
+                        extractApplicationDocuments(
+                                reader.firstText(item, "fileNm"),
+                                reader.firstText(item, "printFileNm")
+                        )
+                )
                 .contentText(reader.stripHtml(reader.joinNonBlank(
                         "\n",
                         eventType == null
@@ -188,6 +195,139 @@ public class BizInfoEventClient implements ExternalPolicyClient {
                 .rawJson(rawJson).httpStatus(200)
                 .build();
     }
+
+    private String resolveOfficialUrl(JsonNode item) {
+
+        String originalUrl =
+                reader.firstText(
+                        item,
+                        "orginlUrlAdres",
+                        "originUrlAdres",
+                        "originUrl"
+                );
+
+        if (isHttpUrl(originalUrl)) {
+            return originalUrl;
+        }
+
+        String bizInfoUrl =
+                reader.firstText(
+                        item,
+                        "bizinfoUrl"
+                );
+
+        if (bizInfoUrl != null
+                && !bizInfoUrl.isBlank()) {
+
+            if (isHttpUrl(bizInfoUrl)) {
+                return bizInfoUrl;
+            }
+
+            return "https://www.bizinfo.go.kr"
+                    + (bizInfoUrl.startsWith("/")
+                    ? bizInfoUrl
+                    : "/" + bizInfoUrl);
+        }
+
+        return reader.firstText(
+                item,
+                "printFlpthNm"
+        );
+    }
+
+    private String extractApplicationDocuments(
+            String... fileNameGroups
+    ) {
+        List<String> documents =
+                new ArrayList<>();
+
+        for (String group : fileNameGroups) {
+
+            if (group == null
+                    || group.isBlank()) {
+                continue;
+            }
+
+            for (String fileName :
+                    group.split("@|\\r?\\n")) {
+
+                String cleaned =
+                        reader.stripHtml(fileName);
+
+                if (cleaned != null
+                        && isApplicationDocumentName(cleaned)
+                        && !documents.contains(cleaned)) {
+
+                    documents.add(cleaned);
+                }
+            }
+        }
+
+        return documents.isEmpty()
+                ? null
+                : String.join("\n", documents);
+    }
+
+    private boolean isApplicationDocumentName(
+            String fileName
+    ) {
+        String normalized =
+                fileName
+                        .replaceAll("\\s+", "")
+                        .toLowerCase(Locale.ROOT);
+
+        if (containsAny(
+                normalized,
+                "공고문",
+                "모집안내",
+                "사업안내",
+                "추진계획",
+                "포스터",
+                "홍보"
+        )) {
+            return false;
+        }
+
+        return containsAny(
+                normalized,
+                "신청서",
+                "신청양식",
+                "제출서류",
+                "제출서식",
+                "서식",
+                "양식",
+                "동의서",
+                "서약서",
+                "신고서",
+                "확인서",
+                "증빙"
+        );
+    }
+
+    private boolean isHttpUrl(
+            String value
+    ) {
+        return value != null
+                && (
+                value.startsWith("https://")
+                        || value.startsWith("http://")
+        );
+    }
+
+    private boolean containsAny(
+            String text,
+            String... keywords
+    ) {
+        for (String keyword : keywords) {
+
+            if (text.contains(keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private String resolveEventRegion(
             String area,
             String title,
