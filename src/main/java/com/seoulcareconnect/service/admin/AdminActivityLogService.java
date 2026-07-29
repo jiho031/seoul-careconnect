@@ -72,13 +72,6 @@ public class AdminActivityLogService {
         activityLogRepository.save(log);
     }
 
-    /**
-     * 현재 로그인한 관리자를 기준으로 활동 저장
-     *
-     * 현재 인증 구조에서 관리자 ID를 바로 알 수 없으므로
-     * 관리자 이름은 Authentication의 name을 사용하고,
-     * 관리자 ID는 null로 저장한다.
-     */
     @Transactional
     public void recordCurrentAdmin(
             AdminActivityType activityType,
