@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${policy.title + ' | 서울 케어넥트'}">정책 상세 | 서울 케어넥트</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/policy-detail.css}" href="/css/policy-detail.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+</head>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="policy-detail-page">
+    <section class="detail-hero">
+        <div class="detail-container">
+            <a class="back-link" th:href="@{/policies}" aria-label="정책 찾기 화면으로 이동">
+                <span aria-hidden="true">‹</span>
+                정책 찾기로 돌아가기
+            </a>
+
+            <div class="detail-title-card">
+                <div class="detail-title-main">
+                    <div class="badge-row">
+                        <span class="status-badge" th:text="${policy.applyStatusLabel}">신청 가능</span>
+                        <span class="dday-badge" th:text="${policy.dDayLabel}">상시</span>
+                        <span class="source-badge" th:text="${policy.sourceName}">공식 제공기관</span>
+                    </div>
+
+                    <h1 th:text="${policy.title}">정책명</h1>
+                    <p class="lead-text" th:text="${policy.summary}">정책 요약</p>
+
+                    <dl class="summary-grid" aria-label="정책 핵심 정보">
+                        <div>
+                            <dt>담당 기관</dt>
+                            <dd th:text="${policy.agency}">공식 제공기관</dd>
+                        </div>
+                        <div>
+                            <dt>지역</dt>
+                            <dd th:text="${policy.regionDisplay}">서울시 전체</dd>
+                        </div>
+                        <div>
+                            <dt>분야</dt>
+                            <dd th:text="${policy.categoryLabel}">생활지원</dd>
+                        </div>
+                        <div>
+                            <dt>생애주기</dt>
+                            <dd th:text="${policy.ageGroupDisplay}">전 연령</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="detail-action-box" aria-label="정책 바로가기 버튼">
+                    <button type="button"
+                            class="primary-action policy-save-btn"
+                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            onclick="handleFavoriteClick(this)">
+                        관심 정책 저장
+                    </button>
+
+                    <a th:if="${policy.officialUrl != null}"
+                       th:href="${policy.officialUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="outline-action">
+                        공식 사이트 확인
+                    </a>
+                    <button type="button"
+                            class="outline-action detail-ai-action"
+                            data-ai-assistant-open
+                            data-ai-assistant-prompt="이 정책의 지원 대상과 신청할 때 주의할 점을 쉽게 설명해 주세요.">
+                        이 정책에 대해 AI에게 질문
+                    </button>
+                    <span th:unless="${policy.officialUrl != null}"
+                          class="outline-action"
+                          aria-disabled="true">
+                        공식 사이트 정보 없음
+                    </span>
+                    <a sec:authorize="hasRole('USER') and !hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+                       th:href="@{/reports(policyId=${policy.policyId})}"
+                       class="outline-action detail-report-action">
+                        누락 신고
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="detail-content-section">
+        <div class="detail-container detail-layout">
+            <div class="detail-main-column">
+                <article class="info-card ai-summary-card">
+                    <div class="section-heading">
+                        <span class="section-icon ai-icon" aria-hidden="true">요약</span>
+                        <div>
+                            <h2>정책 쉬운 요약</h2>
+                            <p>공식 정책 내용을 바탕으로 핵심 내용을 정리했습니다.</p>
+                        </div>
+                    </div>
+
+                    <div th:if="${aiExplanation != null}" class="easy-summary-box ai-approved-summary">
+                        <p class="ai-summary-lead" th:text="${aiExplanation.easySummary}">쉬운 정책 설명</p>
+
+                        <dl class="ai-summary-list">
+                            <div>
+                                <dt>누가 받을 수 있나요?</dt>
+                                <dd th:text="${aiExplanation.eligibilitySummary}">지원 대상 설명</dd>
+                            </div>
+                            <div>
+                                <dt>무엇을 지원하나요?</dt>
+                                <dd th:text="${aiExplanation.benefitSummary}">지원 내용 설명</dd>
+                            </div>
+                            <div>
+                                <dt>어떻게 신청하나요?</dt>
+                                <dd th:text="${aiExplanation.applicationSummary}">신청 방법 설명</dd>
+                            </div>
+                            <div>
+                                <dt>꼭 확인하세요</dt>
+                                <dd th:text="${aiExplanation.cautionSummary}">주의사항</dd>
+                            </div>
+                        </dl>
+
+                        <span class="ai-approved-badge">관리자 검수 완료</span>
+                    </div>
+
+                    <div th:unless="${aiExplanation != null}" class="easy-summary-box">
+                        <p th:text="${policy.summary}">정책 요약</p>
+                    </div>
+
+                    <p class="ai-notice" th:if="${aiExplanation != null}">
+                        AI가 공식 정책 내용을 쉽게 정리하고 관리자가 검수한 설명입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.
+                    </p>
+                    <p class="ai-notice" th:unless="${aiExplanation != null}">
+                        관리자 검수가 완료되기 전에는 기존 정책 요약을 제공합니다. 실제 신청 조건은 반드시 공식 안내에서 확인해 주세요.
+                    </p>
+                </article>
+
+                <article class="info-card">
+                    <h2>지원 대상</h2>
+                    <p th:text="${policy.target}">지원 대상은 공식 공고에서 확인해 주세요.</p>
+
+                    <div th:if="${policy.selectionCriteria != null and !#strings.isEmpty(policy.selectionCriteria)}">
+                        <h3 style="margin: 24px 0 10px;">선정 기준</h3>
+                        <p style="white-space: pre-line;"
+                           th:text="${policy.selectionCriteria}">
+                            선정 기준
+                        </p>
+                    </div>
+                </article>
+
+                <article class="info-card">
+                    <h2>지원 내용</h2>
+
+                    <ul class="dot-list" th:if="${!#lists.isEmpty(policy.benefitLines)}">
+                        <li th:each="line : ${policy.benefitLines}"
+                            th:text="${line}">
+                            지원 내용
+                        </li>
+                    </ul>
+
+                    <p th:if="${#lists.isEmpty(policy.benefitLines)}"
+                       th:text="${policy.benefit}">
+                        지원 내용은 공식 공고에서 확인해 주세요.
+                    </p>
+                </article>
+
+                <article class="info-card">
+                    <h2>신청 방법</h2>
+
+                    <ol class="step-list" th:if="${!#lists.isEmpty(policy.applicationLines)}">
+                        <li th:each="line, iter : ${policy.applicationLines}">
+                            <span th:text="${iter.index + 1}">1</span>
+                            <div>
+                                <strong>신청 안내</strong>
+                                <p th:text="${line}">신청 방법</p>
+                            </div>
+                        </li>
+                    </ol>
+
+                    <ol class="step-list" th:if="${#lists.isEmpty(policy.applicationLines)}">
+                        <li>
+                            <span>1</span>
+                            <div>
+                                <strong>공식 안내 확인</strong>
+                                <p th:text="${policy.applyMethod}">공식 공고를 확인해 주세요.</p>
+                            </div>
+                        </li>
+                    </ol>
+                </article>
+
+                <article class="info-card">
+                    <div class="section-title-row">
+                        <h2>필요 서류 체크리스트</h2>
+                        <span>공식 공고 기준</span>
+                    </div>
+
+                    <div class="checklist" th:if="${!#lists.isEmpty(policy.documentLines)}">
+                        <label th:each="document : ${policy.documentLines}">
+                            <input type="checkbox" disabled>
+                            <span th:text="${document}">필요 서류</span>
+                        </label>
+                    </div>
+
+                    <div class="checklist" th:if="${#lists.isEmpty(policy.documentLines)}">
+                        <label>
+                            <input type="checkbox" disabled>
+                            공식 공고에서 제출 서류를 확인해 주세요.
+                        </label>
+                    </div>
+                </article>
+
+                <article class="info-card"
+                         th:if="${!#lists.isEmpty(policy.contentLines)}">
+                    <h2>상세 안내</h2>
+
+                    <ul class="dot-list detail-guide-list">
+                        <li th:each="line : ${policy.contentLines}"
+                            th:text="${line}">
+                            상세 정책 내용
+                        </li>
+                    </ul>
+                </article>
+            </div>
+
+            <aside class="detail-side-column" aria-label="정책 신청 요약">
+                <div class="side-card sticky-card">
+                    <h2>신청 정보</h2>
+                    <dl class="side-info-list">
+                        <div>
+                            <dt th:text="${policy.periodLabel}">신청 기간</dt>
+                            <dd th:text="${policy.applyPeriod}">공고 확인</dd>
+                        </div>
+                        <div>
+                            <dt>신청 상태</dt>
+                            <dd>
+                                <span class="mini-status"
+                                      th:text="${policy.applyStatusLabel}">
+                                    신청 가능
+                                </span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>신청 방법</dt>
+                            <dd>
+                                <ol class="side-step-list" th:if="${!#lists.isEmpty(policy.applicationLines)}">
+                                <li th:each="line, iter : ${policy.applicationLines}">
+                                <span th:text="|${iter.index + 1}. |">1. </span>
+                                <span th:text="${line}">신청 방법</span>
+                                </li>
+                                </ol>
+                           <span th:if="${#lists.isEmpty(policy.applicationLines)}"
+                           th:text="${policy.applyMethod}">
+                                 공식 공고 확인
+                           </span>
+                          </dd>
+                        </div>
+                        <div>
+                            <dt>지역</dt>
+                            <dd th:text="${policy.regionDisplay}">서울시 전체</dd>
+                        </div>
+                        <div>
+                            <dt>문의처</dt>
+                            <dd th:text="${policy.contact != null and !#strings.isEmpty(policy.contact)
+                                    ? policy.contact
+                                    : '공식 공고에서 확인'}">
+                                공식 공고에서 확인
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <a th:if="${policy.officialUrl != null}"
+                       class="side-primary-link"
+                       th:href="${policy.officialUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        정책 원문·공식 링크
+                    </a>
+                    <span th:unless="${policy.officialUrl != null}"
+                          class="side-primary-link"
+                          aria-disabled="true">
+                        정책 원문 링크 없음
+                    </span>
+
+                    <button type="button"
+                            class="side-save-button policy-save-btn"
+                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            onclick="handleFavoriteClick(this)">
+                        관심 정책 저장
+                    </button>
+                </div>
+
+                <div class="side-card caution-card">
+                    <h2>확인해 주세요</h2>
+                    <p>
+                        본 서비스는 정책 정보를 쉽게 이해할 수 있도록 돕는 참고 서비스입니다.
+                        최종 신청은 각 기관의 공식 페이지에서 진행해 주세요.
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </section>
+</main>
+<script>
+    function handleFavoriteClick(btn) {
+        const userId = btn.dataset.userId;
+        const policyId = btn.dataset.policyId;
+        addFavorite(userId, policyId, policyId);
+    }
+
+    function addFavorite(userId, policyId) {
+        if (!userId) {
+            alert("로그인 후 이용 가능합니다.");
+            return;
+        }
+
+        fetch(`/api/users/${userId}/favorites/${policyId}`, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok || response.status === 409) {
+                    markSaved(policyId);
+                    if (response.status === 409) {
+                        alert("이미 관심 정책으로 등록된 정책입니다.");
+                    } else {
+                        alert("관심 정책에 추가되었습니다!");
+                    }
+                } else {
+                    alert("오류가 발생했습니다.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function markSaved(policyId) {
+        document.querySelectorAll('.policy-save-btn').forEach(btn => {
+            if (btn.dataset.policyId === String(policyId)) {
+                btn.innerText = "찜 완료";
+                btn.disabled = true;
+            }
+        });
+    }
+</script>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

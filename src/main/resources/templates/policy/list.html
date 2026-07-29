@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정책 찾기 | 서울 케어넥트</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/policy-list.css}" href="/css/policy-list.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+    <!-- 신고 페이지(form.html)와 동일한 모달 디자인을 재사용 -->
+    <style>
+        .info-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 30, 50, 0.45);
+        }
+
+        .info-modal.is-open {
+            display: flex;
+        }
+
+        .info-modal-box {
+            width: min(360px, 100%);
+            padding: 34px 28px 28px;
+            border-radius: 22px;
+            background: #ffffff;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.25);
+        }
+
+        .info-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .info-modal-icon.success {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .info-modal-icon.notice {
+            background: #fdeeee;
+            color: #d64545;
+        }
+
+        .info-modal-box h3 {
+            margin: 0 0 8px;
+            color: #071947;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .info-modal-box p {
+            margin: 0 0 22px;
+            color: #65758e;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .info-modal-box button {
+            width: 100%;
+            padding: 13px;
+            border: 0;
+            border-radius: 12px;
+            background: #164ce0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="policy-list-page">
+    <section class="policy-hero">
+        <div class="policy-container">
+            <span class="eyebrow">서울 복지·지원정책 통합 검색</span>
+            <h1>내 상황에 맞는 정책을<br>쉽게 찾아보세요</h1>
+            <p>지역, 생애주기, 분야, 지원 대상 조건을 선택하고 서울시와 자치구 정책을 한 번에 확인할 수 있습니다.</p>
+
+            <form class="search-filter-card"
+                  th:action="@{/policies}"
+                  th:object="${search}"
+                  method="get"
+                  aria-label="정책 검색 조건">
+
+                <input type="hidden" th:field="*{quick}">
+                <input type="hidden" name="page" value="0">
+
+                <div class="policy-search-row">
+                    <label class="sr-only" for="policyKeyword">정책 검색어</label>
+                    <span class="search-icon" aria-hidden="true">
+                        <svg viewBox="0 0 28 28" focusable="false">
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <path d="M18.5 18.5L25 25"></path>
+                        </svg>
+                    </span>
+                    <input id="policyKeyword"
+                           type="search"
+                           th:field="*{keyword}"
+                           placeholder="찾고 싶은 정책을 검색하세요. 예: 주거 지원, 교육, 돌봄">
+                    <button type="submit">검색</button>
+                </div>
+
+                <div class="filter-grid">
+                    <div class="filter-field">
+                        <label for="district">지역</label>
+                        <select id="district" th:field="*{district}">
+                            <option value="">전체</option>
+                            <option value="서울시 전체">서울시 전체</option>
+                            <option th:each="districtItem : ${districts}"
+                                    th:value="${districtItem}"
+                                    th:text="${districtItem}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="ageGroup">생애주기</label>
+                        <select id="ageGroup" th:field="*{ageGroup}">
+                            <option value="">전체</option>
+                            <option th:each="age : ${ageGroups}"
+                                    th:if="${age.name() != 'ALL'}"
+                                    th:value="${age.name()}"
+                                    th:text="${age.label}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="category">분야</label>
+                        <select id="category" th:field="*{category}">
+                            <option value="">전체</option>
+                            <option th:each="categoryItem : ${categories}"
+                                    th:value="${categoryItem.name()}"
+                                    th:text="${categoryItem.label}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="targetKeyword">지원 대상</label>
+                        <select id="targetKeyword" th:field="*{targetKeyword}">
+                            <option value="">전체</option>
+                            <option th:each="targetItem : ${targetKeywords}"
+                                    th:value="${targetItem}"
+                                    th:text="${targetItem}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="applyStatus">신청 상태</label>
+                        <select id="applyStatus" th:field="*{applyStatus}">
+                            <option value="">전체</option>
+                            <option th:each="statusItem : ${applyStatuses}"
+                                    th:value="${statusItem.name()}"
+                                    th:text="${statusItem.label}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="sort">정렬</label>
+                        <select id="sort" th:field="*{sort}">
+                            <option value="deadline">마감임박순</option>
+                            <option value="latest">최신순</option>
+                            <option value="popular">인기순</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="reset-btn"
+                                type="button"
+                                onclick="window.location.href='/policies'">
+                            초기화
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="result-section">
+        <div class="policy-container">
+            <div class="result-head">
+                <div>
+                    <h2>정책 검색 결과</h2>
+                    <p>
+                        총
+                        <strong th:text="${#numbers.formatInteger(policyPage.totalElements, 0, 'COMMA')}">0</strong>개의
+                        정책이 검색되었습니다.
+                    </p>
+                </div>
+
+                <div class="result-tabs" aria-label="빠른 보기">
+                    <a th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick='all', page=0)}"
+                       th:classappend="${search.safeQuick() == 'all'} ? ' active' : ''">
+                        전체
+                    </a>
+                    <a th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick='open', page=0)}"
+                       th:classappend="${search.safeQuick() == 'open'} ? ' active' : ''">
+                        신청 가능
+                    </a>
+                    <a th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick='new', page=0)}"
+                       th:classappend="${search.safeQuick() == 'new'} ? ' active' : ''">
+                        최근 등록
+                    </a>
+                    <a th:href="@{/policies(sort=${search.sort}, quick='recent', page=0)}"
+                       th:classappend="${search.safeQuick() == 'recent'} ? ' active' : ''">
+                        최근 본 정책
+                    </a>
+                </div>
+            </div>
+
+            <div class="policy-card-list" th:if="${!policyPage.empty}">
+                <article class="policy-result-card"
+                         th:each="policy : ${policyPage.content}">
+
+                    <div class="card-top">
+                        <div class="policy-badges">
+                            <span class="badge status"
+                                  th:text="${policy.applyStatusLabel}">
+                                신청 가능
+                            </span>
+
+                            <!-- D-DAY부터 D-14까지는 NEW보다 남은 날짜를 우선 표시 -->
+                            <span class="badge dday"
+                                  th:if="${policy.dDayPriority}"
+                                  th:classappend="${policy.dDayCssClass}"
+                                  th:text="${policy.dDayLabel}">
+                                D-5
+                            </span>
+
+                            <!-- 마감이 15일 이상 남았고 최근 등록된 정책 -->
+                            <span class="badge dday blue"
+                                  th:if="${!policy.dDayPriority
+                                           and policy.newPolicy}">
+                                NEW
+                            </span>
+
+                            <!-- D-Day 우선 대상도 아니고 신규 정책도 아닌 경우 -->
+                            <span class="badge dday"
+                                  th:if="${!policy.dDayPriority
+                                           and !policy.newPolicy}"
+                                  th:classappend="${policy.dDayCssClass}"
+                                  th:text="${policy.dDayLabel}">
+                                D-20
+                            </span>
+                        </div>
+
+                        <button class="bookmark-btn" type="button"
+                                th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                                onclick="handleFavoriteClick(this)">
+                            관심 저장
+                        </button>
+                    </div>
+
+                    <h3>
+                        <a th:href="@{/policies/{policyId}(policyId=${policy.policyId})}"
+                           th:text="${policy.title}"
+                           th:title="${policy.title}">
+                            정책명
+                        </a>
+                    </h3>
+
+                    <p class="policy-subline">
+                        <span th:text="${policy.agency}">담당 기관</span>
+                        <i aria-hidden="true">|</i>
+                        <span th:text="${policy.categoryLabel}">분야</span>
+                    </p>
+
+                    <p class="summary"
+                       th:text="${policy.summary}"
+                       th:title="${policy.summary}">
+                        정책 요약
+                    </p>
+
+                    <dl class="info-grid">
+                        <div>
+                            <dt>신청 기간</dt>
+                            <dd th:text="${policy.applyPeriod}"
+                                th:title="${policy.applyPeriod}">
+                                공고 확인
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>신청 방법</dt>
+                            <dd th:text="${policy.applyMethod}"
+                                th:title="${policy.applyMethod}">
+                                공식 공고 확인
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>지역</dt>
+                            <dd th:text="${policy.regionDisplay}"
+                                th:title="${policy.regionDisplay}">
+                                서울시 전체
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="card-bottom">
+                        <div class="tags">
+                            <span th:each="tag : ${policy.tags}"
+                                  th:text="${tag}">
+                                태그
+                            </span>
+                        </div>
+
+                        <a class="detail-btn"
+                           th:href="@{/policies/{policyId}(policyId=${policy.policyId})}">
+                            상세 보기
+                        </a>
+                    </div>
+                </article>
+            </div>
+
+            <article class="policy-result-card"
+                     th:if="${policyPage.empty}"
+                     style="text-align: center; padding: 56px 30px;">
+                <h3 style="margin-bottom: 14px;">조건에 맞는 정책이 없습니다.</h3>
+                <p class="summary">검색어나 필터 조건을 바꿔 다시 확인해 주세요.</p>
+                <a class="detail-btn" th:href="@{/policies}" style="margin-top: 18px;">전체 정책 보기</a>
+            </article>
+
+            <nav class="pagination"
+                 th:if="${policyPage.totalPages > 1}"
+                 aria-label="페이지 이동">
+
+                <a th:if="${policyPage.first}"
+                   href="#"
+                   class="disabled"
+                   onclick="return false;">
+                    이전
+                </a>
+                <a th:unless="${policyPage.first}"
+                   th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick=${search.quick}, page=${policyPage.number - 1}, size=${policyPage.size})}">
+                    이전
+                </a>
+
+                <a th:each="pageNumber : ${pageNumbers}"
+                   th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick=${search.quick}, page=${pageNumber}, size=${policyPage.size})}"
+                   th:text="${pageNumber + 1}"
+                   th:classappend="${pageNumber == policyPage.number} ? ' active' : ''">
+                    1
+                </a>
+
+                <a th:if="${policyPage.last}"
+                   href="#"
+                   class="disabled"
+                   onclick="return false;">
+                    다음
+                </a>
+                <a th:unless="${policyPage.last}"
+                   th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick=${search.quick}, page=${policyPage.number + 1}, size=${policyPage.size})}">
+                    다음
+                </a>
+            </nav>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- 관심 정책 관련 안내 모달 (신고 페이지 모달과 동일한 디자인) -->
+<div class="info-modal" id="favoriteModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon" id="favoriteModalIcon">✓</div>
+        <h3 id="favoriteModalTitle">관심 정책에 추가되었습니다</h3>
+        <p id="favoriteModalMessage">마이페이지에서 관심 정책을 확인할 수 있어요.</p>
+        <button type="button" id="favoriteModalCloseButton">확인</button>
+    </div>
+</div>
+
+<script>
+    const favoriteModal = document.getElementById("favoriteModal");
+    const favoriteModalIcon = document.getElementById("favoriteModalIcon");
+    const favoriteModalTitle = document.getElementById("favoriteModalTitle");
+    const favoriteModalMessage = document.getElementById("favoriteModalMessage");
+    const favoriteModalCloseButton = document.getElementById("favoriteModalCloseButton");
+
+    function showFavoriteModal(type, title, message) {
+        favoriteModalIcon.textContent = type === "success" ? "✓" : "!";
+        favoriteModalIcon.className = "info-modal-icon " + (type === "success" ? "success" : "notice");
+        favoriteModalTitle.textContent = title;
+        favoriteModalMessage.textContent = message;
+
+        favoriteModal.classList.add("is-open");
+        favoriteModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeFavoriteModal() {
+        favoriteModal.classList.remove("is-open");
+        favoriteModal.setAttribute("aria-hidden", "true");
+    }
+
+    favoriteModalCloseButton.addEventListener("click", closeFavoriteModal);
+
+    favoriteModal.addEventListener("click", function (event) {
+        if (event.target === favoriteModal) {
+            closeFavoriteModal();
+        }
+    });
+
+    function handleFavoriteClick(btn) {
+        const userId = btn.dataset.userId;
+        const policyId = btn.dataset.policyId;
+        addFavorite(userId, policyId, btn);
+    }
+
+    function addFavorite(userId, policyId, btn) {
+        if (!userId) {
+            showFavoriteModal("notice", "로그인이 필요합니다", "로그인 후 이용 가능합니다.");
+            return;
+        }
+
+        fetch(`/api/users/${userId}/favorites/${policyId}`, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok) {
+                    showFavoriteModal("success", "관심 정책에 추가되었습니다", "마이페이지에서 관심 정책을 확인할 수 있어요.");
+                    btn.innerText = "찜 완료";
+                    btn.disabled = true;
+                } else if (response.status === 409) {
+                    showFavoriteModal("notice", "이미 등록된 정책입니다", "이미 관심 정책으로 등록된 정책입니다.");
+                } else {
+                    showFavoriteModal("notice", "오류가 발생했습니다", "잠시 후 다시 시도해주세요.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showFavoriteModal("notice", "오류가 발생했습니다", "네트워크 상태를 확인 후 다시 시도해주세요.");
+            });
+    }
+</script>
+<script th:src="@{/js/common.js}" src="/js/common.js"></script>
+</body>
+</html>

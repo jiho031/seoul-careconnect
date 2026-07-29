@@ -1,0 +1,1019 @@
+<!doctype html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>서울 케어넥트 관리자 - 대시보드</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin.css}"
+          href="/css/admin.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <!-- 관리자 사이드 메뉴 -->
+        <aside class="admin-side">
+            <p class="admin-side-title">관리자 메뉴</p>
+
+            <nav class="admin-menu">
+                <a class="active"
+                   th:href="@{/admin/dashboard}"
+                   href="/admin/dashboard">
+                    📊 대시보드
+                </a>
+
+                <a th:href="@{/admin/collection}"
+                   href="/admin/collection">
+                    🔗 API 수집 현황
+                </a>
+
+                <a th:href="@{/admin/policy-errors}"
+                   href="/admin/policy-errors">
+                    ⚠️ 정책 오류 관리
+                </a>
+
+                <a th:href="@{/admin/ai-review}"
+                   href="/admin/ai-review">
+                    🤖 AI 정책 설명 검수
+                </a>
+
+                <a th:href="@{/admin/reports}"
+                   href="/admin/reports">
+                    🚨 사용자 신고 관리
+                </a>
+
+                <a th:href="@{/admin/policies}"
+                   href="/admin/policies">
+                    📌 정책 목록
+                </a>
+
+                <a th:href="@{/admin/policies/new}"
+                   href="/admin/policies/new">
+                    📝 수동 등록/수정
+                </a>
+
+                <a th:href="@{/admin/users}"
+                   href="/admin/users">
+                    👥 회원 관리
+                </a>
+
+
+            </nav>
+        </aside>
+
+        <!-- 관리자 본문 -->
+        <section class="admin-content">
+
+            <!-- 제목 -->
+            <div class="admin-head">
+                <div>
+                    <h1>관리자 대시보드</h1>
+                    <p>
+                        정책, 신고, 회원, 관리자 권한 현황을
+                        한 화면에서 확인합니다.
+                    </p>
+                </div>
+
+                <div class="admin-actions">
+                    <a class="admin-btn"
+                       th:href="@{/admin/collection}"
+                       href="/admin/collection">
+                        수집 로그 보기
+                    </a>
+
+                    <a class="admin-btn primary"
+                       th:href="@{/admin/policies/new}"
+                       href="/admin/policies/new">
+                        + 정책 수동 등록
+                    </a>
+                </div>
+            </div>
+
+            <!-- 공지 처리 메시지 -->
+            <div class="admin-alert success"
+                 th:if="${noticeSuccess}"
+                 th:text="${noticeSuccess}">
+                공지 처리가 완료되었습니다.
+            </div>
+
+            <div class="admin-alert error"
+                 th:if="${noticeError}"
+                 th:text="${noticeError}">
+                공지 처리 중 오류가 발생했습니다.
+            </div>
+
+            <!-- 상단 통계 -->
+            <div class="admin-stat-grid">
+
+                <article class="admin-stat-card">
+                    <span>전체 정책</span>
+
+                    <strong th:text="${summary.totalPolicyCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>현재 등록된 전체 정책</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>활성 API 출처</span>
+
+                    <strong th:text="${summary.activeSourceCount + '개'}">
+                        0개
+                    </strong>
+
+                    <small th:text="${'전체 출처 '
+                            + summary.totalSourceCount
+                            + '개'}">
+                        전체 출처 0개
+                    </small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>전체 회원</span>
+
+                    <strong th:text="${summary.totalUserCount + '명'}">
+                        0명
+                    </strong>
+
+                    <small th:text="${'활성 회원 '
+                            + summary.activeUserCount
+                            + '명'}">
+                        활성 회원 0명
+                    </small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>최근 수집 결과</span>
+
+                    <strong th:text="${summary.latestCollectionSuccessCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small th:text="${'성공 '
+                            + summary.latestCollectionSuccessCount
+                            + ' · 실패 '
+                            + summary.latestCollectionFailCount}">
+                        성공 0 · 실패 0
+                    </small>
+                </article>
+
+            </div>
+
+            <!-- 최근 가입 회원 / 우선 처리 큐 -->
+            <div class="admin-grid-2 dashboard-top">
+
+                <!-- 최근 가입 회원 -->
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>최근 가입 회원</h2>
+
+                        <a class="admin-link"
+                           th:href="@{/admin/users}"
+                           href="/admin/users">
+                            전체 보기 ›
+                        </a>
+                    </div>
+
+                    <table class="admin-table">
+                        <thead>
+                        <tr>
+                            <th>회원명</th>
+                            <th>이메일</th>
+                            <th>권한</th>
+                            <th>상태</th>
+                            <th>가입일</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        <tr th:if="${#lists.isEmpty(recentUsers)}">
+                            <td colspan="5">
+                                최근 가입 회원이 없습니다.
+                            </td>
+                        </tr>
+
+                        <tr th:each="user : ${recentUsers}">
+                            <td th:text="${user.name}">
+                                홍길동
+                            </td>
+
+                            <td th:text="${user.email}">
+                                user@example.com
+                            </td>
+
+                            <td>
+                                <span th:text="${user.roleLabel}">
+                                    일반 회원
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="admin-tag"
+                                      th:classappend="${user.statusCssClass}"
+                                      th:text="${user.statusLabel}">
+                                    활성
+                                </span>
+                            </td>
+
+                            <td th:text="${user.createdAtText}">
+                                2026.07.15 09:30
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- 우선 처리 큐 -->
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>우선 처리 큐</h2>
+                        <a class="admin-link" href="#">처리 기준</a>
+                    </div>
+
+                    <div class="admin-queue">
+
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>검수 대기 정책 14건</span>
+                                <span class="admin-tag wait">대기</span>
+                            </div>
+
+                            <p>
+                                API/크롤링 수집 후 사용자 공개 전
+                                관리자 승인이 필요합니다.
+                            </p>
+                        </article>
+
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>AI 요약 오류 신고 2건</span>
+                                <span class="admin-tag bad">긴급</span>
+                            </div>
+
+                            <p>
+                                대상, 필요서류, 신청방법 요약 정확성을
+                                확인해야 합니다.
+                            </p>
+                        </article>
+
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>수집 실패 3건</span>
+                                <span class="admin-tag bad">실패</span>
+                            </div>
+
+                            <p>
+                                공공 API 호출 실패 로그가 있습니다.
+                            </p>
+                        </article>
+
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- 하단 영역 -->
+            <div class="admin-bottom-grid policy-bottom">
+
+                <!-- 최근 5일 수집 현황 -->
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>최근 5일 수집 현황</h2>
+
+                        <a class="admin-link"
+                           th:href="@{/admin/collection}"
+                           href="/admin/collection">
+                            상세 보기 ›
+                        </a>
+                    </div>
+
+                    <div class="weekly-chart">
+
+                        <div class="chart-row"
+                             th:each="daily : ${dailyStatuses}">
+
+                            <span class="chart-label">
+                                <strong th:text="${daily.dateText}">
+                                    7월 15일
+                                </strong>
+
+                                <small th:text="${daily.dayOfWeekText}">
+                                    수
+                                </small>
+                            </span>
+
+                            <div class="chart-bar-wrap">
+                                <div class="chart-bar"
+                                     th:style="${'width: '
+                                             + (daily.totalCount > 20
+                                             ? 100
+                                             : daily.totalCount * 5)
+                                             + '%;'}">
+                                </div>
+                            </div>
+
+                            <strong th:text="${daily.totalCount + '건'}">
+                                0건
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    <div class="chart-summary">
+                        <span>
+                            최근 수집 성공
+                            <strong th:text="${summary.latestCollectionSuccessCount + '건'}">
+                                0건
+                            </strong>
+                        </span>
+
+                        <span>
+                            최근 수집 실패
+                            <strong th:text="${summary.latestCollectionFailCount + '건'}">
+                                0건
+                            </strong>
+                        </span>
+
+                        <span>
+                            활성 API
+                            <strong th:text="${summary.activeSourceCount + '개'}">
+                                0개
+                            </strong>
+                        </span>
+                    </div>
+                </section>
+
+                <!-- 관리자 공지 -->
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>관리자 공지</h2>
+
+                        <!-- 최고 관리자만 작성 가능 -->
+                        <button type="button"
+                                sec:authorize="hasRole('SUPER_ADMIN')"
+                                class="admin-link notice-open-btn"
+                                onclick="openNoticeModal()">
+                            공지 작성
+                        </button>
+                    </div>
+
+                    <div class="notice-list">
+
+                        <!-- 공지가 없을 때 -->
+                        <article class="notice-item notice-empty"
+                                 th:if="${#lists.isEmpty(notices)}">
+
+                            <strong>
+                                등록된 관리자 공지가 없습니다.
+                            </strong>
+
+                            <p>
+                                최고 관리자가 공지를 등록하면
+                                이곳에 표시됩니다.
+                            </p>
+                        </article>
+
+                        <!-- 실제 공지 목록 -->
+                        <article class="notice-item"
+                                 th:each="notice : ${notices}"
+                                 th:classappend="${notice.noticeCssClass}"
+                                 th:attr="
+                                    data-id=${notice.noticeId},
+                                    data-title=${notice.title},
+                                    data-content=${notice.content},
+                                    data-type=${notice.noticeTypeLabel},
+                                    data-type-value=${notice.noticeType},
+                                    data-pinned=${notice.pinned},
+                                    data-writer=${notice.safeWriterName},
+                                    data-date=${notice.createdAtText}
+                                 "
+                                 onclick="openNoticeDetailModal(this)">
+
+                            <strong>
+                                <span th:if="${notice.pinned}">
+                                    📌
+                                </span>
+
+                                <span th:text="${'['
+                                        + notice.noticeTypeLabel
+                                        + '] '
+                                        + notice.title}">
+                                    [안내] 관리자 공지
+                                </span>
+                            </strong>
+
+                            <p th:text="${notice.content}">
+                                공지 내용
+                            </p>
+
+                            <small>
+                                <span th:text="${notice.safeWriterName}">
+                                    최고 관리자
+                                </span>
+
+                                <span> · </span>
+
+                                <span th:text="${notice.createdAtText}">
+                                    2026.07.15 10:00
+                                </span>
+                            </small>
+
+                        </article>
+
+                    </div>
+                </section>
+
+                <!-- 최근 관리자 활동 -->
+                <section class="admin-card admin-wide-log">
+                    <div class="admin-card-head">
+                        <h2>최근 관리자 활동</h2>
+                        <button type="button"
+                                class="admin-link"
+                                onclick="openActivityLogModal()">
+                            전체 로그 ›
+                        </button>
+                    </div>
+
+                    <div class="activity-list">
+
+                        <!-- 활동 로그가 없을 때 -->
+                        <div class="activity-item activity-empty"
+                             th:if="${#lists.isEmpty(recentActivities)}">
+
+                            <p>
+                                최근 관리자 활동이 없습니다.
+                            </p>
+                        </div>
+
+                        <!-- 실제 최근 관리자 활동 -->
+                        <div class="activity-item"
+                             th:each="activity : ${recentActivities}">
+
+                            <span class="activity-badge blue"
+                                th:text="${activity.activityType}">
+                                    관리자 활동
+                            </span>
+                            <p>
+                                <strong th:text="${activity.adminName}">
+                                    관리자
+                                </strong>
+
+                                <span th:text="${' · ' + activity.description}">
+                                    · 관리자 활동이 수행되었습니다.
+                                </span>
+
+                                <small th:if="${activity.targetName != '-'}"
+                                       th:text="${' [' + activity.targetName + ']'}">
+                                    [전체 정책 API]
+                                </small>
+                            </p>
+                            <time th:text="${activity.dashboardTimeText}">
+                                12:21
+                            </time>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- 관리자 전체 활동 로그 모달 -->
+<div id="activityLogModal"
+     class="notice-modal">
+
+    <div class="notice-modal-content activity-log-modal-content">
+
+        <div class="notice-modal-head">
+            <div>
+                <h3>관리자 전체 활동 로그</h3>
+                <p>최근 14일 동안 수행된 관리자 활동입니다.</p>
+            </div>
+
+            <button type="button"
+                    class="notice-modal-close"
+                    onclick="closeActivityLogModal()">
+                ×
+            </button>
+        </div>
+
+        <div class="activity-modal-list">
+
+            <div class="activity-item activity-empty"
+                 th:if="${#lists.isEmpty(allActivities)}">
+
+                <p>최근 14일 동안 관리자 활동이 없습니다.</p>
+            </div>
+
+            <div class="activity-item"
+                 th:each="activity : ${allActivities}">
+
+                <span class="activity-badge blue"
+                      th:text="${activity.activityType}">
+                    API 수집
+                </span>
+
+                <div class="activity-modal-body">
+                    <p>
+                        <strong th:text="${activity.adminName}">
+                            관리자
+                        </strong>
+
+                        <span th:text="${' · ' + activity.description}">
+                            · 관리자 활동이 수행되었습니다.
+                        </span>
+                    </p>
+
+                    <small th:if="${activity.targetName != '-'}"
+                           th:text="${'대상: ' + activity.targetName}">
+                        대상: 전체 정책 API
+                    </small>
+                </div>
+
+                <time th:text="${activity.createdAtText}">
+                    2026.07.16 12:11
+                </time>
+
+            </div>
+
+        </div>
+
+        <div class="notice-modal-actions">
+            <button type="button"
+                    class="admin-btn"
+                    onclick="closeActivityLogModal()">
+                닫기
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- 공지 작성 모달: 최고 관리자만 렌더링 -->
+<div id="noticeModal"
+     class="notice-modal"
+     sec:authorize="hasRole('SUPER_ADMIN')">
+
+    <div class="notice-modal-content">
+
+        <div class="notice-modal-head">
+            <h3>관리자 공지 작성</h3>
+
+            <button type="button"
+                    class="notice-modal-close"
+                    onclick="closeNoticeModal()">
+                ×
+            </button>
+        </div>
+
+        <form th:action="@{/admin/notices}"
+              method="post">
+
+            <label class="notice-form-field">
+                <span>공지 유형</span>
+
+                <select name="noticeType"
+                        class="admin-select"
+                        required>
+                    <option value="NORMAL">안내</option>
+                    <option value="IMPORTANT">중요</option>
+                    <option value="SECURITY">보안</option>
+                </select>
+            </label>
+
+            <label class="notice-form-field">
+                <span>제목</span>
+
+                <input type="text"
+                       name="title"
+                       class="admin-input"
+                       maxlength="100"
+                       required>
+            </label>
+
+            <label class="notice-form-field">
+                <span>내용</span>
+
+                <textarea name="content"
+                          class="admin-textarea"
+                          maxlength="1000"
+                          required></textarea>
+            </label>
+
+            <label class="notice-pin-check">
+                <input type="checkbox"
+                       name="pinned"
+                       value="true">
+
+                상단 고정
+            </label>
+
+            <div class="notice-modal-actions">
+                <button type="button"
+                        class="admin-btn"
+                        onclick="closeNoticeModal()">
+                    취소
+                </button>
+
+                <button type="submit"
+                        class="admin-btn primary">
+                    공지 등록
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- 공지 상세 모달: 모든 관리자 조회 가능 -->
+<div id="noticeDetailModal"
+     class="notice-modal">
+
+    <div class="notice-modal-content">
+
+        <div class="notice-modal-head">
+            <h3 id="noticeDetailTitle">
+                공지 제목
+            </h3>
+
+            <button type="button"
+                    class="notice-modal-close"
+                    onclick="closeNoticeDetailModal()">
+                ×
+            </button>
+        </div>
+
+        <div class="notice-detail-meta">
+            <span id="noticeDetailType">
+                안내
+            </span>
+
+            <span>·</span>
+
+            <span id="noticeDetailWriter">
+                최고 관리자
+            </span>
+
+            <span>·</span>
+
+            <span id="noticeDetailDate">
+                2026.07.15 10:00
+            </span>
+        </div>
+
+        <div id="noticeDetailContent"
+             class="notice-detail-content">
+            공지 내용
+        </div>
+
+        <div class="notice-modal-actions">
+
+            <button type="button"
+                    class="admin-btn"
+                    onclick="closeNoticeDetailModal()">
+                닫기
+            </button>
+
+            <!-- 최고 관리자만 수정 가능 -->
+            <button type="button"
+                    sec:authorize="hasRole('SUPER_ADMIN')"
+                    class="admin-btn"
+                    onclick="openNoticeEditModal()">
+                수정
+            </button>
+
+            <!-- 최고 관리자만 삭제 가능 -->
+            <form id="noticeDeleteForm"
+                  sec:authorize="hasRole('SUPER_ADMIN')"
+                  method="post"
+                  class="notice-delete-form">
+
+                <button type="submit"
+                        class="admin-btn danger"
+                        onclick="return confirm('이 공지를 삭제하시겠습니까?')">
+                    삭제
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- 공지 수정 모달: 최고 관리자만 렌더링 -->
+<div id="noticeEditModal"
+     class="notice-modal"
+     sec:authorize="hasRole('SUPER_ADMIN')">
+
+    <div class="notice-modal-content">
+
+        <div class="notice-modal-head">
+            <h3>관리자 공지 수정</h3>
+
+            <button type="button"
+                    class="notice-modal-close"
+                    onclick="closeNoticeEditModal()">
+                ×
+            </button>
+        </div>
+
+        <form id="noticeEditForm"
+              method="post">
+
+            <label class="notice-form-field">
+                <span>공지 유형</span>
+
+                <select id="noticeEditType"
+                        name="noticeType"
+                        class="admin-select"
+                        required>
+                    <option value="NORMAL">안내</option>
+                    <option value="IMPORTANT">중요</option>
+                    <option value="SECURITY">보안</option>
+                </select>
+            </label>
+
+            <label class="notice-form-field">
+                <span>제목</span>
+
+                <input id="noticeEditTitle"
+                       type="text"
+                       name="title"
+                       class="admin-input"
+                       maxlength="100"
+                       required>
+            </label>
+
+            <label class="notice-form-field">
+                <span>내용</span>
+
+                <textarea id="noticeEditContent"
+                          name="content"
+                          class="admin-textarea"
+                          maxlength="1000"
+                          required></textarea>
+            </label>
+
+            <label class="notice-pin-check">
+                <input id="noticeEditPinned"
+                       type="checkbox"
+                       name="pinned"
+                       value="true">
+
+                상단 고정
+            </label>
+
+            <div class="notice-modal-actions">
+                <button type="button"
+                        class="admin-btn"
+                        onclick="closeNoticeEditModal()">
+                    취소
+                </button>
+
+                <button type="submit"
+                        class="admin-btn primary">
+                    수정 저장
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/common.js}"
+        src="/js/common.js">
+</script>
+
+<script>
+    let selectedNoticeId = null;
+    let selectedNoticeElement = null;
+
+    /**
+     * 공지 작성 모달
+     */
+    function openNoticeModal() {
+        const modal =
+            document.getElementById("noticeModal");
+
+        if (modal) {
+            modal.classList.add("open");
+        }
+    }
+
+    function closeNoticeModal() {
+        const modal =
+            document.getElementById("noticeModal");
+
+        if (modal) {
+            modal.classList.remove("open");
+        }
+    }
+
+    /**
+     * 공지 상세 모달
+     */
+    function openNoticeDetailModal(element) {
+        selectedNoticeElement = element;
+        selectedNoticeId = element.dataset.id;
+
+        document.getElementById("noticeDetailTitle").textContent =
+            element.dataset.title || "관리자 공지";
+
+        document.getElementById("noticeDetailContent").textContent =
+            element.dataset.content || "";
+
+        document.getElementById("noticeDetailType").textContent =
+            element.dataset.type || "안내";
+
+        document.getElementById("noticeDetailWriter").textContent =
+            element.dataset.writer || "최고 관리자";
+
+        document.getElementById("noticeDetailDate").textContent =
+            element.dataset.date || "-";
+
+        const deleteForm =
+            document.getElementById("noticeDeleteForm");
+
+        if (deleteForm && selectedNoticeId) {
+            deleteForm.action =
+                "/admin/notices/"
+                + selectedNoticeId
+                + "/delete";
+        }
+
+        const detailModal =
+            document.getElementById("noticeDetailModal");
+
+        if (detailModal) {
+            detailModal.classList.add("open");
+        }
+    }
+
+    function closeNoticeDetailModal() {
+        const modal =
+            document.getElementById("noticeDetailModal");
+
+        if (modal) {
+            modal.classList.remove("open");
+        }
+    }
+
+    /**
+     * 공지 수정 모달
+     */
+    function openNoticeEditModal() {
+        if (!selectedNoticeElement || !selectedNoticeId) {
+            return;
+        }
+
+        const editTitle =
+            document.getElementById("noticeEditTitle");
+
+        const editContent =
+            document.getElementById("noticeEditContent");
+
+        const editType =
+            document.getElementById("noticeEditType");
+
+        const editPinned =
+            document.getElementById("noticeEditPinned");
+
+        const editForm =
+            document.getElementById("noticeEditForm");
+
+        if (!editTitle
+            || !editContent
+            || !editType
+            || !editPinned
+            || !editForm) {
+            return;
+        }
+
+        editTitle.value =
+            selectedNoticeElement.dataset.title || "";
+
+        editContent.value =
+            selectedNoticeElement.dataset.content || "";
+
+        editType.value =
+            selectedNoticeElement.dataset.typeValue || "NORMAL";
+
+        editPinned.checked =
+            selectedNoticeElement.dataset.pinned === "true";
+
+        editForm.action =
+            "/admin/notices/"
+            + selectedNoticeId
+            + "/edit";
+
+        closeNoticeDetailModal();
+
+        const editModal =
+            document.getElementById("noticeEditModal");
+
+        if (editModal) {
+            editModal.classList.add("open");
+        }
+    }
+
+    function closeNoticeEditModal() {
+        const modal =
+            document.getElementById("noticeEditModal");
+
+        if (modal) {
+            modal.classList.remove("open");
+        }
+    }
+
+    /**
+     * 모달 바깥 영역 클릭 시 닫기
+     */
+    window.addEventListener("click", function (event) {
+        const createModal =
+            document.getElementById("noticeModal");
+
+        const detailModal =
+            document.getElementById("noticeDetailModal");
+
+        const editModal =
+            document.getElementById("noticeEditModal");
+
+        if (createModal && event.target === createModal) {
+            closeNoticeModal();
+        }
+
+        if (detailModal && event.target === detailModal) {
+            closeNoticeDetailModal();
+        }
+
+        if (editModal && event.target === editModal) {
+            closeNoticeEditModal();
+        }
+    });
+
+    /**
+     * ESC 키로 모달 닫기
+     */
+    window.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeNoticeModal();
+            closeNoticeDetailModal();
+            closeNoticeEditModal();
+        }
+    });
+
+    function openActivityLogModal() {
+        const modal =
+            document.getElementById("activityLogModal");
+
+        if (modal) {
+            modal.classList.add("open");
+        }
+    }
+
+    function closeActivityLogModal() {
+        const modal =
+            document.getElementById("activityLogModal");
+
+        if (modal) {
+            modal.classList.remove("open");
+        }
+    }
+
+    const activityLogModal =
+        document.getElementById("activityLogModal");
+
+    if (
+        activityLogModal
+        && event.target === activityLogModal
+    ) {
+        closeActivityLogModal();
+    }
+
+    closeActivityLogModal();
+</script>
+
+
+</body>
+</html>

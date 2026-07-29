@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>서울 케어넥트 관리자 - 정책 관리</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin.css}"
+          href="/css/admin.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <!-- 관리자 사이드바 -->
+        <aside class="admin-side">
+            <p class="admin-side-title">관리자 메뉴</p>
+
+            <nav class="admin-menu">
+                <a th:href="@{/admin/dashboard}"
+                   href="/admin/dashboard">
+                    📊 대시보드
+                </a>
+
+                <a th:href="@{/admin/collection}"
+                   href="/admin/collection">
+                    🔗 API 수집 현황
+                </a>
+
+                <a th:href="@{/admin/policy-errors}"
+                   href="/admin/policy-errors">
+                    ⚠️ 정책 오류 관리
+                </a>
+
+                <a th:href="@{/admin/ai-review}"
+                   href="/admin/ai-review">
+                    🤖 AI 정책 설명 검수
+                </a>
+
+                <a th:href="@{/admin/reports}"
+                   href="/admin/reports">
+                    🚨 사용자 신고 관리
+                </a>
+
+                <a class="active"
+                   th:href="@{/admin/policies}"
+                   href="/admin/policies">
+                    📌 정책 목록
+                </a>
+
+                <a th:href="@{/admin/policies/new}"
+                   href="/admin/policies/new">
+                    📝 수동 등록/수정
+                </a>
+
+                <a th:href="@{/admin/users}"
+                   href="/admin/users">
+                    👥 회원 관리
+                </a>
+
+            </nav>
+        </aside>
+
+        <!-- 관리자 본문 -->
+        <section class="admin-content">
+
+            <!-- 페이지 헤더 -->
+            <div class="admin-head">
+                <div>
+                    <h1>정책 관리</h1>
+
+                    <p>
+                        등록된 정책을 검색하고 공개 상태,
+                        검수 상태와 출처 정보를 관리합니다.
+                    </p>
+                </div>
+
+                <div class="admin-actions">
+                    <button class="admin-btn"
+                            type="button">
+                        정책 내역 다운로드
+                    </button>
+
+                    <a class="admin-btn primary"
+                       th:href="@{/admin/policies/new}"
+                       href="/admin/policies/new">
+                        + 정책 등록
+                    </a>
+                </div>
+            </div>
+
+            <!-- 성공 메시지 -->
+            <div class="admin-alert success"
+                 th:if="${successMessage != null}"
+                 th:text="${successMessage}">
+                정책 상태가 변경되었습니다.
+            </div>
+
+            <!-- 오류 메시지 -->
+            <div class="admin-alert error"
+                 th:if="${errorMessage != null}"
+                 th:text="${errorMessage}">
+                정책 처리 중 오류가 발생했습니다.
+            </div>
+
+            <!-- 정책 통계 -->
+            <div class="admin-stat-grid">
+
+                <article class="admin-stat-card">
+                    <span>전체 정책</span>
+
+                    <strong th:text="${totalPolicyCount}">
+                        0
+                    </strong>
+
+                    <small>DB에 등록된 전체 정책</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>공개 중</span>
+
+                    <strong th:text="${publishedCount}">
+                        0
+                    </strong>
+
+                    <small>사용자 화면에 노출 중</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>검수 대기</span>
+
+                    <strong th:text="${pendingReviewCount}">
+                        0
+                    </strong>
+
+                    <small>승인 또는 수정 확인 필요</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>숨김 / 마감</span>
+
+                    <strong th:text="${hiddenOrExpiredCount}">
+                        0
+                    </strong>
+
+                    <small>사용자 화면 미노출 정책</small>
+                </article>
+
+            </div>
+
+            <!-- 정책 검색 -->
+            <section class="admin-card">
+
+                <div class="admin-card-head">
+                    <h2>정책 검색</h2>
+
+                    <a class="admin-link"
+                       th:href="@{/admin/policies}">
+                        필터 초기화
+                    </a>
+                </div>
+
+                <form class="admin-filter policy-filter"
+                      method="get"
+                      th:action="@{/admin/policies}">
+
+                    <input class="admin-input"
+                           type="search"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="정책명 / 기관명 / 지원대상 / 정책 ID 검색">
+
+                    <select class="admin-select"
+                            name="category">
+
+                        <option value="">
+                            분야 전체
+                        </option>
+
+                        <option th:each="categoryItem : ${categories}"
+                                th:value="${categoryItem.name()}"
+                                th:text="${categoryItem.label}"
+                                th:selected="${selectedCategory == categoryItem}">
+                            교육
+                        </option>
+                    </select>
+
+                    <select class="admin-select"
+                            name="status">
+
+                        <option value="">
+                            상태 전체
+                        </option>
+
+                        <option value="AUTO_PUBLISHED"
+                                th:selected="${selectedStatus != null
+                                    and selectedStatus.name() == 'AUTO_PUBLISHED'}">
+                            자동 공개
+                        </option>
+
+                        <option value="APPROVED"
+                                th:selected="${selectedStatus != null
+                                    and selectedStatus.name() == 'APPROVED'}">
+                            공개
+                        </option>
+
+                        <option value="PENDING_REVIEW"
+                                th:selected="${selectedStatus != null
+                                    and selectedStatus.name() == 'PENDING_REVIEW'}">
+                            검수 대기
+                        </option>
+
+                        <option value="NEEDS_UPDATE"
+                                th:selected="${selectedStatus != null
+                                    and selectedStatus.name() == 'NEEDS_UPDATE'}">
+                            수정 필요
+                        </option>
+
+                        <option value="HIDDEN"
+                                th:selected="${selectedStatus != null
+                                    and selectedStatus.name() == 'HIDDEN'}">
+                            숨김
+                        </option>
+
+                        <option value="EXPIRED"
+                                th:selected="${selectedStatus != null
+                                    and selectedStatus.name() == 'EXPIRED'}">
+                            마감
+                        </option>
+
+                        <option value="REJECTED"
+                                th:selected="${selectedStatus != null
+                                    and selectedStatus.name() == 'REJECTED'}">
+                            반려
+                        </option>
+                    </select>
+
+                    <select class="admin-select"
+                            name="sourceId">
+
+                        <option value="">
+                            출처 전체
+                        </option>
+
+                        <option th:each="source : ${sources}"
+                                th:value="${source.sourceId}"
+                                th:text="${source.sourceName}"
+                                th:selected="${selectedSourceId != null
+                                    and selectedSourceId.equals(source.sourceId)}">
+                            정책 출처
+                        </option>
+                    </select>
+
+                    <select class="admin-select"
+                            name="district">
+
+                        <option value="">
+                            지역 전체
+                        </option>
+
+                        <option th:each="districtItem : ${districts}"
+                                th:value="${districtItem}"
+                                th:text="${districtItem}"
+                                th:selected="${selectedDistrict == districtItem}">
+                            강남구
+                        </option>
+                    </select>
+
+                    <button class="admin-btn primary"
+                            type="submit">
+                        검색
+                    </button>
+                </form>
+            </section>
+
+            <!-- 정책 목록 -->
+            <section class="admin-card">
+
+                <div class="admin-card-head">
+                    <h2>정책 목록</h2>
+
+                    <span class="admin-list-count"
+                          th:text="${'총 ' + policyPage.totalElements + '건'}">
+                        총 0건
+                    </span>
+                </div>
+
+                <div class="policy-table-wrap">
+                    <table class="admin-table policy-table">
+                        <thead>
+                        <tr>
+                            <th>정책명</th>
+                            <th>기관</th>
+                            <th>분야</th>
+                            <th>지원대상</th>
+                            <th>신청기간</th>
+                            <th>상태</th>
+                            <th>출처</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        <tr th:each="policy : ${policies}">
+
+                            <td>
+                                <strong class="policy-name"
+                                        th:text="${policy.title}">
+                                    정책명
+                                </strong>
+
+                                <small class="policy-sub"
+                                       th:text="${'정책 ID: ' + policy.externalId}">
+                                    정책 ID: -
+                                </small>
+
+                                <small class="policy-sub"
+                                       th:if="${policy.district != null
+                                           and !policy.district.isBlank()}"
+                                       th:text="${policy.region != null
+                                           and !policy.region.isBlank()
+                                           ? policy.region + ' · ' + policy.district
+                                           : policy.district}">
+                                    서울 · 강남구
+                                </small>
+                            </td>
+
+                            <td th:text="${policy.organization}">
+                                기관명
+                            </td>
+
+                            <td th:text="${policy.categoryLabel}">
+                                생활지원
+                            </td>
+
+                            <td>
+                                <span class="policy-target-text"
+                                      th:title="${policy.target}"
+                                      th:text="${policy.target != null
+                                          and !policy.target.isBlank()
+                                          ? policy.target
+                                          : '-'}">
+                                    지원 대상
+                                </span>
+                            </td>
+
+                            <td>
+                                <span th:text="${policy.applicationPeriodText}">
+                                    상시
+                                </span>
+
+                                <small class="policy-sub"
+                                       th:if="${policy.applyStatusLabel != null}"
+                                       th:text="${policy.applyStatusLabel}">
+                                    신청 가능
+                                </small>
+                            </td>
+
+                            <td>
+                                <span class="admin-tag"
+                                      th:classappend="${policy.statusCssClass}"
+                                      th:text="${policy.statusLabel}">
+                                    공개
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="source-badge"
+                                      th:classappend="${policy.sourceCssClass}"
+                                      th:text="${policy.sourceTypeLabel}">
+                                    API
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="table-actions">
+
+                                    <a th:href="@{/admin/policies/{policyId}/edit(
+                                            policyId=${policy.policyId}
+                                        )}">
+                                        수정
+                                    </a>
+
+                                    <form th:if="${policy.status.name() == 'PENDING_REVIEW'
+                                            or policy.status.name() == 'NEEDS_UPDATE'}"
+                                          method="post"
+                                          th:action="@{/admin/policies/approve}">
+
+                                        <input type="hidden"
+                                               name="policyId"
+                                               th:value="${policy.policyId}">
+
+                                        <button type="submit"
+                                                class="table-action-button"
+                                                onclick="return confirm('이 정책을 공개 승인하시겠습니까?');">
+                                            승인
+                                        </button>
+                                    </form>
+
+                                    <form th:if="${policy.status.name() == 'AUTO_PUBLISHED'
+                                            or policy.status.name() == 'APPROVED'}"
+                                          method="post"
+                                          th:action="@{/admin/policies/hide}">
+
+                                        <input type="hidden"
+                                               name="policyId"
+                                               th:value="${policy.policyId}">
+
+                                        <button type="submit"
+                                                class="table-action-button"
+                                                onclick="return confirm('이 정책을 숨김 처리하시겠습니까?');">
+                                            숨김
+                                        </button>
+                                    </form>
+
+                                    <form th:if="${policy.status.name() == 'HIDDEN'}"
+                                          method="post"
+                                          th:action="@{/admin/policies/unhide}">
+
+                                        <input type="hidden"
+                                               name="policyId"
+                                               th:value="${policy.policyId}">
+
+                                        <button type="submit"
+                                                class="table-action-button"
+                                                onclick="return confirm('숨김을 해제하고 검수 대기 상태로 변경하시겠습니까?');">
+                                            복구
+                                        </button>
+                                    </form>
+
+                                    <form th:if="${policy.status.name() == 'PENDING_REVIEW'
+                                            or policy.status.name() == 'NEEDS_UPDATE'}"
+                                          method="post"
+                                          th:action="@{/admin/policies/reject}">
+
+                                        <input type="hidden"
+                                               name="policyId"
+                                               th:value="${policy.policyId}">
+
+                                        <button type="submit"
+                                                class="table-action-button danger-text"
+                                                onclick="return confirm('이 정책을 반려 처리하시겠습니까?');">
+                                            반려
+                                        </button>
+                                    </form>
+
+                                    <form th:if="${policy.status.name() == 'AUTO_PUBLISHED'
+                                            or policy.status.name() == 'APPROVED'}"
+                                          method="post"
+                                          th:action="@{/admin/policies/needs-update}">
+
+                                        <input type="hidden"
+                                               name="policyId"
+                                               th:value="${policy.policyId}">
+
+                                        <button type="submit"
+                                                class="table-action-button">
+                                            수정필요
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(policies)}">
+                            <td colspan="8"
+                                class="admin-empty">
+                                조건에 해당하는 정책이 없습니다.
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 정책 전체 목록 페이지네이션 -->
+                <div class="admin-pagination"
+                     th:if="${policyPage.totalPages > 0}">
+
+                    <a th:if="${!policyPage.first}"
+                       th:href="@{/admin/policies(
+                           page=${policyPage.number - 1},
+                           keyword=${keyword},
+                           category=${selectedCategory},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId},
+                           district=${selectedDistrict}
+                       )}">
+                        ‹
+                    </a>
+
+                    <span th:if="${policyPage.first}"
+                          class="disabled">
+                        ‹
+                    </span>
+
+                    <a th:each="pageNumber :
+                            ${#numbers.sequence(0, policyPage.totalPages - 1)}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == policyPage.number}
+                            ? 'active'
+                            : ''"
+                       th:href="@{/admin/policies(
+                           page=${pageNumber},
+                           keyword=${keyword},
+                           category=${selectedCategory},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId},
+                           district=${selectedDistrict}
+                       )}">
+                        1
+                    </a>
+
+                    <a th:if="${!policyPage.last}"
+                       th:href="@{/admin/policies(
+                           page=${policyPage.number + 1},
+                           keyword=${keyword},
+                           category=${selectedCategory},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId},
+                           district=${selectedDistrict}
+                       )}">
+                        ›
+                    </a>
+
+                    <span th:if="${policyPage.last}"
+                          class="disabled">
+                        ›
+                    </span>
+                </div>
+            </section>
+
+            <!-- 하단 영역 -->
+            <div class="admin-bottom-grid policy-bottom">
+
+                <!-- 정책 처리 기준 -->
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>정책 처리 기준</h2>
+
+                        <span class="admin-list-count">
+                            관리자 검수 기준
+                        </span>
+                    </div>
+
+                    <div class="admin-queue">
+
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>자동 공개</span>
+                                <span class="admin-tag ok">공개 중</span>
+                            </div>
+
+                            <p>
+                                API 검증 기준을 통과해 자동으로
+                                사용자 화면에 공개된 정책입니다.
+                            </p>
+                        </article>
+
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>검수 대기</span>
+                                <span class="admin-tag wait">확인 필요</span>
+                            </div>
+
+                            <p>
+                                수동 등록 또는 자동 검증에서 관리자 확인이
+                                필요하다고 판단된 정책입니다.
+                            </p>
+                        </article>
+
+                        <article class="admin-queue-item">
+                            <div class="admin-queue-top">
+                                <span>수정 필요</span>
+                                <span class="admin-tag ai">재검수</span>
+                            </div>
+
+                            <p>
+                                공개된 정책 중 정보 수정이나
+                                추가 검토가 필요한 정책입니다.
+                            </p>
+                        </article>
+
+                    </div>
+                </section>
+
+                <!-- 최근 검수 필요 정책 -->
+                <section class="admin-card recent-review-card">
+
+                    <div class="admin-card-head">
+                        <h2>최근 검수 필요 정책</h2>
+
+                        <span class="admin-list-count"
+                              th:text="${recentReviewPolicies != null
+                                  ? #lists.size(recentReviewPolicies) + '건'
+                                  : '0건'}">
+                            0건
+                        </span>
+                    </div>
+
+                    <!-- 5개 높이 이후 내부 스크롤 -->
+                    <div class="recent-review-list">
+
+                        <div class="recent-review-empty"
+                             th:if="${recentReviewPolicies == null
+                                 or #lists.isEmpty(recentReviewPolicies)}">
+                            현재 검수가 필요한 정책이 없습니다.
+                        </div>
+
+                        <article class="recent-review-item"
+                                 th:each="reviewPolicy : ${recentReviewPolicies}">
+
+                            <div class="recent-review-info">
+
+                                <div class="recent-review-title-row">
+
+                                    <strong th:text="${'#' + reviewPolicy.policyId}">
+                                        #15
+                                    </strong>
+
+                                    <span class="admin-tag"
+                                          th:classappend="${reviewPolicy.statusCssClass}"
+                                          th:text="${reviewPolicy.statusLabel}">
+                                        검수 대기
+                                    </span>
+                                </div>
+
+                                <p th:text="${reviewPolicy.title}"
+                                   th:title="${reviewPolicy.title}">
+                                    정책명
+                                </p>
+
+                                <small th:text="${reviewPolicy.organization != null
+                                    and !reviewPolicy.organization.isBlank()
+                                    ? reviewPolicy.organization
+                                    : '기관 정보 없음'}">
+                                    제공기관
+                                </small>
+                            </div>
+
+                            <a class="recent-review-button"
+                               th:href="@{/admin/policies/{policyId}/edit(
+                                   policyId=${reviewPolicy.policyId}
+                               )}">
+                                수정
+                            </a>
+                        </article>
+
+                    </div>
+                </section>
+
+            </div>
+
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/common.js}"
+        src="/js/common.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>서울 케어넥트 관리자 - 사용자 신고 관리</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin.css}"
+          href="/css/admin.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin_reports.css}"
+          href="/css/admin_reports.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <!-- 관리자 사이드바 -->
+        <aside class="admin-side">
+            <p class="admin-side-title">관리자 메뉴</p>
+
+            <nav class="admin-menu">
+                <a th:href="@{/admin/dashboard}"
+                   href="/admin/dashboard">
+                    📊 대시보드
+                </a>
+
+                <a th:href="@{/admin/collection}"
+                   href="/admin/collection">
+                    🔗 API 수집 현황
+                </a>
+
+                <a th:href="@{/admin/policy-errors}"
+                   href="/admin/policy-errors">
+                    ⚠️ 정책 오류 관리
+                </a>
+
+                <a th:href="@{/admin/ai-review}"
+                   href="/admin/ai-review">
+                    🤖 AI 정책 설명 검수
+                </a>
+
+                <a class="active"
+                   th:href="@{/admin/reports}"
+                   href="/admin/reports">
+                    🚨 사용자 신고 관리
+                </a>
+
+                <a th:href="@{/admin/policies}"
+                   href="/admin/policies">
+                    📌 정책 목록
+                </a>
+
+                <a th:href="@{/admin/policies/new}"
+                   href="/admin/policies/new">
+                    📝 수동 등록/수정
+                </a>
+
+                <a th:href="@{/admin/users}"
+                   href="/admin/users">
+                    👥 회원 관리
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 관리자 본문 -->
+        <section class="admin-content">
+
+            <!-- 페이지 헤더 -->
+            <div class="admin-head">
+                <div>
+                    <h1>사용자 신고 관리</h1>
+
+                    <p>
+                        사용자가 신고한 정책 정보 오류, 기간 오류,
+                        링크 오류와 누락 정책 요청을 확인하고 처리합니다.
+                    </p>
+                </div>
+
+                <div class="admin-actions">
+                    <button class="admin-btn"
+                            type="button">
+                        신고 내역 다운로드
+                    </button>
+                </div>
+            </div>
+
+            <!-- 성공 메시지 -->
+            <div class="admin-alert success"
+                 th:if="${successMessage != null}"
+                 th:text="${successMessage}">
+                사용자 신고 상태가 변경되었습니다.
+            </div>
+
+            <!-- 오류 메시지 -->
+            <div class="admin-alert error"
+                 th:if="${errorMessage != null}"
+                 th:text="${errorMessage}">
+                신고 처리 중 오류가 발생했습니다.
+            </div>
+
+            <!-- 신고 통계 -->
+            <div class="admin-stat-grid">
+
+                <article class="admin-stat-card">
+                    <span>전체 신고</span>
+
+                    <strong th:text="${totalCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>누적 신고 건수</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>접수</span>
+
+                    <strong th:text="${receivedCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>관리자 확인 대기</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>검토 중</span>
+
+                    <strong th:text="${inReviewCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>관리자 처리 진행 중</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>처리 완료</span>
+
+                    <strong th:text="${completedCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>관리자 확인 완료</small>
+                </article>
+            </div>
+
+            <!-- 신고 검색 -->
+            <section class="admin-card">
+
+                <div class="admin-card-head">
+                    <h2>신고 검색</h2>
+
+                    <span class="admin-list-count">
+                        사용자 신고 접수 항목
+                    </span>
+                </div>
+
+                <form class="report-filter"
+                      method="get"
+                      th:action="@{/admin/reports}">
+
+                    <input class="admin-input"
+                           type="text"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="정책명, 신고 내용, 사용자 검색">
+
+                    <!-- 신고 유형 -->
+                    <select class="admin-select"
+                            name="reportType">
+
+                        <option value="">
+                            신고 유형 전체
+                        </option>
+
+                        <option value="MISSING"
+                                th:selected="${selectedReportType == 'MISSING'}">
+                            누락 정책 신고
+                        </option>
+
+                        <option value="INFO_ERROR"
+                                th:selected="${selectedReportType == 'INFO_ERROR'}">
+                            정책 정보 오류
+                        </option>
+
+                        <option value="DEADLINE_ERROR"
+                                th:selected="${selectedReportType == 'DEADLINE_ERROR'}">
+                            기간 오류
+                        </option>
+
+                        <option value="LINK_ERROR"
+                                th:selected="${selectedReportType == 'LINK_ERROR'}">
+                            링크 오류
+                        </option>
+                    </select>
+
+                    <!-- 처리 상태 -->
+                    <select class="admin-select"
+                            name="status">
+
+                        <option value="">
+                            처리 상태 전체
+                        </option>
+
+                        <option value="RECEIVED"
+                                th:selected="${selectedStatus == 'RECEIVED'}">
+                            접수
+                        </option>
+
+                        <option value="IN_REVIEW"
+                                th:selected="${selectedStatus == 'IN_REVIEW'}">
+                            검토 중
+                        </option>
+
+                        <option value="COMPLETED"
+                                th:selected="${selectedStatus == 'COMPLETED'}">
+                            처리 완료
+                        </option>
+
+                        <option value="REJECTED"
+                                th:selected="${selectedStatus == 'REJECTED'}">
+                            반려
+                        </option>
+                    </select>
+
+                    <button class="admin-btn primary"
+                            type="submit">
+                        검색
+                    </button>
+
+                    <a class="admin-btn"
+                       th:href="@{/admin/reports}">
+                        초기화
+                    </a>
+                </form>
+            </section>
+
+            <!-- 사용자 신고 목록 -->
+            <section class="admin-card report-list-card">
+
+                <div class="admin-card-head">
+                    <h2>사용자 신고 목록</h2>
+
+                    <div class="report-head-actions">
+                        <span class="admin-list-count"
+                              th:text="${'총 ' + reportPage.totalElements + '건'}">
+                            총 0건
+                        </span>
+
+                        <button type="button"
+                                class="icon-refresh-btn"
+                                aria-label="사용자 신고 목록 새로고침"
+                                onclick="window.location.reload();">
+                            ↻
+                        </button>
+                    </div>
+                </div>
+
+                <table class="admin-table report-table">
+                    <thead>
+                    <tr>
+                        <th>신고 대상</th>
+                        <th>신고 유형</th>
+                        <th>신고 내용</th>
+                        <th>연결 페이지</th>
+                        <th>상태</th>
+                        <th>접수 시간</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <!-- 실제 신고 데이터 -->
+                    <tr th:each="report : ${reports}">
+
+                        <!-- 신고 대상 -->
+                        <td>
+                            <strong class="report-target-name"
+                                    th:text="${report.policyTitle}">
+                                정책명
+                            </strong>
+
+                            <span class="report-target-sub"
+                                  th:text="${'신고자: ' + report.reporterEmail}">
+                                신고자: -
+                            </span>
+
+                            <span class="report-target-sub"
+                                  th:if="${report.title != null
+                                      and !report.title.isBlank()}"
+                                  th:text="${report.title}">
+                                신고 제목
+                            </span>
+                        </td>
+
+                        <!-- 신고 유형 -->
+                        <td>
+                            <span class="report-badge"
+                                  th:classappend="${report.reportTypeCssClass}"
+                                  th:text="${report.reportTypeLabel}">
+                                정책 정보 오류
+                            </span>
+                        </td>
+
+                        <!-- 신고 내용 -->
+                        <td>
+                            <p class="report-content"
+                               th:text="${report.content}">
+                                신고 내용
+                            </p>
+
+                            <div class="report-photo-thumbs"
+                                 th:if="${!#lists.isEmpty(report.photoUrlList)}">
+                                <a th:each="photoUrl : ${report.photoUrlList}"
+                                   th:href="@{${photoUrl}}"
+                                   target="_blank"
+                                   rel="noopener">
+                                    <img th:src="@{${photoUrl}}" alt="첨부 사진">
+                                </a>
+                            </div>
+                        </td>
+
+                        <!-- 연결 페이지 -->
+                        <td>
+                            <!-- 누락 정책 신고 -->
+                            <span th:if="${report.reportType == 'MISSING'}">
+                                수동 등록/수정
+                            </span>
+
+                            <!-- 기존 정책 오류 -->
+                            <span th:if="${report.reportType == 'INFO_ERROR'
+                                or report.reportType == 'DEADLINE_ERROR'
+                                or report.reportType == 'LINK_ERROR'}">
+                                정책 오류 관리
+                            </span>
+                        </td>
+
+                        <!-- 상태 -->
+                        <td>
+                            <span class="admin-tag"
+                                  th:classappend="${report.statusCssClass}"
+                                  th:text="${report.statusLabel}">
+                                접수
+                            </span>
+                        </td>
+
+                        <!-- 접수 시간 -->
+                        <td th:text="${report.createdAtText}">
+                            2026.07.21 10:00
+                        </td>
+
+                        <!-- 관리 -->
+                        <td>
+                            <div class="table-actions">
+
+                                <!-- 누락 정책 신고 -->
+                                <a th:if="${report.reportType == 'MISSING'}"
+                                   th:href="@{/admin/policies/new(
+                                    reportId=${report.reportId}
+                                    )}">
+                                    이동
+                                </a>
+
+                                <!-- 정책 정보/기간/링크 오류 -->
+                                <a th:if="${report.reportType == 'INFO_ERROR'
+                                    or report.reportType == 'DEADLINE_ERROR'
+                                    or report.reportType == 'LINK_ERROR'}"
+                                   th:href="@{/admin/policy-errors}">
+                                    이동
+                                </a>
+
+                                <!-- 신고 상태 처리 -->
+                                <button type="button"
+                                        class="table-action-button"
+                                        th:data-report-id="${report.reportId}"
+                                        th:data-report-title="${report.title}"
+                                        th:data-policy-title="${report.policyTitle}"
+                                        th:data-status="${report.status}"
+                                        th:data-admin-memo="${report.adminMemo}"
+                                        onclick="openReportModal(this)">
+                                    처리
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 신고 데이터 없음 -->
+                    <tr th:if="${#lists.isEmpty(reports)}">
+                        <td colspan="7"
+                            class="admin-empty">
+                            조건에 해당하는 사용자 신고가 없습니다.
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+
+                <!-- 페이지네이션 -->
+                <div class="admin-pagination"
+                     th:if="${reportPage.totalPages > 0}">
+
+                    <!-- 이전 페이지 -->
+                    <a th:if="${!reportPage.first}"
+                       th:href="@{/admin/reports(
+                           page=${reportPage.number - 1},
+                           keyword=${keyword},
+                           reportType=${selectedReportType},
+                           status=${selectedStatus}
+                       )}">
+                        ‹
+                    </a>
+
+                    <span th:if="${reportPage.first}"
+                          class="disabled">
+                        ‹
+                    </span>
+
+                    <!-- 페이지 번호 -->
+                    <a th:each="pageNumber :
+                            ${#numbers.sequence(0, reportPage.totalPages - 1)}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == reportPage.number
+                            ? 'active'
+                            : ''}"
+                       th:href="@{/admin/reports(
+                           page=${pageNumber},
+                           keyword=${keyword},
+                           reportType=${selectedReportType},
+                           status=${selectedStatus}
+                       )}">
+                        1
+                    </a>
+
+                    <!-- 다음 페이지 -->
+                    <a th:if="${!reportPage.last}"
+                       th:href="@{/admin/reports(
+                           page=${reportPage.number + 1},
+                           keyword=${keyword},
+                           reportType=${selectedReportType},
+                           status=${selectedStatus}
+                       )}">
+                        ›
+                    </a>
+
+                    <span th:if="${reportPage.last}"
+                          class="disabled">
+                        ›
+                    </span>
+                </div>
+            </section>
+
+            <!-- 하단 안내 -->
+            <div class="admin-bottom-grid report-bottom">
+
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>신고 분류 기준</h2>
+
+                        <span class="admin-list-count">
+                            자동 분류 기준
+                        </span>
+                    </div>
+
+                    <div class="report-rule-list">
+
+                        <article class="report-rule-item">
+                            <strong>정책 정보 오류</strong>
+
+                            <p>
+                                지원 대상, 필요 서류 등 정책 내용 오류는
+                                정책 오류 관리에서 확인합니다.
+                            </p>
+                        </article>
+
+                        <article class="report-rule-item">
+                            <strong>기간 오류</strong>
+
+                            <p>
+                                신청 시작일과 마감일이 실제 공고와 다른 경우
+                                정책 오류 관리로 연결합니다.
+                            </p>
+                        </article>
+
+                        <article class="report-rule-item">
+                            <strong>링크 오류</strong>
+
+                            <p>
+                                공식 신청 URL이 잘못되었거나 접속되지 않는 경우
+                                정책 오류 관리로 연결합니다.
+                            </p>
+                        </article>
+
+                        <article class="report-rule-item">
+                            <strong>누락 정책 신고</strong>
+
+                            <p>
+                                서비스에 없는 정책은 수동 등록 또는
+                                API 재수집 필요 여부를 확인합니다.
+                            </p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>처리 흐름</h2>
+
+                        <span class="admin-list-count">
+                            신고 처리 기준
+                        </span>
+                    </div>
+
+                    <div class="report-process-list">
+
+                        <article class="report-process-item">
+                            <span class="admin-tag wait">
+                                접수
+                            </span>
+
+                            <p>
+                                신고가 등록되면 관리자가 신고 내용과
+                                관련 정책을 확인합니다.
+                            </p>
+                        </article>
+
+                        <article class="report-process-item">
+                            <span class="admin-tag ai">
+                                검토 중
+                            </span>
+
+                            <p>
+                                정책 원문, 공식 URL 또는 API 원본 데이터와
+                                신고 내용을 비교합니다.
+                            </p>
+                        </article>
+
+                        <article class="report-process-item">
+                            <span class="admin-tag ok">
+                                처리 완료
+                            </span>
+
+                            <p>
+                                정책 정보 수정 또는 누락 정책 등록이 완료되면
+                                신고 상태를 처리 완료로 변경합니다.
+                            </p>
+                        </article>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- 사용자 신고 처리 모달 -->
+<div id="reportModal"
+     class="notice-modal">
+
+    <div class="notice-modal-content report-modal-content">
+
+        <div class="notice-modal-head">
+            <div>
+                <h3>사용자 신고 처리</h3>
+
+                <p id="modalReportTitle">
+                    신고 제목
+                </p>
+            </div>
+
+            <button type="button"
+                    class="notice-modal-close"
+                    aria-label="사용자 신고 처리 창 닫기"
+                    onclick="closeReportModal()">
+                ×
+            </button>
+        </div>
+
+        <form method="post"
+              th:action="@{/admin/reports/status}">
+
+            <input type="hidden"
+                   id="modalReportId"
+                   name="reportId">
+
+            <div class="notice-form-group">
+                <label for="modalReportStatus">
+                    처리 상태
+                </label>
+
+                <select id="modalReportStatus"
+                        name="status"
+                        class="admin-select"
+                        required>
+
+                    <option value="RECEIVED">
+                        접수
+                    </option>
+
+                    <option value="IN_REVIEW">
+                        검토 중
+                    </option>
+
+                    <option value="COMPLETED">
+                        처리 완료
+                    </option>
+
+                    <option value="REJECTED">
+                        반려
+                    </option>
+                </select>
+            </div>
+
+            <div class="notice-form-group">
+                <label for="modalReportMemo">
+                    관리자 메모
+                </label>
+
+                <textarea id="modalReportMemo"
+                          name="adminMemo"
+                          class="admin-textarea"
+                          rows="5"
+                          maxlength="1000"
+                          placeholder="처리 내용이나 확인 결과를 입력하세요."></textarea>
+            </div>
+
+            <div class="notice-modal-actions">
+                <button type="button"
+                        class="admin-btn"
+                        onclick="closeReportModal()">
+                    취소
+                </button>
+
+                <button type="submit"
+                        class="admin-btn primary">
+                    저장
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/common.js}"
+        src="/js/common.js"></script>
+
+<script>
+    function openReportModal(button) {
+        const modal =
+            document.getElementById("reportModal");
+
+        const reportIdInput =
+            document.getElementById("modalReportId");
+
+        const reportTitle =
+            document.getElementById("modalReportTitle");
+
+        const statusSelect =
+            document.getElementById("modalReportStatus");
+
+        const memoTextarea =
+            document.getElementById("modalReportMemo");
+
+        if (!modal
+            || !reportIdInput
+            || !reportTitle
+            || !statusSelect
+            || !memoTextarea) {
+            return;
+        }
+
+        const reportId =
+            button.dataset.reportId;
+
+        const title =
+            button.dataset.reportTitle;
+
+        const policyTitle =
+            button.dataset.policyTitle;
+
+        const status =
+            button.dataset.status;
+
+        const adminMemo =
+            button.dataset.adminMemo;
+
+        reportIdInput.value =
+            reportId || "";
+
+        reportTitle.textContent =
+            title || policyTitle || "신고 제목 없음";
+
+        statusSelect.value =
+            status || "RECEIVED";
+
+        memoTextarea.value =
+            adminMemo && adminMemo !== "null"
+                ? adminMemo
+                : "";
+
+        modal.classList.add("open");
+    }
+
+    function closeReportModal() {
+        const modal =
+            document.getElementById("reportModal");
+
+        if (modal) {
+            modal.classList.remove("open");
+        }
+    }
+
+    window.addEventListener(
+        "click",
+        function (event) {
+            const modal =
+                document.getElementById("reportModal");
+
+            if (modal && event.target === modal) {
+                closeReportModal();
+            }
+        }
+    );
+
+    window.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key === "Escape") {
+                closeReportModal();
+            }
+        }
+    );
+</script>
+
+</body>
+</html>

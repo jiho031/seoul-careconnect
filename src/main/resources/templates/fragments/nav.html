@@ -1,0 +1,158 @@
+<header class="site-header"
+        th:fragment="nav"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+  <div class="nav-inner">
+
+    <a class="brand"
+       th:href="@{/}"
+       href="/"
+       aria-label="서울 케어넥트 홈">
+      <img th:src="@{/images/logo-cropped.png}"
+           src="/images/logo-cropped.png"
+           alt="서울 케어넥트"
+           onerror="this.onerror=null;this.src='/images/logo.png';">
+    </a>
+
+    <button class="nav-toggle"
+            type="button"
+            aria-label="메뉴 열기"
+            aria-expanded="false"
+            aria-controls="globalNav">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav-menu" id="globalNav" aria-label="주요 메뉴">
+
+      <a th:href="@{/policies}" href="/policies">정책 찾기</a>
+      <a th:href="@{/favorites}" href="/favorites" sec:authorize="isAuthenticated()">관심 정책</a>
+      <a href="/login" sec:authorize="isAnonymous()">관심 정책</a>
+
+      <a th:href="@{/guides}" href="/guides">신청 가이드</a>
+    </nav>
+
+    <div class="nav-actions">
+
+      <!-- 일반 회원에게만 누락 신고 표시 -->
+      <a sec:authorize="hasRole('USER') and !hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+         th:href="@{/reports}"
+         href="/reports"
+         class="nav-report-button">
+        누락 신고
+      </a>
+
+      <!-- 관리자와 최고관리자에게 관리자페이지 표시 -->
+      <a sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')"
+         th:href="@{/admin/dashboard}"
+         href="/admin/dashboard"
+         class="nav-report-button admin-page-button">
+        관리자페이지
+      </a>
+
+      <!-- 비로그인 사용자 -->
+      <a sec:authorize="isAnonymous()"
+         class="btn-login"
+         th:href="@{/login}"
+         href="/login">
+        로그인
+      </a>
+
+      <a sec:authorize="isAnonymous()"
+         class="btn-join"
+         th:href="@{/signup}"
+         href="/signup">
+        회원가입
+      </a>
+
+      <!-- 모든 로그인 사용자 -->
+      <a sec:authorize="isAuthenticated()"
+         class="btn-login"
+         th:href="@{/mypage}"
+         href="/mypage">
+        마이페이지
+      </a>
+
+      <form sec:authorize="isAuthenticated()"
+            th:action="@{/logout}"
+            action="/logout"
+            method="post"
+            class="nav-logout-form">
+        <button type="submit" class="btn-join">
+          로그아웃
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- 로그인 세션 만료 안내 -->
+  <div class="session-timeout-modal"
+       id="sessionTimeoutModal"
+       sec:authorize="isAuthenticated()"
+       th:attr="data-remember-me=${rememberMeEnabled}"
+       aria-hidden="true">
+
+    <div class="session-timeout-backdrop"></div>
+
+    <section class="session-timeout-dialog"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="sessionTimeoutTitle">
+
+      <div class="session-timeout-icon"
+           aria-hidden="true">
+        !
+      </div>
+
+      <h2 id="sessionTimeoutTitle">
+        로그인 시간이 곧 만료됩니다
+      </h2>
+
+      <p>
+        보안을 위해
+        <strong id="sessionRemainingText">
+          5분 00초
+        </strong>
+        후 자동으로 로그아웃됩니다.
+      </p>
+
+      <p class="session-timeout-question">
+        서비스를 계속 이용하시겠습니까?
+      </p>
+
+      <div class="session-timeout-actions">
+        <button type="button"
+                id="sessionExtendButton"
+                class="session-extend-button">
+          로그인 연장
+        </button>
+
+        <button type="button"
+                id="sessionLogoutButton"
+                class="session-logout-button">
+          로그아웃
+        </button>
+      </div>
+
+    </section>
+  </div>
+
+  <script th:src="@{/js/common.js}"
+          src="/js/common.js"
+          defer>
+  </script>
+
+  <script sec:authorize="isAuthenticated()"
+          th:src="@{/js/session-timeout.js}"
+          src="/js/session-timeout.js"
+          defer>
+  </script>
+
+  <div th:if="${aiAssistantVisible}"
+       th:replace="~{fragments/ai-assistant :: assistant}">
+  </div>
+
+</header>

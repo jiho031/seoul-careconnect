@@ -1,0 +1,807 @@
+:root {
+  --navy: #061846;
+  --text: #10224b;
+  --teal: #007f84;
+  --teal-dark: #006e74;
+  --line: #d8e5f1;
+  --soft-line: #e7f0f8;
+  --bg: #f4fbff;
+  --white: #ffffff;
+  --shadow: 0 18px 42px rgba(31, 70, 104, .13);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+
+body.nav-open {
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+a,
+select {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 78px;
+  background: rgba(255, 255, 255, .98);
+  border-bottom: 1px solid #dbe7f2;
+}
+
+.nav-inner {
+  width: min(1480px, calc(100% - 72px));
+  height: 100%;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 220px minmax(360px, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  width: 190px;
+  min-width: 190px;
+  height: 58px;
+}
+
+.brand img {
+  display: block;
+  width: 190px;
+  height: auto;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(34px, 3.4vw, 58px);
+  color: #061846;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -.045em;
+}
+
+.nav-menu a {
+  padding: 27px 0;
+  white-space: nowrap;
+}
+
+.nav-menu a:hover,
+.nav-menu a:focus-visible {
+  color: var(--teal);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.nav-actions a {
+  height: 44px;
+  min-width: 82px;
+  padding: 0 15px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+}
+
+.btn-login {
+  background: #fff;
+  border: 1px solid #cfddeb;
+  color: #061846;
+}
+
+.btn-join {
+  border: 1px solid #00777d;
+  color: #fff;
+  background: linear-gradient(180deg, #008e94 0%, #00757b 100%);
+  box-shadow: 0 8px 16px rgba(0, 117, 123, .18);
+}
+
+.nav-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #cfddeb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin: 4px auto;
+  border-radius: 999px;
+  background: #061846;
+}
+
+.site-footer {
+  background: #fff;
+  border-top: 1px solid #d7e4f0;
+}
+
+.footer-inner {
+  width: min(1480px, calc(100% - 72px));
+  margin: 0 auto;
+  padding: 34px 0 28px;
+  display: grid;
+  grid-template-columns: 1.1fr .75fr .82fr 1.1fr;
+  gap: 32px;
+}
+
+.footer-brand img {
+  display: block;
+  width: 190px;
+  margin-bottom: 12px;
+}
+
+.footer-brand p,
+.footer-notice p {
+  margin: 0 0 6px;
+  color: #1d2f56;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -.04em;
+}
+
+.footer-col,
+.footer-notice {
+  padding-left: 28px;
+  border-left: 1px solid #c7d5e5;
+}
+
+.footer-col h2,
+.footer-notice h2 {
+  margin: 0 0 14px;
+  color: #061846;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -.05em;
+}
+
+.footer-col a {
+  width: 190px;
+  min-height: 28px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #1b2d56;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -.04em;
+}
+
+.footer-help a {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.footer-col span {
+  color: #6e85a8;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.footer-col b {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef5fb;
+  color: #6b83a8;
+  font-size: 13px;
+}
+
+.footer-bottom {
+  width: min(1480px, calc(100% - 72px));
+  margin: 0 auto;
+  padding: 18px 0 24px;
+  border-top: 1px solid #d7e4f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: #172a55;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -.04em;
+}
+
+.footer-bottom div {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+@media (max-width: 1180px) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .footer-inner,
+  .footer-bottom {
+    width: calc(100% - 32px);
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .footer-col,
+  .footer-notice {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.nav-report-button {
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid #2f8f8c;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #137c79;
+  font-size: 15px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-report-button:hover {
+  background: #eefafa;
+  border-color: #137c79;
+  transform: translateY(-1px);
+}
+
+.nav-logout-form {
+  margin: 0;
+  display: inline-flex;
+}
+
+.nav-logout-form button {
+  height: 44px;
+  min-width: 82px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #00777d;
+  color: #fff;
+  background: linear-gradient(180deg, #008e94 0%, #00757b 100%);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   네비게이션 반응형
+   1320px 이하: 햄버거 메뉴
+   1321px 이상: 데스크톱 메뉴
+========================================================= */
+
+/* 데스크톱 메뉴를 확실하게 고정 */
+@media (min-width: 1321px) {
+  .site-header {
+    height: 78px !important;
+    overflow: visible !important;
+  }
+
+  .nav-inner {
+    width: min(1480px, calc(100% - 72px)) !important;
+    height: 100% !important;
+    display: grid !important;
+    grid-template-columns: 220px minmax(360px, 1fr) auto !important;
+    grid-template-rows: 1fr !important;
+    align-items: center !important;
+    gap: 24px !important;
+  }
+
+  .nav-toggle {
+    display: none !important;
+  }
+
+  .nav-menu {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: clamp(34px, 3.4vw, 58px) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  .nav-actions {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+}
+
+/* 태블릿 및 모바일 */
+@media (max-width: 1320px) {
+  body.nav-open {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .site-header {
+    height: auto !important;
+    min-height: 78px !important;
+    overflow: visible !important;
+  }
+
+  .nav-inner {
+    position: relative !important;
+    width: calc(100% - 32px) !important;
+    height: auto !important;
+    min-height: 78px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 48px !important;
+    grid-template-rows: 78px auto auto !important;
+    align-items: center !important;
+    gap: 0 !important;
+  }
+
+  .brand {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 190px !important;
+    min-width: 0 !important;
+    height: 58px !important;
+  }
+
+  .brand img {
+    display: block !important;
+    width: 190px !important;
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .nav-toggle {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: block !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 !important;
+  }
+
+  /* 닫힌 상태에서는 메뉴와 회원 버튼을 모두 숨김 */
+  .nav-menu,
+  .nav-actions,
+  body.large-text-mode .nav-menu,
+  body.large-text-mode .nav-actions {
+    display: none !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  body.nav-open .nav-menu,
+  body.large-text-mode.nav-open .nav-menu {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    margin: 10px 0 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid #cfdeed !important;
+    border-bottom: 0 !important;
+    border-radius: 18px 18px 0 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 14px 34px rgba(31, 70, 104, 0.10) !important;
+  }
+
+  body.nav-open .nav-menu a,
+  body.large-text-mode.nav-open .nav-menu a {
+    width: 100% !important;
+    min-height: 72px !important;
+    padding: 0 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    border-bottom: 1px solid #dce7f2 !important;
+    color: #071947 !important;
+    background: #ffffff !important;
+    font-size: 20px !important;
+    font-weight: 900 !important;
+    line-height: 1.35 !important;
+    text-align: left !important;
+    white-space: normal !important;
+  }
+
+  body.nav-open .nav-menu a:last-child,
+  body.large-text-mode.nav-open .nav-menu a:last-child {
+    border-bottom: 1px solid #dce7f2 !important;
+  }
+
+  body.nav-open .nav-actions,
+  body.large-text-mode.nav-open .nav-actions {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin: 0 0 14px !important;
+    padding: 16px 18px 18px !important;
+    border: 1px solid #cfdeed !important;
+    border-top: 0 !important;
+    border-radius: 0 0 18px 18px !important;
+    background: #ffffff !important;
+    box-shadow: 0 18px 38px rgba(31, 70, 104, 0.14) !important;
+  }
+
+  /* 누락 신고 또는 관리자페이지는 첫 줄 전체 사용 */
+  body.nav-open .nav-actions > .nav-report-button,
+  body.nav-open .nav-actions > .admin-page-button,
+  body.large-text-mode.nav-open .nav-actions > .nav-report-button,
+  body.large-text-mode.nav-open .nav-actions > .admin-page-button {
+    grid-column: 1 / -1 !important;
+  }
+
+  body.nav-open .nav-actions > a,
+  body.nav-open .nav-actions .nav-logout-form,
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.nav-open .nav-actions > a,
+  body.nav-open .nav-actions .nav-logout-form button,
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    padding: 0 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 82px !important;
+    font-size: 23px !important;
+  }
+
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    height: 66px !important;
+    min-height: 66px !important;
+    font-size: 21px !important;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 560px) {
+  .site-header {
+    min-height: 74px !important;
+  }
+
+  .nav-inner {
+    width: calc(100% - 24px) !important;
+    min-height: 74px !important;
+    grid-template-columns: minmax(0, 1fr) 46px !important;
+    grid-template-rows: 74px auto auto !important;
+  }
+
+  .brand {
+    width: 170px !important;
+    height: 56px !important;
+  }
+
+  .brand img {
+    width: 170px !important;
+  }
+
+  .nav-toggle {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  body.nav-open .nav-menu a,
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 68px !important;
+    padding: 0 20px !important;
+    font-size: 18px !important;
+  }
+
+  body.nav-open .nav-actions,
+  body.large-text-mode.nav-open .nav-actions {
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  body.nav-open .nav-actions > a,
+  body.nav-open .nav-actions .nav-logout-form button,
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 0 8px !important;
+    font-size: 17px !important;
+  }
+
+  body.large-text-mode.nav-open .nav-menu a {
+    min-height: 76px !important;
+    font-size: 21px !important;
+  }
+
+  body.large-text-mode.nav-open .nav-actions > a,
+  body.large-text-mode.nav-open .nav-actions .nav-logout-form button {
+    height: 62px !important;
+    min-height: 62px !important;
+    font-size: 19px !important;
+  }
+}
+
+/* =========================================================
+   세션 만료 안내 팝업
+========================================================= */
+
+.session-timeout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.session-timeout-modal.is-open {
+  display: flex;
+}
+
+.session-timeout-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 19, 48, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.session-timeout-dialog {
+  width: min(440px, 100%);
+  padding: 38px 34px 32px;
+  position: relative;
+  z-index: 1;
+  border: 1px solid #d4e5ee;
+  border-radius: 26px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 28px 70px rgba(4, 27, 57, 0.28);
+}
+
+.session-timeout-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: linear-gradient(135deg, #11938d 0%, #176da8 100%);
+  font-size: 30px;
+  font-weight: 950;
+  box-shadow: 0 12px 26px rgba(17, 130, 137, 0.25);
+}
+
+.session-timeout-dialog h2 {
+  margin: 0 0 14px;
+  color: #071947;
+  font-size: 25px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.session-timeout-dialog p {
+  margin: 0;
+  color: #5f708a;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.65;
+}
+
+.session-timeout-dialog p strong {
+  color: #087e79;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.session-timeout-question {
+  margin-top: 8px !important;
+  color: #14254f !important;
+  font-weight: 800 !important;
+}
+
+.session-timeout-actions {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.session-extend-button,
+.session-logout-button {
+  height: 52px;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          background-color 0.2s ease;
+}
+
+.session-extend-button {
+  border: 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, #118c87 0%, #176ca8 100%);
+  box-shadow: 0 12px 22px rgba(20, 119, 132, 0.22);
+}
+
+.session-logout-button {
+  border: 1px solid #ccdce8;
+  color: #425673;
+  background: #ffffff;
+}
+
+.session-extend-button:hover,
+.session-logout-button:hover {
+  transform: translateY(-1px);
+}
+
+.session-extend-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+
+@media (max-width: 520px) {
+  .session-timeout-dialog {
+    padding: 32px 22px 24px;
+    border-radius: 22px;
+  }
+
+  .session-timeout-dialog h2 {
+    font-size: 22px;
+  }
+
+  .session-timeout-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .session-extend-button {
+    grid-row: 1;
+  }
+}
+
+.admin-page-button {
+  min-width: 112px !important;
+  padding: 0 16px !important;
+  white-space: nowrap;
+}
+

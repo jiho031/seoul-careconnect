@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>서울 케어넥트 관리자 - 회원 관리</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin.css}"
+          href="/css/admin.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin_users.css}"
+          href="/css/admin_users.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <!-- 관리자 사이드바 -->
+        <aside class="admin-side">
+            <p class="admin-side-title">관리자 메뉴</p>
+
+            <nav class="admin-menu">
+                <a th:href="@{/admin/dashboard}"
+                   href="/admin/dashboard">
+                    📊 대시보드
+                </a>
+
+                <a th:href="@{/admin/collection}"
+                   href="/admin/collection">
+                    🔗 API 수집 현황
+                </a>
+
+                <a th:href="@{/admin/policy-errors}"
+                   href="/admin/policy-errors">
+                    ⚠️ 정책 오류 관리
+                </a>
+
+                <a th:href="@{/admin/ai-review}"
+                   href="/admin/ai-review">
+                    🤖 AI 정책 설명 검수
+                </a>
+
+                <a th:href="@{/admin/reports}"
+                   href="/admin/reports">
+                    🚨 사용자 신고 관리
+                </a>
+
+                <a th:href="@{/admin/policies}"
+                   href="/admin/policies">
+                    📌 정책 목록
+                </a>
+
+                <a th:href="@{/admin/policies/new}"
+                   href="/admin/policies/new">
+                    📝 수동 등록/수정
+                </a>
+
+                <a class="active"
+                   th:href="@{/admin/users}"
+                   href="/admin/users">
+                    👥 회원 관리
+                </a>
+
+            </nav>
+        </aside>
+
+        <!-- 관리자 본문 -->
+        <section class="admin-content">
+
+            <!-- 페이지 헤더 -->
+            <div class="admin-head">
+                <div>
+                    <h1>회원 관리</h1>
+
+                    <p>
+                        회원 정보와 이용 상태,
+                        권한 정보를 확인하고 관리합니다.
+                    </p>
+                </div>
+
+                <div class="admin-actions">
+                    <button class="admin-btn"
+                            type="button">
+                        회원 목록 다운로드
+                    </button>
+                </div>
+            </div>
+
+            <!-- 성공 메시지 -->
+            <div class="admin-alert success"
+                 th:if="${successMessage != null}"
+                 th:text="${successMessage}">
+                회원 상태가 변경되었습니다.
+            </div>
+
+            <!-- 오류 메시지 -->
+            <div class="admin-alert error"
+                 th:if="${errorMessage != null}"
+                 th:text="${errorMessage}">
+                회원 처리 중 오류가 발생했습니다.
+            </div>
+
+            <!-- 회원 통계 -->
+            <div class="admin-stat-grid">
+
+                <article class="admin-stat-card">
+                    <span>전체 회원</span>
+
+                    <strong th:text="${totalUserCount + '명'}">
+                        0명
+                    </strong>
+
+                    <small>DB에 등록된 전체 회원</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>오늘 가입</span>
+
+                    <strong th:text="${todayJoinedCount + '명'}">
+                        0명
+                    </strong>
+
+                    <small>오늘 새로 가입한 회원</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>관리자</span>
+
+                    <strong th:text="${adminCount + '명'}">
+                        0명
+                    </strong>
+
+                    <small>현재 관리자 권한 보유 회원</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>비활성 회원</span>
+
+                    <strong th:text="${inactiveUserCount + '명'}">
+                        0명
+                    </strong>
+
+                    <small>서비스 이용이 제한된 회원</small>
+                </article>
+
+            </div>
+
+            <!-- 회원 검색 -->
+            <section class="admin-card">
+
+                <div class="admin-card-head">
+                    <h2>회원 검색</h2>
+
+                    <a class="admin-link"
+                       th:href="@{/admin/users}">
+                        필터 초기화
+                    </a>
+                </div>
+
+                <form class="user-filter"
+                      method="get"
+                      th:action="@{/admin/users}">
+
+                    <!-- 검색어 -->
+                    <input class="admin-input"
+                           type="search"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="이름, 이메일, 전화번호 검색">
+
+                    <!-- 회원 권한 -->
+                    <select class="admin-select"
+                            name="role">
+
+                        <option value="">
+                            회원 유형 전체
+                        </option>
+
+                        <option value="USER"
+                                th:selected="${selectedRole == 'USER'}">
+                            일반 회원
+                        </option>
+
+                        <option value="ADMIN"
+                                th:selected="${selectedRole == 'ADMIN'}">
+                            관리자
+                        </option>
+
+                        <option value="SUPER_ADMIN"
+                                th:selected="${selectedRole == 'SUPER_ADMIN'}">
+                            최고 관리자
+                        </option>
+                    </select>
+
+                    <!-- 활성 여부 -->
+                    <select class="admin-select"
+                            name="active">
+
+                        <option value="">
+                            회원 상태 전체
+                        </option>
+
+                        <option value="true"
+                                th:selected="${selectedActive != null
+                                    and selectedActive}">
+                            활성
+                        </option>
+
+                        <option value="false"
+                                th:selected="${selectedActive != null
+                                    and !selectedActive}">
+                            비활성
+                        </option>
+                    </select>
+
+                    <!-- 연령대 -->
+                    <select class="admin-select"
+                            name="ageGroup">
+
+                        <option value="">
+                            연령대 전체
+                        </option>
+
+                        <option value="UNDER_40"
+                                th:selected="${selectedAgeGroup == 'UNDER_40'}">
+                            30대 이하
+                        </option>
+
+                        <option value="FORTIES"
+                                th:selected="${selectedAgeGroup == 'FORTIES'}">
+                            40대
+                        </option>
+
+                        <option value="FIFTIES"
+                                th:selected="${selectedAgeGroup == 'FIFTIES'}">
+                            50대
+                        </option>
+
+                        <option value="SIXTIES_PLUS"
+                                th:selected="${selectedAgeGroup == 'SIXTIES_PLUS'}">
+                            60대 이상
+                        </option>
+
+                        <option value="ALL"
+                                th:selected="${selectedAgeGroup == 'ALL'}">
+                            전 연령
+                        </option>
+                    </select>
+
+                    <button class="admin-btn primary"
+                            type="submit">
+                        검색
+                    </button>
+                </form>
+            </section>
+
+            <!-- 회원 목록 -->
+            <section class="admin-card user-list-card">
+
+                <div class="admin-card-head">
+                    <h2>회원 목록</h2>
+
+                    <div class="user-head-actions">
+
+                        <span class="admin-list-count"
+                              th:text="${'총 ' + userPage.totalElements + '명'}">
+                            총 0명
+                        </span>
+
+                        <a class="icon-refresh-btn"
+                           th:href="@{/admin/users(
+                               keyword=${keyword},
+                               role=${selectedRole},
+                               active=${selectedActive},
+                               ageGroup=${selectedAgeGroup},
+                               page=${userPage.number}
+                           )}"
+                           aria-label="회원 목록 새로고침">
+                            ↻
+                        </a>
+                    </div>
+                </div>
+
+                <div class="user-table-wrap">
+                    <table class="admin-table user-table">
+
+                        <thead>
+                        <tr>
+                            <th>회원 정보</th>
+                            <th>회원 유형</th>
+                            <th>연령대</th>
+                            <th>지역</th>
+                            <th>상태</th>
+                            <th>가입일</th>
+                            <th>가입 방식</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        <!-- 실제 회원 목록 -->
+                        <tr th:each="user : ${users}">
+
+                            <!-- 회원 정보 -->
+                            <td>
+                                <strong class="user-name"
+                                        th:text="${user.name}">
+                                    홍길동
+                                </strong>
+
+                                <span class="user-sub"
+                                      th:text="${user.maskedEmail}">
+                                    ho***@mail.com
+                                </span>
+
+                                <span class="user-sub"
+                                      th:if="${user.phone != null
+                                          and !user.phone.isBlank()}"
+                                      th:text="${user.phone}">
+                                    010-0000-0000
+                                </span>
+                            </td>
+
+                            <!-- 회원 유형 -->
+                            <td>
+                                <span class="user-role"
+                                      th:classappend="${user.roleCssClass}"
+                                      th:text="${user.roleLabel}">
+                                    일반 회원
+                                </span>
+                            </td>
+
+                            <!-- 연령대 -->
+                            <td th:text="${user.ageGroupLabel}">
+                                -
+                            </td>
+
+                            <!-- 지역 -->
+                            <td th:text="${user.regionText}">
+                                서울 강서구
+                            </td>
+
+                            <!-- 상태 -->
+                            <td>
+                                <span class="admin-tag"
+                                      th:classappend="${user.statusCssClass}"
+                                      th:text="${user.statusLabel}">
+                                    활성
+                                </span>
+                            </td>
+
+                            <!-- 가입일 -->
+                            <td th:text="${user.createdAtText}">
+                                2026.07.01
+                            </td>
+
+                            <!-- 가입 방식 -->
+                            <td>
+                                <span th:text="${user.provider == 'LOCAL'
+                                    ? '일반 가입'
+                                    : user.provider}">
+                                    일반 가입
+                                </span>
+                            </td>
+
+                            <!-- 관리 -->
+                            <td>
+                                <div class="table-actions">
+
+                                    <!-- 활성 회원 비활성화 -->
+                                    <form th:if="${user.active
+                                            and user.role != 'SUPER_ADMIN'}"
+                                          method="post"
+                                          th:action="@{/admin/users/deactivate}">
+
+                                        <input type="hidden"
+                                               name="userId"
+                                               th:value="${user.userId}">
+
+                                        <button type="submit"
+                                                class="table-action-button danger-text"
+                                                onclick="return confirm('이 회원을 비활성화하시겠습니까?');">
+                                            비활성
+                                        </button>
+                                    </form>
+
+                                    <!-- 비활성 회원 활성화 -->
+                                    <form th:if="${!user.active}"
+                                          method="post"
+                                          th:action="@{/admin/users/activate}">
+
+                                        <input type="hidden"
+                                               name="userId"
+                                               th:value="${user.userId}">
+
+                                        <button type="submit"
+                                                class="table-action-button"
+                                                onclick="return confirm('이 회원을 다시 활성화하시겠습니까?');">
+                                            활성화
+                                        </button>
+                                    </form>
+
+                                    <!-- 최고 관리자 -->
+                                    <span class="user-protected-text"
+                                          th:if="${user.role == 'SUPER_ADMIN'}">
+                                        보호 계정
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- 조회 결과 없음 -->
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="8"
+                                class="admin-empty">
+                                조건에 해당하는 회원이 없습니다.
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="admin-pagination"
+                     th:if="${userPage.totalPages > 0}">
+
+                    <!-- 이전 페이지 -->
+                    <a th:if="${!userPage.first}"
+                       th:href="@{/admin/users(
+                           page=${userPage.number - 1},
+                           keyword=${keyword},
+                           role=${selectedRole},
+                           active=${selectedActive},
+                           ageGroup=${selectedAgeGroup}
+                       )}">
+                        ‹
+                    </a>
+
+                    <span th:if="${userPage.first}"
+                          class="disabled">
+                        ‹
+                    </span>
+
+                    <!-- 페이지 번호 -->
+                    <a th:each="pageNumber :
+                            ${#numbers.sequence(0, userPage.totalPages - 1)}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == userPage.number}
+                           ? 'active'
+                           : ''"
+                       th:href="@{/admin/users(
+                           page=${pageNumber},
+                           keyword=${keyword},
+                           role=${selectedRole},
+                           active=${selectedActive},
+                           ageGroup=${selectedAgeGroup}
+                       )}">
+                        1
+                    </a>
+
+                    <!-- 다음 페이지 -->
+                    <a th:if="${!userPage.last}"
+                       th:href="@{/admin/users(
+                           page=${userPage.number + 1},
+                           keyword=${keyword},
+                           role=${selectedRole},
+                           active=${selectedActive},
+                           ageGroup=${selectedAgeGroup}
+                       )}">
+                        ›
+                    </a>
+
+                    <span th:if="${userPage.last}"
+                          class="disabled">
+                        ›
+                    </span>
+                </div>
+            </section>
+
+            <!-- 하단 안내 -->
+            <div class="admin-bottom-grid user-bottom">
+
+                <!-- 회원 상태 기준 -->
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>회원 상태 기준</h2>
+
+                        <span class="admin-list-count">
+                            서비스 이용 상태
+                        </span>
+                    </div>
+
+                    <div class="user-rule-list">
+
+                        <article class="user-rule-item">
+                            <strong>활성</strong>
+
+                            <p>
+                                정상적으로 로그인하고
+                                서비스를 이용할 수 있는 회원입니다.
+                            </p>
+                        </article>
+
+                        <article class="user-rule-item">
+                            <strong>비활성</strong>
+
+                            <p>
+                                관리자 처리 또는 탈퇴 등의 사유로
+                                서비스 이용이 제한된 회원입니다.
+                            </p>
+                        </article>
+
+                        <article class="user-rule-item">
+                            <strong>재활성화</strong>
+
+                            <p>
+                                비활성 회원을 다시 활성 상태로 변경하면
+                                서비스 이용이 가능해집니다.
+                            </p>
+                        </article>
+
+                    </div>
+                </section>
+
+                <!-- 관리자 권한 기준 -->
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>관리자 권한 기준</h2>
+
+                        <span class="admin-list-count">
+                            권한 위임 방식
+                        </span>
+                    </div>
+
+                    <div class="user-process-list">
+
+                        <article class="user-process-item">
+                            <span class="user-role super">
+                                최고 관리자
+                            </span>
+
+                            <p>
+                                관리자 권한 부여와 회수,
+                                시스템의 주요 권한을 관리합니다.
+                            </p>
+                        </article>
+
+                        <article class="user-process-item">
+                            <span class="user-role admin">
+                                관리자
+                            </span>
+
+                            <p>
+                                정책 오류, AI 정책 설명 검수,
+                                사용자 신고 항목을 처리합니다.
+                            </p>
+                        </article>
+
+                        <article class="user-process-item">
+                            <span class="user-role user">
+                                일반 회원
+                            </span>
+
+                            <p>
+                                관리자 신청 기능은 없으며,
+                                최고 관리자가 직접 관리자 권한을 부여합니다.
+                            </p>
+                        </article>
+
+                    </div>
+                </section>
+            </div>
+
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/common.js}"
+        src="/js/common.js"></script>
+
+</body>
+</html>

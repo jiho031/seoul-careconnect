@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>서울 케어넥트 관리자 - 정책 오류 관리</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin.css}"
+          href="/css/admin.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/admin_policy_errors.css}"
+          href="/css/admin_policy_errors.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-layout">
+
+        <!-- 관리자 사이드바 -->
+        <aside class="admin-side">
+            <p class="admin-side-title">
+                관리자 메뉴
+            </p>
+
+            <nav class="admin-menu">
+
+                <a th:href="@{/admin/dashboard}"
+                   href="/admin/dashboard">
+                    📊 대시보드
+                </a>
+
+                <a th:href="@{/admin/collection}"
+                   href="/admin/collection">
+                    🔗 API 수집 현황
+                </a>
+
+                <a class="active"
+                   th:href="@{/admin/policy-errors}"
+                   href="/admin/policy-errors">
+                    ⚠️ 정책 오류 관리
+                </a>
+
+                <a th:href="@{/admin/ai-review}"
+                   href="/admin/ai-review">
+                    🤖 AI 정책 설명 검수
+                </a>
+
+                <a th:href="@{/admin/reports}"
+                   href="/admin/reports">
+                    🚨 사용자 신고 관리
+                </a>
+
+                <a th:href="@{/admin/policies}"
+                   href="/admin/policies">
+                    📌 정책 목록
+                </a>
+
+                <a th:href="@{/admin/policies/new}"
+                   href="/admin/policies/new">
+                    📝 수동 등록/수정
+                </a>
+
+                <a th:href="@{/admin/users}"
+                   href="/admin/users">
+                    👥 회원 관리
+                </a>
+
+            </nav>
+        </aside>
+
+        <!-- 관리자 본문 -->
+        <section class="admin-content">
+
+            <!-- 페이지 헤더 -->
+            <div class="admin-head">
+
+                <div>
+                    <h1>정책 오류 관리</h1>
+
+                    <p>
+                        API 자동 수집 또는 사용자 신고를 통해 확인된
+                        필수값 누락, 기간 오류, URL 오류 정책을 관리합니다.
+                    </p>
+                </div>
+
+                <div class="admin-actions">
+
+                    <button class="admin-btn"
+                            type="button">
+                        오류 로그 다운로드
+                    </button>
+
+                    <button class="admin-btn primary"
+                            type="button">
+                        선택 항목 재수집
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- 처리 성공 메시지 -->
+            <div class="admin-alert success"
+                 th:if="${successMessage != null}"
+                 th:text="${successMessage}">
+                정책 오류 상태가 변경되었습니다.
+            </div>
+
+            <!-- 처리 실패 메시지 -->
+            <div class="admin-alert error"
+                 th:if="${errorMessage != null}"
+                 th:text="${errorMessage}">
+                처리 중 오류가 발생했습니다.
+            </div>
+
+            <!-- 오류 통계 -->
+            <div class="admin-stat-grid">
+
+                <article class="admin-stat-card">
+                    <span>전체 오류</span>
+
+                    <strong th:text="${totalErrorCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>관리자 확인 필요</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>필수값 누락</span>
+
+                    <strong th:text="${missingValueCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>정책명, 기관, 기간, URL 등</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>기간 오류</span>
+
+                    <strong th:text="${dateErrorCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>시작일과 마감일 확인 필요</small>
+                </article>
+
+                <article class="admin-stat-card">
+                    <span>URL 오류</span>
+
+                    <strong th:text="${urlErrorCount + '건'}">
+                        0건
+                    </strong>
+
+                    <small>공식 링크 접속 실패</small>
+                </article>
+
+            </div>
+
+            <!-- 검색 영역 -->
+            <section class="admin-card">
+
+                <div class="admin-card-head">
+
+                    <h2>오류 정책 검색</h2>
+
+                    <span class="admin-list-count">
+                        API 수집 및 사용자 신고 오류
+                    </span>
+
+                </div>
+
+                <form class="error-filter"
+                      method="get"
+                      th:action="@{/admin/policy-errors}">
+
+                    <!-- 검색어 -->
+                    <input class="admin-input"
+                           type="text"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="정책명, 정책 ID, 기관명 검색">
+
+                    <!-- 오류 유형 -->
+                    <select class="admin-select"
+                            name="errorType">
+
+                        <option value="">
+                            오류 유형 전체
+                        </option>
+
+                        <option th:each="type : ${errorTypes}"
+                                th:value="${type.name()}"
+                                th:text="${type.label}"
+                                th:selected="${selectedErrorType == type}">
+                            필수값 누락
+                        </option>
+
+                    </select>
+
+                    <!-- 처리 상태 -->
+                    <select class="admin-select"
+                            name="status">
+
+                        <option value="">
+                            처리 상태 전체
+                        </option>
+
+                        <option th:each="itemStatus : ${errorStatuses}"
+                                th:value="${itemStatus.name()}"
+                                th:text="${itemStatus.label}"
+                                th:selected="${selectedStatus == itemStatus}">
+                            확인 대기
+                        </option>
+
+                    </select>
+
+                    <!-- API 출처 -->
+                    <select class="admin-select"
+                            name="sourceId">
+
+                        <option value="">
+                            API 출처 전체
+                        </option>
+
+                        <option th:each="source : ${sources}"
+                                th:value="${source.sourceId}"
+                                th:text="${source.sourceName}"
+                                th:selected="${selectedSourceId != null
+                                    and selectedSourceId.equals(source.sourceId)}">
+                            공공데이터포털
+                        </option>
+
+                    </select>
+
+                    <button class="admin-btn primary"
+                            type="submit">
+                        검색
+                    </button>
+
+                    <a class="admin-btn"
+                       th:href="@{/admin/policy-errors}">
+                        초기화
+                    </a>
+
+                </form>
+            </section>
+
+            <!-- 오류 정책 목록 -->
+            <section class="admin-card error-list-card">
+
+                <div class="admin-card-head">
+
+                    <h2>오류 정책 목록</h2>
+
+                    <div class="error-head-actions">
+
+                        <span class="admin-list-count"
+                              th:text="${'총 ' + errorPage.totalElements + '건'}">
+                            총 0건
+                        </span>
+
+                        <button type="button"
+                                class="icon-refresh-btn"
+                                aria-label="정책 오류 목록 새로고침"
+                                onclick="window.location.reload();">
+                            ↻
+                        </button>
+
+                    </div>
+                </div>
+
+                <table class="admin-table error-table">
+
+                    <thead>
+                    <tr>
+                        <th>정책명</th>
+                        <th>API 출처</th>
+                        <th>오류 유형</th>
+                        <th>오류 내용</th>
+                        <th>상태</th>
+                        <th>접수 시간</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <!-- 실제 DB 오류 목록 -->
+                    <tr th:each="error : ${errors}"
+                        class="policy-error-row"
+                        th:data-error-id="${error.errorId}"
+                        th:data-policy-id="${error.policyId}"
+                        th:data-external-id="${error.externalId}"
+                        th:data-policy-title="${error.policyTitle}"
+                        th:data-source-name="${error.sourceName}"
+                        th:data-error-type="${error.errorTypeLabel}"
+                        th:data-error-message="${error.errorMessage}"
+                        th:data-created-at="${error.createdAtText}"
+                        th:data-processed-at="${error.processedAtText}"
+                        th:data-status="${error.status != null
+                            ? error.status.name()
+                            : 'WAITING'}"
+                        th:data-admin-memo="${error.adminMemo}"
+                        onclick="openPolicyErrorModal(this)">
+
+                        <!-- 정책명 및 외부 정책 ID -->
+                        <td>
+                            <strong class="error-policy-name"
+                                    th:text="${error.policyTitle}">
+                                정책명
+                            </strong>
+
+                            <span class="error-policy-sub"
+                                  th:text="${'정책 ID: ' + error.externalId}">
+                                정책 ID: -
+                            </span>
+                        </td>
+
+                        <!-- API 출처 -->
+                        <td th:text="${error.sourceName}">
+                            API 출처
+                        </td>
+
+                        <!-- 오류 유형 -->
+                        <td>
+                            <span class="error-badge"
+                                  th:classappend="${error.errorTypeCssClass}"
+                                  th:text="${error.errorTypeLabel}">
+                                필수값 누락
+                            </span>
+                        </td>
+
+                        <!-- 오류 내용 -->
+                        <td>
+                            <span class="error-message-preview"
+                                  th:title="${error.errorMessage}"
+                                  th:text="${error.errorMessage}">
+                                오류 내용
+                            </span>
+                        </td>
+
+                        <!-- 처리 상태 -->
+                        <td>
+                            <span class="admin-tag"
+                                  th:classappend="${error.statusCssClass}"
+                                  th:text="${error.statusLabel}">
+                                확인 대기
+                            </span>
+                        </td>
+
+                        <!-- 접수 시간 -->
+                        <td th:text="${error.createdAtText}">
+                            2026.07.21 10:00
+                        </td>
+
+                        <!-- 처리 버튼 -->
+                        <td>
+                            <div class="table-actions">
+
+                                <button type="button"
+                                        class="table-action-button"
+                                        th:data-error-id="${error.errorId}"
+                                        th:data-policy-id="${error.policyId}"
+                                        th:data-external-id="${error.externalId}"
+                                        th:data-policy-title="${error.policyTitle}"
+                                        th:data-source-name="${error.sourceName}"
+                                        th:data-error-type="${error.errorTypeLabel}"
+                                        th:data-error-message="${error.errorMessage}"
+                                        th:data-created-at="${error.createdAtText}"
+                                        th:data-processed-at="${error.processedAtText}"
+                                        th:data-status="${error.status != null
+                                            ? error.status.name()
+                                            : 'WAITING'}"
+                                        th:data-admin-memo="${error.adminMemo}"
+                                        onclick="event.stopPropagation();
+                                            openPolicyErrorModal(this);">
+                                    처리
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 오류 데이터 없음 -->
+                    <tr th:if="${#lists.isEmpty(errors)}">
+                        <td colspan="7"
+                            class="admin-empty">
+                            조건에 해당하는 정책 오류가 없습니다.
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+
+                <!-- 페이지네이션 -->
+                <div class="admin-pagination"
+                     th:if="${errorPage.totalPages > 0}">
+
+                    <!-- 이전 페이지 이동 가능 -->
+                    <a th:if="${!errorPage.first}"
+                       th:href="@{/admin/policy-errors(
+                           page=${errorPage.number - 1},
+                           keyword=${keyword},
+                           errorType=${selectedErrorType},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId}
+                       )}">
+                        ‹
+                    </a>
+
+                    <!-- 이전 페이지 이동 불가 -->
+                    <span th:if="${errorPage.first}"
+                          class="disabled">
+                        ‹
+                    </span>
+
+                    <!-- 페이지 번호 -->
+                    <a th:each="pageNumber :
+                            ${#numbers.sequence(0, errorPage.totalPages - 1)}"
+                       th:text="${pageNumber + 1}"
+                       th:classappend="${pageNumber == errorPage.number
+                            ? 'active'
+                            : ''}"
+                       th:href="@{/admin/policy-errors(
+                           page=${pageNumber},
+                           keyword=${keyword},
+                           errorType=${selectedErrorType},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId}
+                       )}">
+                        1
+                    </a>
+
+                    <!-- 다음 페이지 이동 가능 -->
+                    <a th:if="${!errorPage.last}"
+                       th:href="@{/admin/policy-errors(
+                           page=${errorPage.number + 1},
+                           keyword=${keyword},
+                           errorType=${selectedErrorType},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId}
+                       )}">
+                        ›
+                    </a>
+
+                    <!-- 다음 페이지 이동 불가 -->
+                    <span th:if="${errorPage.last}"
+                          class="disabled">
+                        ›
+                    </span>
+
+                </div>
+            </section>
+
+            <!-- 하단 오류 처리 안내 -->
+            <div class="admin-bottom-grid error-bottom">
+
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>오류 처리 기준</h2>
+
+                        <span class="admin-list-count">
+                            자동 분류 기준
+                        </span>
+                    </div>
+
+                    <div class="error-rule-list">
+
+                        <article class="error-rule-item">
+                            <strong>필수값 누락</strong>
+
+                            <p>
+                                정책명, 기관, 신청 기간, 대상,
+                                공식 URL 중 하나라도 비어 있으면
+                                확인 대상으로 분류합니다.
+                            </p>
+                        </article>
+
+                        <article class="error-rule-item">
+                            <strong>기간 오류</strong>
+
+                            <p>
+                                마감일이 과거이거나 시작일이 마감일보다
+                                늦은 경우 관리자 확인이 필요합니다.
+                            </p>
+                        </article>
+
+                        <article class="error-rule-item">
+                            <strong>URL 오류</strong>
+
+                            <p>
+                                공식 URL 접속 실패 또는 신청 페이지가
+                                존재하지 않는 경우 오류로 처리합니다.
+                            </p>
+                        </article>
+
+                    </div>
+                </section>
+
+                <section class="admin-card">
+
+                    <div class="admin-card-head">
+                        <h2>처리 후 동작</h2>
+
+                        <span class="admin-list-count">
+                            자동화 기준
+                        </span>
+                    </div>
+
+                    <div class="after-process-list">
+
+                        <article class="after-process-item">
+                            <span class="admin-tag ok">
+                                수정 완료
+                            </span>
+
+                            <p>
+                                정책 정보 수정 후 검수 대기 상태로 변경되며,
+                                최근 검수 필요 정책 목록에 표시됩니다.
+                            </p>
+                        </article>
+
+                        <article class="after-process-item">
+                            <span class="admin-tag wait">
+                                재수집
+                            </span>
+
+                            <p>
+                                API 원본 데이터가 수정되었을 가능성이 있으면
+                                해당 정책을 다시 수집합니다.
+                            </p>
+                        </article>
+
+                        <article class="after-process-item">
+                            <span class="admin-tag bad">
+                                제외 처리
+                            </span>
+
+                            <p>
+                                정책이 유효하지 않거나 서비스 대상이 아니면
+                                오류 항목을 제외 처리합니다.
+                            </p>
+                        </article>
+
+                    </div>
+                </section>
+
+            </div>
+
+        </section>
+    </div>
+</main>
+
+<!-- 정책 오류 상세 및 처리 모달 -->
+<div id="policyErrorModal"
+     class="notice-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="policyErrorModalTitle">
+
+    <div class="notice-modal-content policy-error-modal-content">
+
+        <!-- 모달 상단 -->
+        <div class="notice-modal-head">
+
+            <div>
+                <h3 id="policyErrorModalTitle">
+                    정책 오류 상세
+                </h3>
+
+                <p id="modalPolicyTitle">
+                    정책명
+                </p>
+            </div>
+
+            <button type="button"
+                    class="notice-modal-close"
+                    aria-label="정책 오류 처리 창 닫기"
+                    onclick="closePolicyErrorModal()">
+                ×
+            </button>
+
+        </div>
+
+        <!-- 오류 상세 정보 -->
+        <div class="policy-error-detail-grid">
+
+            <div class="policy-error-detail-item">
+                <span>내부 정책 ID</span>
+
+                <strong id="modalPolicyId">
+                    -
+                </strong>
+            </div>
+
+            <div class="policy-error-detail-item">
+                <span>외부 정책 ID</span>
+
+                <strong id="modalExternalId">
+                    -
+                </strong>
+            </div>
+
+            <div class="policy-error-detail-item">
+                <span>오류 유형</span>
+
+                <strong id="modalErrorType">
+                    -
+                </strong>
+            </div>
+
+            <div class="policy-error-detail-item">
+                <span>수집 출처</span>
+
+                <strong id="modalSourceName">
+                    -
+                </strong>
+            </div>
+
+            <div class="policy-error-detail-item">
+                <span>접수 시간</span>
+
+                <strong id="modalCreatedAt">
+                    -
+                </strong>
+            </div>
+
+            <div class="policy-error-detail-item">
+                <span>처리 시간</span>
+
+                <strong id="modalProcessedAt">
+                    -
+                </strong>
+            </div>
+
+        </div>
+
+        <!-- 오류 내용 -->
+        <div class="notice-form-group">
+
+            <label>
+                오류 내용
+            </label>
+
+            <div id="modalErrorMessage"
+                 class="policy-error-message">
+                오류 내용이 없습니다.
+            </div>
+
+        </div>
+
+        <!-- 처리 폼 -->
+        <form method="post"
+              th:action="@{/admin/policy-errors/status}">
+
+            <input type="hidden"
+                   id="modalErrorId"
+                   name="errorId">
+
+            <!-- 처리 상태 -->
+            <div class="notice-form-group">
+
+                <label for="modalStatus">
+                    처리 상태
+                </label>
+
+                <select id="modalStatus"
+                        name="status"
+                        class="admin-select"
+                        required>
+
+                    <option th:each="itemStatus : ${errorStatuses}"
+                            th:value="${itemStatus.name()}"
+                            th:text="${itemStatus.label}">
+                        확인 대기
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- 관리자 메모 -->
+            <div class="notice-form-group">
+
+                <label for="modalAdminMemo">
+                    관리자 메모
+                </label>
+
+                <textarea id="modalAdminMemo"
+                          name="adminMemo"
+                          class="admin-textarea"
+                          rows="5"
+                          maxlength="1000"
+                          placeholder="확인한 오류 위치와 처리 내용을 입력하세요."></textarea>
+
+            </div>
+
+            <!-- 처리 버튼 -->
+            <div class="notice-modal-actions">
+
+                <a id="modalPolicyEditLink"
+                   class="admin-btn"
+                   href="#">
+                    수동 등록/수정
+                </a>
+
+                <button type="button"
+                        class="admin-btn"
+                        onclick="closePolicyErrorModal()">
+                    취소
+                </button>
+
+                <button type="submit"
+                        class="admin-btn primary">
+                    상태 저장
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/common.js}"
+        src="/js/common.js"></script>
+
+<script>
+    function openPolicyErrorModal(target) {
+        const modal =
+            document.getElementById("policyErrorModal");
+
+        const errorIdInput =
+            document.getElementById("modalErrorId");
+
+        const titleElement =
+            document.getElementById("modalPolicyTitle");
+
+        const policyIdElement =
+            document.getElementById("modalPolicyId");
+
+        const externalIdElement =
+            document.getElementById("modalExternalId");
+
+        const errorTypeElement =
+            document.getElementById("modalErrorType");
+
+        const sourceNameElement =
+            document.getElementById("modalSourceName");
+
+        const createdAtElement =
+            document.getElementById("modalCreatedAt");
+
+        const processedAtElement =
+            document.getElementById("modalProcessedAt");
+
+        const errorMessageElement =
+            document.getElementById("modalErrorMessage");
+
+        const statusSelect =
+            document.getElementById("modalStatus");
+
+        const memoTextarea =
+            document.getElementById("modalAdminMemo");
+
+        const policyEditLink =
+            document.getElementById("modalPolicyEditLink");
+
+        if (!modal
+            || !errorIdInput
+            || !titleElement
+            || !policyIdElement
+            || !externalIdElement
+            || !errorTypeElement
+            || !sourceNameElement
+            || !createdAtElement
+            || !processedAtElement
+            || !errorMessageElement
+            || !statusSelect
+            || !memoTextarea
+            || !policyEditLink) {
+
+            return;
+        }
+
+        const errorId =
+            target.dataset.errorId;
+
+        const policyId =
+            target.dataset.policyId;
+
+        const externalId =
+            target.dataset.externalId;
+
+        const policyTitle =
+            target.dataset.policyTitle;
+
+        const sourceName =
+            target.dataset.sourceName;
+
+        const errorType =
+            target.dataset.errorType;
+
+        const errorMessage =
+            target.dataset.errorMessage;
+
+        const createdAt =
+            target.dataset.createdAt;
+
+        const processedAt =
+            target.dataset.processedAt;
+
+        const status =
+            target.dataset.status;
+
+        const adminMemo =
+            target.dataset.adminMemo;
+
+        errorIdInput.value =
+            errorId || "";
+
+        titleElement.textContent =
+            policyTitle || "정책명 없음";
+
+        policyIdElement.textContent =
+            policyId || "-";
+
+        externalIdElement.textContent =
+            externalId || "-";
+
+        errorTypeElement.textContent =
+            errorType || "-";
+
+        sourceNameElement.textContent =
+            sourceName || "-";
+
+        createdAtElement.textContent =
+            createdAt || "-";
+
+        processedAtElement.textContent =
+            processedAt || "-";
+
+        errorMessageElement.textContent =
+            errorMessage || "오류 내용이 없습니다.";
+
+        statusSelect.value =
+            status || "WAITING";
+
+        memoTextarea.value =
+            adminMemo && adminMemo !== "null"
+                ? adminMemo
+                : "";
+
+        /*
+         * 기존 정책과 연결된 오류라면
+         * 해당 정책 수정 페이지로 이동한다.
+         */
+        if (policyId
+            && policyId !== "null"
+            && policyId !== "") {
+
+            policyEditLink.href =
+                "/admin/policies/"
+                + encodeURIComponent(policyId)
+                + "/edit";
+
+            policyEditLink.textContent =
+                "수동 등록/수정";
+
+        } if (policyId
+            && policyId !== "null"
+            && policyId !== "") {
+
+            policyEditLink.href =
+                "/admin/policies/"
+                + encodeURIComponent(policyId)
+                + "/edit";
+
+            policyEditLink.textContent =
+                "전체 수정";
+
+            policyEditLink.style.display =
+                "inline-flex";
+
+        } else {
+            policyEditLink.removeAttribute("href");
+            policyEditLink.style.display =
+                "none";
+        }
+
+        modal.classList.add("open");
+
+        document.body.style.overflow =
+            "hidden";
+    }
+
+    function closePolicyErrorModal() {
+        const modal =
+            document.getElementById("policyErrorModal");
+
+        if (modal) {
+            modal.classList.remove("open");
+        }
+
+        document.body.style.overflow =
+            "";
+    }
+
+    window.addEventListener(
+        "click",
+        function (event) {
+            const modal =
+                document.getElementById("policyErrorModal");
+
+            if (modal && event.target === modal) {
+                closePolicyErrorModal();
+            }
+        }
+    );
+
+    window.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key === "Escape") {
+                closePolicyErrorModal();
+            }
+        }
+    );
+</script>
+
+</body>
+</html>

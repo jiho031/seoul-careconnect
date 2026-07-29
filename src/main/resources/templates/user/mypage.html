@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>마이페이지 | 서울 케어넥트</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}"
+          href="/css/common.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/mypage.css}"
+          href="/css/mypage.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+
+    <style>
+        .info-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 30, 50, 0.45);
+        }
+
+        .info-modal.is-open {
+            display: flex;
+        }
+
+        .info-modal-box {
+            width: min(360px, 100%);
+            padding: 34px 28px 28px;
+            border-radius: 22px;
+            background: #ffffff;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.25);
+        }
+
+        .info-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .info-modal-icon.success {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .info-modal-icon.notice {
+            background: #fdeeee;
+            color: #d64545;
+        }
+
+        .info-modal-box h3 {
+            margin: 0 0 8px;
+            color: #071947;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .info-modal-box p {
+            margin: 0 0 22px;
+            color: #65758e;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .info-modal-box button {
+            width: 100%;
+            padding: 13px;
+            border: 0;
+            border-radius: 12px;
+            background: #164ce0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .info-modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-modal-actions button {
+            flex: 1;
+        }
+
+        .info-modal-actions .info-modal-cancel {
+            background: #eef1f7;
+            color: #4a5a75;
+        }
+
+        .info-modal-actions .info-modal-danger {
+            background: #d64545;
+        }
+
+        /* 신고 내역 카드 상태 배지 */
+        .policy-card-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .policy-card-status.received {
+            background: #eef1f7;
+            color: #4a5a75;
+        }
+
+        .policy-card-status.in-review {
+            background: #fff4e5;
+            color: #b26b00;
+        }
+
+        .policy-card-status.completed {
+            background: #e6f7f5;
+            color: #0c817e;
+        }
+
+        .report-card-meta {
+            margin: 4px 0 0;
+            color: #6b7b99;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .report-card-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .report-card-photos img {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid #dce8f1;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="mypage-page">
+
+    <!-- 상단 안내 영역 -->
+    <section class="mypage-hero">
+        <div class="mypage-hero-text">
+            <span class="mypage-eyebrow">내 정보 관리</span>
+
+            <h1>마이페이지</h1>
+
+            <p>
+                회원정보와 관심 지역, 화면 표시 방식을
+                한 곳에서 관리하세요.
+            </p>
+        </div>
+
+        <div class="hero-status">
+            <span>현재 화면 모드</span>
+
+            <strong th:text="${user.uiMode == 'LARGE_TEXT'}
+                    ? '고령친화 모드'
+                    : '일반 모드'">
+                일반 모드
+            </strong>
+        </div>
+    </section>
+
+    <section class="mypage-layout">
+
+        <!-- 왼쪽 회원 요약 -->
+        <aside class="profile-summary-card">
+
+            <div class="profile-avatar"
+                 th:text="${user.initial}">
+                서
+            </div>
+
+            <div class="profile-summary-title">
+                <h2 th:text="${user.name}">
+                    사용자
+                </h2>
+
+                <span class="provider-badge"
+                      th:classappend="${#strings.toLowerCase(user.provider)}"
+                      th:text="${user.providerLabel}">
+                    이메일 가입
+                </span>
+            </div>
+
+            <dl class="profile-summary-list">
+                <div>
+                    <dt>이메일</dt>
+                    <dd th:text="${user.email}">
+                        user@example.com
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>관심 지역</dt>
+                    <dd th:text="${user.district != null
+                            ? user.district
+                            : '미설정'}">
+                        미설정
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>연령대</dt>
+                    <dd th:text="${user.ageGroup != null
+                            ? user.ageGroup
+                            : '미설정'}">
+                        미설정
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>가입일</dt>
+                    <dd th:text="${user.createdAtText}">
+                        2026.07.10
+                    </dd>
+                </div>
+            </dl>
+
+            <nav class="mypage-side-nav"
+                 aria-label="마이페이지 메뉴">
+
+                <a href="#profile-edit" class="active">
+                    회원정보 수정
+                </a>
+
+                <a href="#favorites">
+                    관심 정책
+                </a>
+
+                <a href="#reports">
+                    신고 내역
+                </a>
+
+                <a href="#accessibility-setting">
+                    화면 설정
+                </a>
+
+                <a href="#account-security">
+                    계정 보안
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 오른쪽 콘텐츠 -->
+        <div class="mypage-content">
+
+            <!-- 회원정보 수정 -->
+            <section class="mypage-card"
+                     id="profile-edit">
+
+                <div class="card-heading">
+                    <div>
+                        <span>PROFILE</span>
+
+                        <h2>회원정보 수정</h2>
+
+                        <p>
+                            정책 추천과 서비스 이용에 사용할
+                            기본 정보를 관리합니다.
+                        </p>
+                    </div>
+
+                    <span class="required-guide">
+                        <b>*</b> 필수 입력
+                    </span>
+                </div>
+
+                <div class="result-message success"
+                     th:if="${profileSuccess}"
+                     th:text="${profileSuccess}">
+                    회원정보가 저장되었습니다.
+                </div>
+
+                <form class="mypage-form"
+                      th:action="@{/mypage/profile}"
+                      th:object="${profileRequest}"
+                      method="post">
+
+                    <div class="form-alert error"
+                         th:if="${#fields.hasGlobalErrors()}">
+
+                        <p th:each="error : ${#fields.globalErrors()}"
+                           th:text="${error}">
+                            입력값을 확인해주세요.
+                        </p>
+                    </div>
+
+                    <!-- 계정 정보 -->
+                    <section class="form-section readonly-section">
+                        <div class="form-section-heading">
+                            <div>
+                                <h3>계정 정보</h3>
+                                <p>
+                                    로그인과 계정 식별에 사용되는 정보입니다.
+                                </p>
+                            </div>
+
+                            <span class="section-badge">
+                                수정 불가
+                            </span>
+                        </div>
+
+                        <div class="form-grid two-col">
+
+                            <div class="mypage-field">
+                                <label for="email">
+                                    이메일
+                                </label>
+
+                                <input id="email"
+                                       type="email"
+                                       th:value="${user.email}"
+                                       readonly>
+
+                                <small>
+                                    로그인 이메일은 변경할 수 없습니다.
+                                </small>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="provider">
+                                    가입 방식
+                                </label>
+
+                                <input id="provider"
+                                       type="text"
+                                       th:value="${user.providerLabel}"
+                                       readonly>
+
+                                <small>
+                                    최초 가입에 사용한 로그인 방식입니다.
+                                </small>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 기본 정보 -->
+                    <section class="form-section">
+                        <div class="form-section-heading">
+                            <div>
+                                <h3>기본 정보</h3>
+                                <p>
+                                    이름, 연락처와 정책 추천 기준을 수정합니다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 이름 / 연락처 -->
+                        <div class="form-grid two-col">
+
+                            <div class="mypage-field">
+                                <label for="name">
+                                    이름 <em>*</em>
+                                </label>
+
+                                <input id="name"
+                                       type="text"
+                                       th:field="*{name}"
+                                       maxlength="50"
+                                       placeholder="이름을 입력하세요">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('name')}"
+                                       th:errors="*{name}">
+                                    이름 오류
+                                </small>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="phone">
+                                    연락처
+                                </label>
+
+                                <input id="phone"
+                                       type="tel"
+                                       th:field="*{phone}"
+                                       placeholder="010-0000-0000">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('phone')}"
+                                       th:errors="*{phone}">
+                                    연락처 오류
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- 출생연도 / 연령대 -->
+                        <div class="form-grid two-col">
+
+                            <div class="mypage-field">
+                                <label for="birthYear">
+                                    출생연도 <em>*</em>
+                                </label>
+
+                                <input id="birthYear"
+                                       type="text"
+                                       inputmode="numeric"
+                                       maxlength="4"
+                                       th:field="*{birthYear}"
+                                       placeholder="예: 1972"
+                                       oninput="updateAgeGroup()">
+
+                                <small>
+                                    숫자 4자리로 입력해주세요.
+                                </small>
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('birthYear')}"
+                                       th:errors="*{birthYear}">
+                                    출생연도 오류
+                                </small>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="ageGroup">
+                                    연령대
+                                </label>
+
+                                <input id="ageGroup"
+                                       type="text"
+                                       th:field="*{ageGroup}"
+                                       readonly>
+
+                                <small>
+                                    출생연도를 기준으로 자동 계산됩니다.
+                                </small>
+                            </div>
+
+                        </div>
+
+                        <!-- 서비스 지역 / 관심 지역 -->
+                        <div class="form-grid two-col">
+
+                            <div class="mypage-field">
+                                <label for="region">
+                                    서비스 지역
+                                </label>
+
+                                <input id="region"
+                                       type="text"
+                                       th:value="${user.region != null
+                                               ? user.region
+                                               : '서울'}"
+                                       readonly>
+
+                                <small>
+                                    현재 서울시 정책을 제공합니다.
+                                </small>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="district">
+                                    관심 지역 <em>*</em>
+                                </label>
+
+                                <select id="district"
+                                        th:field="*{district}">
+
+                                    <option value="">
+                                        자치구를 선택하세요
+                                    </option>
+
+                                    <option value="강남구">강남구</option>
+                                    <option value="강동구">강동구</option>
+                                    <option value="강북구">강북구</option>
+                                    <option value="강서구">강서구</option>
+                                    <option value="관악구">관악구</option>
+                                    <option value="광진구">광진구</option>
+                                    <option value="구로구">구로구</option>
+                                    <option value="금천구">금천구</option>
+                                    <option value="노원구">노원구</option>
+                                    <option value="도봉구">도봉구</option>
+                                    <option value="동대문구">동대문구</option>
+                                    <option value="동작구">동작구</option>
+                                    <option value="마포구">마포구</option>
+                                    <option value="서대문구">서대문구</option>
+                                    <option value="서초구">서초구</option>
+                                    <option value="성동구">성동구</option>
+                                    <option value="성북구">성북구</option>
+                                    <option value="송파구">송파구</option>
+                                    <option value="양천구">양천구</option>
+                                    <option value="영등포구">영등포구</option>
+                                    <option value="용산구">용산구</option>
+                                    <option value="은평구">은평구</option>
+                                    <option value="종로구">종로구</option>
+                                    <option value="중구">중구</option>
+                                    <option value="중랑구">중랑구</option>
+                                </select>
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('district')}"
+                                       th:errors="*{district}">
+                                    관심 지역 오류
+                                </small>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 화면 표시 방식 -->
+                    <fieldset class="ui-mode-section"
+                              id="accessibility-setting">
+
+                        <legend>
+                            화면 표시 방식 <em>*</em>
+                        </legend>
+
+                        <p>
+                            글씨 크기, 버튼 간격과 화면 배치를 사용자에게 맞게
+                            설정할 수 있습니다.
+                        </p>
+
+                        <div class="ui-mode-grid">
+
+                            <label class="ui-mode-option">
+                                <input type="radio"
+                                       th:field="*{uiMode}"
+                                       value="DEFAULT">
+
+                                <span class="mode-check"></span>
+
+                                <strong>일반 모드</strong>
+
+                                <small>
+                                    기본 글씨 크기와 일반 간격으로 표시합니다.
+                                </small>
+                            </label>
+
+                            <label class="ui-mode-option">
+                                <input type="radio"
+                                       th:field="*{uiMode}"
+                                       value="LARGE_TEXT">
+
+                                <span class="mode-check"></span>
+
+                                <strong>고령친화 모드</strong>
+
+                                <small>
+                                    큰 글씨와 넓은 버튼을 사용하고 복잡한 화면을 단순하게 표시합니다.
+                                </small>
+                            </label>
+                        </div>
+
+                        <small class="field-error"
+                               th:if="${#fields.hasErrors('uiMode')}"
+                               th:errors="*{uiMode}">
+                            화면 모드 오류
+                        </small>
+                    </fieldset>
+
+                    <div class="form-actions">
+                        <a th:href="@{/}"
+                           href="/"
+                           class="button-secondary">
+                            취소
+                        </a>
+
+                        <button type="submit"
+                                class="button-primary">
+                            변경사항 저장
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="mypage-card" id="favorites">
+
+                <div class="card-heading compact">
+                    <div>
+                        <span>FAVORITES</span>
+                        <h2>관심 정책</h2>
+                        <p>관심 있는 정책을 모아 확인할 수 있습니다.</p>
+                    </div>
+
+                    <a th:href="@{/favorites}">
+                        전체보기 →
+                    </a>
+                </div>
+
+                <div
+                        id="favorites-list"
+                        class="policy-card-list">
+                </div>
+
+                <!-- 관심 정책 페이지 버튼 -->
+                <div id="favoritePagination"
+                     class="favorite-pagination"
+                     aria-label="관심 정책 페이지">
+                </div>
+
+                <p
+                        id="emptyFavoriteMessage"
+                        style="display:none;
+               color:#6b7b99;
+               font-weight:700;
+               padding:20px 0;">
+
+                    아직 관심 정책이 없습니다.
+                </p>
+
+            </section>
+
+            <!-- 관심 정책 간단 미리보기 -->
+            <aside class="popular-policy-preview"
+                   id="mypageFavoritePreview"
+                   role="tooltip"
+                   aria-hidden="true">
+
+                <div class="popular-policy-preview-head">
+
+        <span class="popular-policy-preview-category"
+              data-preview-field="category">
+            분야
+        </span>
+
+                    <span class="popular-policy-preview-status"
+                          data-preview-field="status">
+            신청 상태
+        </span>
+
+                </div>
+
+                <strong class="popular-policy-preview-title"
+                        data-preview-field="title">
+                    정책명
+                </strong>
+
+                <dl class="popular-policy-preview-info">
+
+                    <div data-preview-row="agency">
+                        <dt>기관</dt>
+                        <dd data-preview-field="agency"></dd>
+                    </div>
+
+                    <div data-preview-row="region">
+                        <dt>지역</dt>
+                        <dd data-preview-field="region"></dd>
+                    </div>
+
+                    <div data-preview-row="target">
+                        <dt>대상</dt>
+                        <dd data-preview-field="target"></dd>
+                    </div>
+
+                    <div data-preview-row="period">
+                        <dt>신청 기간</dt>
+                        <dd data-preview-field="period"></dd>
+                    </div>
+
+                </dl>
+
+                <p class="popular-policy-preview-guide">
+                    클릭하면 정책 상세 내용을 확인할 수 있습니다.
+                </p>
+
+            </aside>
+
+            <!-- 신고 내역 -->
+            <section class="mypage-card" id="reports">
+
+                <div class="card-heading compact">
+                    <div>
+                        <span>REPORTS</span>
+                        <h2>오류·누락 신고 내역</h2>
+                        <p>내가 접수한 오류·누락 신고를 확인할 수 있습니다.</p>
+                    </div>
+
+                    <a th:href="@{/reports}">
+                        신고하러 가기 →
+                    </a>
+                </div>
+
+                <div
+                        id="reports-list"
+                        class="policy-card-list">
+                </div>
+
+                <p
+                        id="emptyReportMessage"
+                        style="display:none;
+               color:#6b7b99;
+               font-weight:700;
+               padding:20px 0;">
+
+                    아직 접수한 신고가 없습니다.
+                </p>
+
+            </section>
+
+            <!-- 계정 보안 -->
+            <section class="mypage-card security-card"
+                     id="account-security">
+
+                <div class="card-heading compact">
+                    <div>
+                        <span>SECURITY</span>
+
+                        <h2>계정 보안</h2>
+
+                        <p>
+                            비밀번호 변경과 회원 탈퇴를 관리합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="result-message success"
+                     th:if="${passwordSuccess}"
+                     th:text="${passwordSuccess}">
+                    비밀번호가 변경되었습니다.
+                </div>
+
+                <div class="security-grid">
+
+                    <!-- 일반 회원 비밀번호 변경 -->
+                    <details class="security-item"
+                             th:if="${user.localAccount}">
+
+                        <summary>
+                            <span class="security-icon">
+                                PW
+                            </span>
+
+                            <span>
+                                <strong>비밀번호 변경</strong>
+
+                                <small>
+                                    현재 비밀번호 확인 후 변경합니다.
+                                </small>
+                            </span>
+
+                            <b>열기</b>
+                        </summary>
+
+                        <form class="security-form"
+                              th:action="@{/mypage/password}"
+                              th:object="${passwordRequest}"
+                              method="post">
+
+                            <div class="form-alert error"
+                                 th:if="${#fields.hasGlobalErrors()}">
+
+                                <p th:each="error : ${#fields.globalErrors()}"
+                                   th:text="${error}">
+                                    비밀번호 오류
+                                </p>
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="currentPassword">
+                                    현재 비밀번호
+                                </label>
+
+                                <input id="currentPassword"
+                                       type="password"
+                                       th:field="*{currentPassword}"
+                                       autocomplete="current-password">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('currentPassword')}"
+                                       th:errors="*{currentPassword}">
+                                    비밀번호 오류
+                                </small>
+                            </div>
+
+                            <div class="form-grid two-col">
+
+                                <div class="mypage-field">
+                                    <label for="newPassword">
+                                        새 비밀번호
+                                    </label>
+
+                                    <input id="newPassword"
+                                           type="password"
+                                           th:field="*{newPassword}"
+                                           autocomplete="new-password"
+                                           placeholder="8자 이상 입력">
+
+                                    <small class="field-error"
+                                           th:if="${#fields.hasErrors('newPassword')}"
+                                           th:errors="*{newPassword}">
+                                        새 비밀번호 오류
+                                    </small>
+                                </div>
+
+                                <div class="mypage-field">
+                                    <label for="newPasswordConfirm">
+                                        새 비밀번호 확인
+                                    </label>
+
+                                    <input id="newPasswordConfirm"
+                                           type="password"
+                                           th:field="*{newPasswordConfirm}"
+                                           autocomplete="new-password">
+
+                                    <small class="field-error"
+                                           th:if="${#fields.hasErrors('newPasswordConfirm')}"
+                                           th:errors="*{newPasswordConfirm}">
+                                        비밀번호 확인 오류
+                                    </small>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                    class="button-primary small-button">
+                                비밀번호 변경
+                            </button>
+                        </form>
+                    </details>
+
+                    <!-- 소셜 회원 안내 -->
+                    <div class="security-item social-notice"
+                         th:unless="${user.localAccount}">
+
+                        <div class="social-notice-inner">
+                            <span class="security-icon">
+                                SNS
+                            </span>
+
+                            <span>
+                                <strong>소셜 로그인 계정</strong>
+
+                                <small th:text="|${user.providerLabel} 계정의 비밀번호는 해당 서비스에서 관리합니다.|">
+                                    소셜 계정에서 비밀번호를 관리합니다.
+                                </small>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 회원 탈퇴 -->
+                    <details class="security-item danger-item">
+
+                        <summary>
+                            <span class="security-icon danger">
+                                !
+                            </span>
+
+                            <span>
+                                <strong>회원 탈퇴</strong>
+
+                                <small>
+                                    계정을 비활성화하고 서비스 이용을 중단합니다.
+                                </small>
+                            </span>
+
+                            <b>열기</b>
+                        </summary>
+
+                        <form class="security-form"
+                              id="withdrawForm"
+                              th:action="@{/mypage/withdraw}"
+                              th:object="${withdrawRequest}"
+                              method="post">
+
+                            <div class="form-alert error"
+                                 th:if="${#fields.hasGlobalErrors()}">
+
+                                <p th:each="error : ${#fields.globalErrors()}"
+                                   th:text="${error}">
+                                    회원 탈퇴 오류
+                                </p>
+                            </div>
+
+                            <div class="withdraw-warning">
+                                탈퇴 후 계정은 즉시 비활성화되며
+                                로그인이 제한됩니다.
+                            </div>
+
+                            <div class="mypage-field"
+                                 th:if="${user.localAccount}">
+
+                                <label for="withdrawPassword">
+                                    현재 비밀번호
+                                </label>
+
+                                <input id="withdrawPassword"
+                                       type="password"
+                                       th:field="*{currentPassword}"
+                                       autocomplete="current-password">
+                            </div>
+
+                            <div class="mypage-field">
+                                <label for="confirmText">
+                                    확인 문구
+                                    <span>‘탈퇴합니다’ 입력</span>
+                                </label>
+
+                                <input id="confirmText"
+                                       type="text"
+                                       th:field="*{confirmText}"
+                                       placeholder="탈퇴합니다">
+
+                                <small class="field-error"
+                                       th:if="${#fields.hasErrors('confirmText')}"
+                                       th:errors="*{confirmText}">
+                                    확인 문구 오류
+                                </small>
+                            </div>
+
+                            <button type="submit"
+                                    class="button-danger">
+                                회원 탈퇴
+                            </button>
+                        </form>
+                    </details>
+                </div>
+            </section>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- 관심 정책 삭제 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
+<div class="info-modal" id="favoriteConfirmModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon notice">!</div>
+        <h3>관심 정책에서 삭제하시겠습니까?</h3>
+        <p>삭제하면 목록에서 바로 사라지며, 다시 보려면 관심 등록을 새로 해야 해요.</p>
+        <div class="info-modal-actions">
+            <button type="button" id="favoriteConfirmCancelButton" class="info-modal-cancel">취소</button>
+            <button type="button" id="favoriteConfirmOkButton" class="info-modal-danger">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 회원 탈퇴 확인 모달 (신고/목록 페이지와 동일한 디자인) -->
+<div class="info-modal" id="withdrawConfirmModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon notice">!</div>
+        <h3>정말 회원 탈퇴를 진행하시겠습니까?</h3>
+        <p>탈퇴 후 계정은 즉시 비활성화되며 로그인이 제한됩니다.</p>
+        <div class="info-modal-actions">
+            <button type="button" id="withdrawConfirmCancelButton" class="info-modal-cancel">취소</button>
+            <button type="button" id="withdrawConfirmOkButton" class="info-modal-danger">확인</button>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<script th:inline="javascript">
+
+    const currentUserId = /*[[${user.userId}]]*/ 1;
+
+    let pendingRemovePolicyId = null;
+    let pendingRemoveButton = null;
+
+    let favoritePreviewData = new Map();
+    let favoritePreviewTimer = null;
+
+    let favoriteItems = [];
+    let currentFavoritePage = 1;
+
+    const FAVORITE_PAGE_SIZE = 5;
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ===========================
+        // 마이페이지 사이드 메뉴
+        // ===========================
+        const menuLinks = document.querySelectorAll(".mypage-side-nav a");
+
+        menuLinks.forEach(link => {
+
+            link.addEventListener("click", function (e) {
+
+                e.preventDefault();
+
+                // active 변경
+                menuLinks.forEach(item => item.classList.remove("active"));
+                this.classList.add("active");
+
+                // 해당 위치로 이동
+                const target = document.querySelector(this.getAttribute("href"));
+
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 100,
+                        behavior: "smooth"
+                    });
+                }
+
+            });
+
+        });
+
+        // 관심 정책 불러오기
+        loadFavorites();
+
+        // 관심 정책 카드 클릭 / hover 미리보기
+        initMypageFavoriteInteractions();
+
+        // 신고 내역 불러오기
+        loadReports();
+
+        // ===========================
+        // 관심 정책 삭제 확인 모달
+        // ===========================
+        const confirmModal = document.getElementById("favoriteConfirmModal");
+        const cancelButton = document.getElementById("favoriteConfirmCancelButton");
+        const okButton = document.getElementById("favoriteConfirmOkButton");
+
+        cancelButton.addEventListener("click", closeFavoriteConfirmModal);
+
+        confirmModal.addEventListener("click", function (event) {
+            if (event.target === confirmModal) {
+                closeFavoriteConfirmModal();
+            }
+        });
+
+        okButton.addEventListener("click", function () {
+            if (!pendingRemovePolicyId) {
+                closeFavoriteConfirmModal();
+                return;
+            }
+
+            const policyId = pendingRemovePolicyId;
+            const btn = pendingRemoveButton;
+
+            fetch(`/api/users/${currentUserId}/favorites/${policyId}`, {
+                method: "DELETE"
+            }).then(res => {
+                if (res.ok && btn) {
+
+                    favoriteItems =
+                        favoriteItems.filter(
+                            item =>
+                                String(item.policyId) !==
+                                String(policyId)
+                        );
+
+                    favoritePreviewData.delete(
+                        String(policyId)
+                    );
+
+
+                    if (favoriteItems.length === 0) {
+
+                        document.getElementById(
+                            "favorites-list"
+                        ).innerHTML = "";
+
+                        document.getElementById(
+                            "favoritePagination"
+                        ).innerHTML = "";
+
+                        document.getElementById(
+                            "emptyFavoriteMessage"
+                        ).style.display = "block";
+
+                    } else {
+
+                        document.getElementById(
+                            "emptyFavoriteMessage"
+                        ).style.display = "none";
+
+                        renderFavoritePage();
+                    }
+                }
+
+                closeFavoriteConfirmModal();
+            });
+        });
+
+        // ===========================
+        // 회원 탈퇴 확인 모달
+        // ===========================
+        const withdrawForm = document.getElementById("withdrawForm");
+        const withdrawConfirmModal = document.getElementById("withdrawConfirmModal");
+        const withdrawCancelButton = document.getElementById("withdrawConfirmCancelButton");
+        const withdrawOkButton = document.getElementById("withdrawConfirmOkButton");
+
+        function openWithdrawConfirmModal() {
+            withdrawConfirmModal.classList.add("is-open");
+            withdrawConfirmModal.setAttribute("aria-hidden", "false");
+        }
+
+        function closeWithdrawConfirmModal() {
+            withdrawConfirmModal.classList.remove("is-open");
+            withdrawConfirmModal.setAttribute("aria-hidden", "true");
+        }
+
+        if (withdrawForm) {
+            withdrawForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                openWithdrawConfirmModal();
+            });
+        }
+
+        withdrawCancelButton.addEventListener("click", closeWithdrawConfirmModal);
+
+        withdrawConfirmModal.addEventListener("click", function (event) {
+            if (event.target === withdrawConfirmModal) {
+                closeWithdrawConfirmModal();
+            }
+        });
+
+        withdrawOkButton.addEventListener("click", function () {
+            closeWithdrawConfirmModal();
+            // form.submit()은 submit 이벤트 리스너를 다시 거치지 않으므로
+            // 여기서 안전하게 실제 제출을 진행한다.
+            withdrawForm.submit();
+        });
+
+    });
+
+    function openFavoriteConfirmModal() {
+        const modal = document.getElementById("favoriteConfirmModal");
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeFavoriteConfirmModal() {
+        const modal = document.getElementById("favoriteConfirmModal");
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        pendingRemovePolicyId = null;
+        pendingRemoveButton = null;
+    }
+
+    // ===========================
+    // 관심 정책 조회
+    // ===========================
+    async function loadFavorites() {
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/users/${currentUserId}/favorites`
+                );
+
+            const data =
+                await response.json();
+
+
+            favoriteItems = data;
+            currentFavoritePage = 1;
+
+
+            favoritePreviewData = new Map(
+                data.map(item => [
+                    String(item.policyId),
+                    item
+                ])
+            );
+
+
+            const container =
+                document.getElementById(
+                    "favorites-list"
+                );
+
+            const empty =
+                document.getElementById(
+                    "emptyFavoriteMessage"
+                );
+
+            const pagination =
+                document.getElementById(
+                    "favoritePagination"
+                );
+
+
+            if (data.length === 0) {
+
+                container.innerHTML = "";
+                pagination.innerHTML = "";
+
+                empty.style.display =
+                    "block";
+
+                return;
+            }
+
+
+            empty.style.display =
+                "none";
+
+
+            renderFavoritePage();
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+    }
+
+    // ===========================
+    // 관심 정책 페이지 출력
+    // ===========================
+    function renderFavoritePage() {
+
+        const container =
+            document.getElementById(
+                "favorites-list"
+            );
+
+
+        const totalPages =
+            Math.ceil(
+                favoriteItems.length /
+                FAVORITE_PAGE_SIZE
+            );
+
+
+        if (
+            totalPages > 0 &&
+            currentFavoritePage > totalPages
+        ) {
+
+            currentFavoritePage =
+                totalPages;
+        }
+
+
+        const start =
+            (currentFavoritePage - 1) *
+            FAVORITE_PAGE_SIZE;
+
+        const end =
+            start + FAVORITE_PAGE_SIZE;
+
+
+        const pageItems =
+            favoriteItems.slice(
+                start,
+                end
+            );
+
+
+        container.innerHTML =
+            pageItems.map(item => {
+
+                const deleted =
+                    item.title ===
+                    "삭제된 정책입니다";
+
+                return `
+
+<div class="policy-card ${deleted ? "is-deleted" : ""}"
+     data-policy-id="${item.policyId}"
+     ${deleted ? "" : 'role="link" tabindex="0"'}>
+
+    <div class="policy-card-body">
+
+        <span class="policy-card-category">
+            ${item.category}
+        </span>
+
+        <h4 class="policy-card-title">
+            ${item.title}
+        </h4>
+
+    </div>
+
+    <button
+        type="button"
+        class="policy-card-remove"
+        onclick="removeFavorite(${item.policyId}, this)">
+        삭제
+    </button>
+
+</div>
+
+`;
+
+            }).join("");
+
+
+        renderFavoritePagination();
+    }
+
+    // ===========================
+    // 관심 정책 페이징
+    // ===========================
+    function renderFavoritePagination() {
+
+        const pagination =
+            document.getElementById(
+                "favoritePagination"
+            );
+
+
+        const totalPages =
+            Math.ceil(
+                favoriteItems.length /
+                FAVORITE_PAGE_SIZE
+            );
+
+
+        if (totalPages <= 1) {
+
+            pagination.innerHTML = "";
+            pagination.style.display = "none";
+
+            return;
+        }
+
+
+        pagination.style.display =
+            "flex";
+
+
+        let html = "";
+
+
+        // 이전
+        html += `
+        <button
+            type="button"
+            ${currentFavoritePage === 1 ? "disabled" : ""}
+            onclick="changeFavoritePage(${currentFavoritePage - 1})">
+            이전
+        </button>
+    `;
+
+
+        // 페이지 번호
+        for (
+            let page = 1;
+            page <= totalPages;
+            page++
+        ) {
+
+            html += `
+            <button
+                type="button"
+                class="${page === currentFavoritePage ? "active" : ""}"
+                ${page === currentFavoritePage
+                ? 'aria-current="page"'
+                : ""}
+                onclick="changeFavoritePage(${page})">
+                ${page}
+            </button>
+        `;
+        }
+
+
+        // 다음
+        html += `
+        <button
+            type="button"
+            ${currentFavoritePage === totalPages ? "disabled" : ""}
+            onclick="changeFavoritePage(${currentFavoritePage + 1})">
+            다음
+        </button>
+    `;
+
+
+        pagination.innerHTML =
+            html;
+    }
+
+    function changeFavoritePage(page) {
+
+        const totalPages =
+            Math.ceil(
+                favoriteItems.length /
+                FAVORITE_PAGE_SIZE
+            );
+
+        if (
+            page < 1 ||
+            page > totalPages ||
+            page === currentFavoritePage
+        ) {
+            return;
+        }
+
+        hideMypageFavoritePreview();
+
+        currentFavoritePage = page;
+
+        renderFavoritePage();
+    }
+
+    // ===========================
+    // 관심 정책 카드 클릭 / hover 미리보기
+    // ===========================
+    function initMypageFavoriteInteractions() {
+
+        const container =
+            document.getElementById("favorites-list");
+
+        const preview =
+            document.getElementById("mypageFavoritePreview");
+
+        if (!container || !preview) {
+            return;
+        }
+
+        const canHover = window.matchMedia(
+            "(hover: hover) and (pointer: fine)"
+        ).matches;
+
+
+        // 카드 클릭 → 정책 상세페이지 이동
+        container.addEventListener("click", function (event) {
+
+            // 삭제 버튼을 눌렀다면 상세페이지로 이동하지 않는다.
+            if (event.target.closest(".policy-card-remove")) {
+                return;
+            }
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (
+                !card ||
+                card.classList.contains("is-deleted")
+            ) {
+                return;
+            }
+
+            const policyId =
+                card.dataset.policyId;
+
+            if (!policyId) {
+                return;
+            }
+
+            window.location.href =
+                `/policies/${policyId}`;
+        });
+
+
+        // 키보드 Enter로도 상세 이동
+        container.addEventListener("keydown", function (event) {
+
+            if (
+                event.key !== "Enter" &&
+                event.key !== " "
+            ) {
+                return;
+            }
+
+            if (event.target.closest(".policy-card-remove")) {
+                return;
+            }
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (
+                !card ||
+                card.classList.contains("is-deleted")
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const policyId =
+                card.dataset.policyId;
+
+            if (policyId) {
+                window.location.href =
+                    `/policies/${policyId}`;
+            }
+        });
+
+
+        // 터치 기기에서는 hover 기능 사용 안 함
+        if (!canHover) {
+            return;
+        }
+
+
+        // 카드에 마우스가 들어왔을 때
+        container.addEventListener("mouseover", function (event) {
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (
+                !card ||
+                card.classList.contains("is-deleted")
+            ) {
+                return;
+            }
+
+            // 카드 내부 요소 사이를 이동하는 경우는 무시
+            if (
+                event.relatedTarget &&
+                card.contains(event.relatedTarget)
+            ) {
+                return;
+            }
+
+            // 삭제 버튼 위에서는 미리보기 표시 안 함
+            if (event.target.closest(".policy-card-remove")) {
+                return;
+            }
+
+            clearTimeout(favoritePreviewTimer);
+
+            favoritePreviewTimer =
+                window.setTimeout(() => {
+
+                    showMypageFavoritePreview(card);
+
+                }, 500);
+        });
+
+
+        // 카드에서 마우스가 빠져나갔을 때
+        container.addEventListener("mouseout", function (event) {
+
+            const card =
+                event.target.closest(".policy-card");
+
+            if (!card) {
+                return;
+            }
+
+            if (
+                event.relatedTarget &&
+                card.contains(event.relatedTarget)
+            ) {
+                return;
+            }
+
+            hideMypageFavoritePreview();
+        });
+
+
+        window.addEventListener(
+            "scroll",
+            hideMypageFavoritePreview,
+            { passive: true }
+        );
+
+        window.addEventListener(
+            "resize",
+            hideMypageFavoritePreview
+        );
+    }
+
+
+    function showMypageFavoritePreview(card) {
+
+        const preview =
+            document.getElementById("mypageFavoritePreview");
+
+        if (!preview) {
+            return;
+        }
+
+        const item =
+            favoritePreviewData.get(
+                String(card.dataset.policyId)
+            );
+
+        if (!item) {
+            return;
+        }
+
+
+        const getField = (name) =>
+            preview.querySelector(
+                `[data-preview-field="${name}"]`
+            );
+
+        const getRow = (name) =>
+            preview.querySelector(
+                `[data-preview-row="${name}"]`
+            );
+
+
+        function setField(name, value) {
+
+            const field = getField(name);
+
+            if (!field) {
+                return;
+            }
+
+            const text =
+                value ? String(value).trim() : "";
+
+            field.textContent = text;
+            field.hidden = !text;
+        }
+
+
+        function setRow(name, value) {
+
+            const row = getRow(name);
+            const field = getField(name);
+
+            if (!row || !field) {
+                return;
+            }
+
+            const text =
+                value ? String(value).trim() : "";
+
+            field.textContent = text;
+            row.hidden = !text;
+        }
+
+
+        setField(
+            "category",
+            item.category || "미분류"
+        );
+
+        setField(
+            "status",
+            item.applyStatusLabel
+        );
+
+        setField(
+            "title",
+            item.title || "정책 정보"
+        );
+
+        setRow(
+            "agency",
+            item.agency
+        );
+
+        setRow(
+            "region",
+            item.regionDisplay
+        );
+
+        setRow(
+            "target",
+            item.target
+        );
+
+        setRow(
+            "period",
+            item.applyPeriod
+        );
+
+
+        const cardRect =
+            card.getBoundingClientRect();
+
+        const margin = 12;
+        const gap = 10;
+
+
+        let left =
+            cardRect.left +
+            cardRect.width / 2 -
+            preview.offsetWidth / 2;
+
+
+        left = Math.max(
+            margin,
+            Math.min(
+                left,
+                window.innerWidth -
+                preview.offsetWidth -
+                margin
+            )
+        );
+
+
+        let top =
+            cardRect.bottom + gap;
+
+
+        if (
+            top + preview.offsetHeight >
+            window.innerHeight - margin
+        ) {
+
+            top =
+                cardRect.top -
+                preview.offsetHeight -
+                gap;
+        }
+
+
+        preview.style.left =
+            `${Math.round(left)}px`;
+
+        preview.style.top =
+            `${Math.max(
+                margin,
+                Math.round(top)
+            )}px`;
+
+
+        preview.classList.add(
+            "is-visible"
+        );
+
+        preview.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+    }
+
+
+    function hideMypageFavoritePreview() {
+
+        if (favoritePreviewTimer !== null) {
+
+            window.clearTimeout(
+                favoritePreviewTimer
+            );
+
+            favoritePreviewTimer = null;
+        }
+
+
+        const preview =
+            document.getElementById(
+                "mypageFavoritePreview"
+            );
+
+        if (!preview) {
+            return;
+        }
+
+
+        preview.classList.remove(
+            "is-visible"
+        );
+
+        preview.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    }
+
+    // ===========================
+    // 관심 정책 삭제 (확인 모달을 먼저 띄운다)
+    // ===========================
+    function removeFavorite(policyId, btn) {
+
+        pendingRemovePolicyId = policyId;
+        pendingRemoveButton = btn;
+        openFavoriteConfirmModal();
+
+    }
+
+    // ===========================
+    // 신고 내역 조회
+    // ===========================
+    async function loadReports() {
+
+        try {
+
+            const response =
+                await fetch(`/api/users/${currentUserId}/reports`);
+
+            const data =
+                await response.json();
+
+            const container =
+                document.getElementById("reports-list");
+
+            const empty =
+                document.getElementById("emptyReportMessage");
+
+            if (data.length === 0) {
+
+                container.innerHTML = "";
+
+                empty.style.display = "block";
+
+                return;
+            }
+
+            empty.style.display = "none";
+
+            container.innerHTML =
+                data.map(item => `
+
+<div class="policy-card">
+
+    <div class="policy-card-body">
+
+        <span class="policy-card-category">
+            ${item.reportTypeLabel}
+        </span>
+
+        <h4 class="policy-card-title">
+            ${item.title}
+        </h4>
+
+        <p class="report-card-meta" ${item.policyTitle ? "" : "style=\"display:none;\""}>
+            관련 정책: ${item.policyTitle ? item.policyTitle : ""}
+        </p>
+
+        <p class="report-card-meta">
+            접수일 ${formatReportDate(item.createdAt)}
+        </p>
+
+        ${renderReportPhotos(item.photoUrls)}
+
+    </div>
+
+    <span class="policy-card-status ${reportStatusCssClass(item.status)}">
+        ${item.statusLabel}
+    </span>
+
+</div>
+
+`).join("");
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+
+    }
+
+    function reportStatusCssClass(status) {
+        if (status === "IN_REVIEW") return "in-review";
+        if (status === "COMPLETED") return "completed";
+        return "received";
+    }
+
+    function renderReportPhotos(photoUrls) {
+        if (!photoUrls || photoUrls.length === 0) return "";
+
+        const thumbs = photoUrls.map(url => `
+            <img src="${url}" alt="첨부 사진" onclick="window.open('${url}', '_blank')">
+        `).join("");
+
+        return `<div class="report-card-photos">${thumbs}</div>`;
+    }
+
+    function formatReportDate(createdAt) {
+        if (!createdAt) return "";
+        // "2026-07-23T13:38:50" 형태의 문자열에서 날짜 부분만 사용
+        return String(createdAt).slice(0, 10);
+    }
+
+</script>
+
+<script>
+    function updateAgeGroup() {
+        const birthYearInput =
+            document.getElementById("birthYear");
+
+        const ageGroupInput =
+            document.getElementById("ageGroup");
+
+        if (!birthYearInput || !ageGroupInput) {
+            return;
+        }
+
+        const birthYear = Number(birthYearInput.value);
+        const currentYear = new Date().getFullYear();
+
+        if (
+            !Number.isInteger(birthYear) ||
+            birthYear < 1900 ||
+            birthYear > currentYear
+        ) {
+            ageGroupInput.value = "";
+            return;
+        }
+
+        const age = currentYear - birthYear;
+
+        if (age <= 29) {
+            ageGroupInput.value = "20대 이하";
+        } else if (age <= 39) {
+            ageGroupInput.value = "30대";
+        } else if (age <= 49) {
+            ageGroupInput.value = "40대";
+        } else if (age <= 59) {
+            ageGroupInput.value = "50대";
+        } else {
+            ageGroupInput.value = "60대 이상";
+        }
+    }
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        updateAgeGroup
+    );
+</script>
+
+</html>

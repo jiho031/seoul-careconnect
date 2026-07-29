@@ -1,0 +1,76 @@
+<th:block th:fragment="assistant"
+          xmlns:th="http://www.thymeleaf.org">
+    <link rel="stylesheet"
+          th:href="@{/css/ai-assistant.css}"
+          href="/css/ai-assistant.css">
+
+    <div class="ai-assistant"
+         id="aiPolicyAssistant"
+         th:attr="data-policy-id=${aiAssistantPolicyId},
+                  data-policy-title=${aiAssistantPolicyTitle}">
+        <button type="button"
+                class="ai-assistant-launcher"
+                data-ai-assistant-launcher
+                aria-controls="aiAssistantPanel"
+                aria-expanded="false">
+            <span class="ai-assistant-launcher-icon" aria-hidden="true">AI</span>
+            <span>AI 정책 도우미</span>
+        </button>
+
+        <section class="ai-assistant-panel"
+                 id="aiAssistantPanel"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-labelledby="aiAssistantTitle"
+                 aria-hidden="true"
+                 hidden>
+            <div class="ai-assistant-header">
+                <div>
+                    <span class="ai-assistant-eyebrow">서울 케어넥트</span>
+                    <h2 id="aiAssistantTitle">AI 정책 도우미</h2>
+                    <p data-ai-assistant-context></p>
+                </div>
+                <button type="button"
+                        class="ai-assistant-close"
+                        data-ai-assistant-close
+                        aria-label="AI 정책 도우미 닫기">×</button>
+            </div>
+
+            <div class="ai-assistant-messages"
+                 data-ai-assistant-messages
+                 aria-live="polite">
+                <article class="ai-assistant-message is-assistant">
+                    <span class="ai-assistant-avatar" aria-hidden="true">AI</span>
+                    <div>
+                        <p>궁금한 정책이나 신청 준비 사항을 물어보세요. 공개 중인 서울 정책을 찾아 근거와 함께 쉽게 설명해 드릴게요.</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="ai-assistant-suggestions" aria-label="추천 질문">
+                <button type="button" data-ai-suggestion="내 지역과 연령대에 맞는 일자리 정책을 찾아주세요.">맞춤 일자리 정책</button>
+                <button type="button" data-ai-suggestion="신청할 때 필요한 서류를 알려주세요.">필요 서류</button>
+                <button type="button" data-ai-suggestion="신청 절차와 주의할 점을 알려주세요.">신청 절차</button>
+            </div>
+
+            <form class="ai-assistant-form" data-ai-assistant-form>
+                <label class="sr-only" for="aiAssistantQuestion">AI 정책 도우미 질문</label>
+                <textarea id="aiAssistantQuestion"
+                          data-ai-assistant-input
+                          rows="2"
+                          maxlength="500"
+                          placeholder="예: 강서구에 사는 50대가 받을 수 있는 취업 지원이 있나요?"
+                          required></textarea>
+                <button type="submit" data-ai-assistant-submit>질문하기</button>
+            </form>
+
+            <p class="ai-assistant-notice">
+                신청 가능 여부를 확정하지 않습니다. 정확한 조건은 각 정책의 공식 페이지에서 확인해 주세요.
+            </p>
+        </section>
+    </div>
+
+    <script th:src="@{/js/ai-assistant.js}"
+            src="/js/ai-assistant.js"
+            defer></script>
+</th:block>

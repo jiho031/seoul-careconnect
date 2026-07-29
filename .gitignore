@@ -18,6 +18,8 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
+sc_application.properties
+
 .idea
 *.iws
 *.iml
@@ -35,3 +37,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+src/main/resources/application-secret.properties
+
+### Uploaded files ###
+/uploads/

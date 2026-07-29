@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관심 정책 | 서울 케어넥트</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+    <link rel="stylesheet" th:href="@{/css/index.css}" href="/css/index.css">
+    <link rel="stylesheet" th:href="@{/css/favorite.css}" href="/css/favorite.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+    <!-- [추가] 삭제된 정책 안내 모달 스타일 (다른 페이지들과 동일한 디자인) -->
+    <style>
+        .info-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 30, 50, 0.45);
+        }
+
+        .info-modal.is-open {
+            display: flex;
+        }
+
+        .info-modal-box {
+            width: min(360px, 100%);
+            padding: 34px 28px 28px;
+            border-radius: 22px;
+            background: #ffffff;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.25);
+        }
+
+        .info-modal-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 26px;
+            font-weight: 900;
+            background: #fdeeee;
+            color: #d64545;
+        }
+
+        .info-modal-box h3 {
+            margin: 0 0 8px;
+            color: #071947;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .info-modal-box p {
+            margin: 0 0 22px;
+            color: #65758e;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .info-modal-box button {
+            width: 100%;
+            padding: 13px;
+            border: 0;
+            border-radius: 12px;
+            background: #164ce0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="favorite-page">
+
+    <section class="favorite-hero">
+        <span class="favorite-eyebrow">FAVORITES</span>
+        <h1>관심 정책</h1>
+        <p th:text="|찜한 정책 ${favorites != null ? #lists.size(favorites) : 0}건을 모아봤어요.|">
+            찜한 정책을 모아봤어요.
+        </p>
+    </section>
+
+    <section class="favorite-list-section">
+        <div class="board-head">
+            <h2>찜한 정책</h2>
+            <a href="/mypage#favorites">마이페이지에서 관리 ›</a>
+        </div>
+
+        <div class="favorite-grid" id="favoriteGrid">
+            <div class="policy-card favorite-card"
+                 th:each="fav : ${favorites}"
+                 th:attr="data-policy-id=${fav.policyId}">
+
+                <a class="favorite-card-link favorite-preview-target"
+                   th:href="@{|/policies/${fav.policyId}|}"
+                   th:attr="
+                       data-preview-title=${fav.title},
+                       data-preview-category=${fav.categoryLabel},
+                       data-preview-agency=${fav.agency},
+                       data-preview-region=${fav.regionDisplay},
+                       data-preview-target=${fav.target},
+                       data-preview-status=${fav.applyStatusLabel},
+                       data-preview-period=${fav.applyPeriod},
+                       data-deleted=${fav.deleted},
+                       aria-label=${fav.title}">
+
+                    <div class="policy-card-top">
+                        <span class="policy-dday"
+                              th:if="${fav.dDayLabel != null}"
+                              th:classappend="${fav.dDayCssClass}"
+                              th:text="${fav.dDayLabel}">
+                            D-5
+                        </span>
+
+                        <span class="policy-card-category" th:text="${fav.categoryLabel}">카테고리</span>
+                    </div>
+
+                    <h3 class="policy-card-title" th:text="${fav.title}" th:title="${fav.title}">정책명</h3>
+
+                    <p class="policy-card-summary"
+                       th:if="${fav.summary != null}"
+                       th:text="${fav.summary}">
+                        정책 요약 설명이 들어갑니다.
+                    </p>
+
+                    <div class="policy-meta" th:if="${fav.applyPeriod != null}">
+                        <span class="policy-status" th:text="${fav.applyStatusLabel}">신청 가능</span>
+                        <span class="policy-meta-label">신청 기간</span>
+                        <span class="policy-meta-divider"></span>
+                        <span class="policy-date" th:text="${fav.applyPeriod}">공고 확인</span>
+                    </div>
+                </a>
+
+                <button class="policy-card-remove"
+                        type="button"
+                        th:attr="data-policy-id=${fav.policyId}"
+                        onclick="removeFavorite(this)">
+                    삭제
+                </button>
+            </div>
+        </div>
+
+        <p class="favorite-empty"
+           id="emptyFavoriteMessage"
+           th:if="${favorites == null or #lists.isEmpty(favorites)}">
+            아직 찜한 정책이 없어요. 마음에 드는 정책을 찜해보세요!
+        </p>
+    </section>
+
+    <section class="policy-section recommend-section">
+        <div class="board-head">
+            <h2>이런 정책은 어떠세요?</h2>
+            <a th:href="@{/policies}">전체 정책 보기 ›</a>
+        </div>
+
+        <div class="deadline-grid">
+            <a class="policy-card favorite-preview-target"
+               th:each="policy : ${recommendedPolicies}"
+               th:href="@{|/policies/${policy.policyId}|}"
+               th:attr="
+                   data-preview-title=${policy.title},
+                   data-preview-category=${policy.categoryLabel},
+                   data-preview-agency=${policy.agency},
+                   data-preview-region=${policy.regionDisplay},
+                   data-preview-target=${policy.target},
+                   data-preview-status=${policy.applyStatusLabel},
+                   data-preview-period=${policy.applyPeriod},
+                   aria-label=${policy.title}">
+
+                <div class="policy-card-top">
+                    <span class="policy-dday"
+                          th:classappend="${policy.dDayCssClass}"
+                          th:text="${policy.dDayLabel}">
+                        D-5
+                    </span>
+
+                    <strong class="policy-title" th:text="${policy.title}" th:title="${policy.title}">정책명</strong>
+                </div>
+
+                <div class="policy-meta">
+                    <span class="policy-status" th:text="${policy.applyStatusLabel}">신청 가능</span>
+                    <span class="policy-meta-label">신청 기간</span>
+                    <span class="policy-meta-divider"></span>
+                    <span class="policy-date" th:text="${policy.applyPeriod}" th:title="${policy.applyPeriod}">공고 확인</span>
+                </div>
+            </a>
+
+            <p class="policy-empty"
+               th:if="${recommendedPolicies == null or #lists.isEmpty(recommendedPolicies)}">
+                아직 추천할 정책이 없습니다.
+            </p>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- 관심 정책 카드 간단 미리보기 -->
+<aside class="popular-policy-preview"
+       id="favoritePolicyPreview"
+       role="tooltip"
+       aria-hidden="true">
+
+    <div class="popular-policy-preview-head">
+
+        <span class="popular-policy-preview-category"
+              data-preview-field="category">
+            분야
+        </span>
+
+        <span class="popular-policy-preview-status"
+              data-preview-field="status">
+            신청 상태
+        </span>
+
+    </div>
+
+    <strong class="popular-policy-preview-title"
+            data-preview-field="title">
+        정책명
+    </strong>
+
+    <dl class="popular-policy-preview-info">
+
+        <div data-preview-row="agency">
+            <dt>기관</dt>
+            <dd data-preview-field="agency"></dd>
+        </div>
+
+        <div data-preview-row="region">
+            <dt>지역</dt>
+            <dd data-preview-field="region"></dd>
+        </div>
+
+        <div data-preview-row="target">
+            <dt>대상</dt>
+            <dd data-preview-field="target"></dd>
+        </div>
+
+        <div data-preview-row="period">
+            <dt>신청 기간</dt>
+            <dd data-preview-field="period"></dd>
+        </div>
+
+    </dl>
+
+    <p class="popular-policy-preview-guide">
+        클릭하면 정책 상세 내용을 확인할 수 있습니다.
+    </p>
+
+</aside>
+
+<!-- [추가] 삭제된 정책 안내 모달 -->
+<div class="info-modal" id="deletedPolicyModal" aria-hidden="true">
+    <div class="info-modal-box">
+        <div class="info-modal-icon">!</div>
+        <h3>삭제된 정책입니다</h3>
+        <p>기간이 지났거나 더 이상 제공되지 않는 정책이에요. 마이페이지에서 관심 목록을 정리할 수 있어요.</p>
+        <button type="button" id="deletedPolicyModalCloseButton">확인</button>
+    </div>
+</div>
+
+<script th:src="@{/js/favorite.js}"
+        src="/js/favorite.js"></script>
+
+<script th:inline="javascript">
+    const currentUserId = /*[[${user.userId}]]*/ 1;
+
+    function removeFavorite(btn) {
+        const policyId = btn.getAttribute('data-policy-id');
+
+        if (!confirm('관심 정책에서 삭제하시겠습니까?')) return;
+
+        fetch(`/api/users/${currentUserId}/favorites/${policyId}`, { method: 'DELETE' })
+            .then(res => {
+                if (res.ok) {
+                    const card = btn.closest('.favorite-card');
+                    card.remove();
+
+                    if (document.querySelectorAll('.favorite-card').length === 0) {
+                        document.getElementById('emptyFavoriteMessage').style.display = 'block';
+                    }
+                } else {
+                    alert('삭제 중 오류가 발생했습니다.');
+                }
+            });
+    }
+
+    // ===========================
+    // [추가] 삭제된 정책 카드 클릭 시 상세 페이지(404/500) 대신 안내 모달 표시
+    // ===========================
+    document.addEventListener("DOMContentLoaded", function () {
+        const deletedModal = document.getElementById("deletedPolicyModal");
+        const deletedModalCloseButton = document.getElementById("deletedPolicyModalCloseButton");
+
+        function openDeletedPolicyModal() {
+            deletedModal.classList.add("is-open");
+            deletedModal.setAttribute("aria-hidden", "false");
+        }
+
+        function closeDeletedPolicyModal() {
+            deletedModal.classList.remove("is-open");
+            deletedModal.setAttribute("aria-hidden", "true");
+        }
+
+        deletedModalCloseButton.addEventListener("click", closeDeletedPolicyModal);
+
+        deletedModal.addEventListener("click", function (event) {
+            if (event.target === deletedModal) {
+                closeDeletedPolicyModal();
+            }
+        });
+
+        document.querySelectorAll('.favorite-card-link[data-deleted="true"]').forEach(function (link) {
+            link.addEventListener("click", function (event) {
+                event.preventDefault();
+                openDeletedPolicyModal();
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

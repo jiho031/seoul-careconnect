@@ -1,0 +1,334 @@
+<footer class="scc-clean-footer" th:fragment="footer">
+    <style>
+        .scc-clean-footer,
+        .scc-clean-footer * {
+            box-sizing: border-box !important;
+        }
+
+        .scc-clean-footer {
+            width: 100% !important;
+            background: #fff !important;
+            color: #071a46 !important;
+            border-top: 1px solid #d7e1ef !important;
+            font-family: inherit !important;
+            overflow: hidden !important;
+            word-break: keep-all !important;
+        }
+
+        .scc-clean-footer a {
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+
+        .scc-clean-footer__inner {
+            width: min(1760px, calc(100% - 96px)) !important;
+            margin: 0 auto !important;
+            padding: 34px 0 24px !important;
+        }
+
+        .scc-clean-footer__top {
+            display: grid !important;
+            grid-template-columns: 1.25fr 0.86fr 1fr 1.35fr !important;
+            align-items: start !important;
+            gap: 0 !important;
+        }
+
+        .scc-clean-footer__brand,
+        .scc-clean-footer__quick,
+        .scc-clean-footer__help,
+        .scc-clean-footer__notice {
+            min-width: 0 !important;
+        }
+
+        .scc-clean-footer__quick,
+        .scc-clean-footer__help,
+        .scc-clean-footer__notice {
+            border-left: 1px solid #b9c6db !important;
+            padding-left: 48px !important;
+        }
+
+        .scc-clean-footer__logo-link {
+            display: inline-block !important;
+            width: 220px !important;
+            max-width: 220px !important;
+            line-height: 0 !important;
+            overflow: visible !important;
+        }
+
+        .scc-clean-footer__logo {
+            display: block !important;
+            width: 220px !important;
+            max-width: 220px !important;
+            height: auto !important;
+            max-height: none !important;
+            object-fit: contain !important;
+            overflow: visible !important;
+        }
+
+        .scc-clean-footer__slogan {
+            margin: 16px 0 0 !important;
+            color: #10224e !important;
+            font-size: 17px !important;
+            font-weight: 500 !important;
+            line-height: 1.45 !important;
+            letter-spacing: -0.04em !important;
+        }
+
+        .scc-clean-footer__title {
+            margin: 0 0 16px !important;
+            color: #071a46 !important;
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            line-height: 1.15 !important;
+            letter-spacing: -0.05em !important;
+            white-space: nowrap !important;
+        }
+
+        .scc-clean-footer__quick-list,
+        .scc-clean-footer__help-list {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            max-width: 250px !important;
+        }
+
+        .scc-clean-footer__quick-link {
+            display: flex !important;
+            align-items: center !important;
+            gap: 22px !important;
+            min-height: 24px !important;
+            color: #10224e !important;
+            font-size: 17px !important;
+            font-weight: 500 !important;
+            line-height: 1.2 !important;
+            letter-spacing: -0.04em !important;
+            white-space: nowrap !important;
+        }
+
+        .scc-clean-footer__arrow {
+            color: #6f8abf !important;
+            font-size: 27px !important;
+            font-weight: 300 !important;
+            line-height: 0.7 !important;
+        }
+
+        .scc-clean-footer__help-link {
+            display: grid !important;
+            grid-template-columns: 24px 1fr !important;
+            align-items: center !important;
+            column-gap: 18px !important;
+            min-height: 25px !important;
+            color: #10224e !important;
+            font-size: 17px !important;
+            font-weight: 500 !important;
+            line-height: 1.2 !important;
+            letter-spacing: -0.04em !important;
+            white-space: nowrap !important;
+        }
+
+        .scc-clean-footer__icon {
+            display: block !important;
+            width: 23px !important;
+            height: 23px !important;
+            color: #829bca !important;
+        }
+
+        .scc-clean-footer__icon svg,
+        .scc-clean-footer__shield svg {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            fill: none !important;
+            stroke: currentColor !important;
+            stroke-linecap: round !important;
+            stroke-linejoin: round !important;
+        }
+
+        .scc-clean-footer__icon svg {
+            stroke-width: 2 !important;
+        }
+
+        .scc-clean-footer__notice-wrap {
+            display: grid !important;
+            grid-template-columns: minmax(310px, 1fr) 96px !important;
+            align-items: center !important;
+            column-gap: 42px !important;
+        }
+
+        .scc-clean-footer__notice-text {
+            margin: 0 !important;
+            color: #10224e !important;
+            font-size: 17px !important;
+            font-weight: 500 !important;
+            line-height: 1.5 !important;
+            letter-spacing: -0.04em !important;
+        }
+
+        .scc-clean-footer__shield {
+            width: 92px !important;
+            height: 104px !important;
+            color: #b7c3d8 !important;
+        }
+
+        .scc-clean-footer__shield svg {
+            stroke-width: 5 !important;
+        }
+
+        .scc-clean-footer__bottom {
+            width: min(1760px, calc(100% - 96px)) !important;
+            margin: 0 auto !important;
+            padding: 18px 0 20px !important;
+            border-top: 1px solid #b9c6db !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 24px !important;
+        }
+
+        .scc-clean-footer__legal {
+            display: flex !important;
+            align-items: center !important;
+            gap: 28px !important;
+            color: #10224e !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            line-height: 1.25 !important;
+            letter-spacing: -0.04em !important;
+            white-space: nowrap !important;
+        }
+
+        .scc-clean-footer__copy {
+            margin: 0 !important;
+            color: #10224e !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            line-height: 1.25 !important;
+            letter-spacing: -0.04em !important;
+            white-space: nowrap !important;
+        }
+
+        @media (max-width: 1180px) {
+            .scc-clean-footer__inner,
+            .scc-clean-footer__bottom {
+                width: min(100% - 48px, 980px) !important;
+            }
+
+            .scc-clean-footer__top {
+                grid-template-columns: 1fr 1fr !important;
+                row-gap: 30px !important;
+            }
+
+            .scc-clean-footer__help {
+                border-left: 0 !important;
+                padding-left: 0 !important;
+            }
+
+            .scc-clean-footer__notice {
+                padding-left: 48px !important;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .scc-clean-footer__inner,
+            .scc-clean-footer__bottom {
+                width: min(100% - 32px, 520px) !important;
+            }
+
+            .scc-clean-footer__inner {
+                padding: 30px 0 22px !important;
+            }
+
+            .scc-clean-footer__top {
+                grid-template-columns: 1fr !important;
+                row-gap: 26px !important;
+            }
+
+            .scc-clean-footer__quick,
+            .scc-clean-footer__help,
+            .scc-clean-footer__notice {
+                border-left: 0 !important;
+                padding-left: 0 !important;
+            }
+
+            .scc-clean-footer__logo-link,
+            .scc-clean-footer__logo {
+                width: 190px !important;
+                max-width: 190px !important;
+            }
+
+            .scc-clean-footer__notice-wrap {
+                grid-template-columns: 1fr 70px !important;
+                column-gap: 18px !important;
+            }
+
+            .scc-clean-footer__shield {
+                width: 66px !important;
+                height: 76px !important;
+            }
+
+            .scc-clean-footer__bottom {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+        }
+    </style>
+
+    <div class="scc-clean-footer__inner">
+        <div class="scc-clean-footer__top">
+            <section class="scc-clean-footer__brand" aria-label="서울 케어넥트 소개">
+                <a class="scc-clean-footer__logo-link" href="/" aria-label="서울 케어넥트 홈">
+                    <img class="scc-clean-footer__logo" th:src="@{/images/logo-cropped.png}" src="/images/logo-cropped.png" alt="서울 케어넥트" style="display:block;width:220px;max-width:220px;height:auto;max-height:none;object-fit:contain;" onerror="this.onerror=null; this.src='/images/logo.png';">
+                </a>
+                <p class="scc-clean-footer__slogan">
+                    시민의 삶을 더 편리하게, 더 든든하게.<br>
+                    정책 찾기부터 신청 준비까지,<br>
+                    서울 케어넥트가 함께합니다.
+                </p>
+            </section>
+
+            <nav class="scc-clean-footer__quick" aria-label="바로가기">
+                <h2 class="scc-clean-footer__title">바로가기</h2>
+                <div class="scc-clean-footer__quick-list">
+                    <a class="scc-clean-footer__quick-link" href="/policies"><span>정책 찾기</span><span class="scc-clean-footer__arrow">›</span></a>
+                    <a class="scc-clean-footer__quick-link" th:href="@{/favorites}" href="/favorites"><span>관심 정책</span><span class="scc-clean-footer__arrow">›</span></a>
+                    <a class="scc-clean-footer__quick-link" th:href="@{/guides}" href="/guides"><span>신청 가이드</span><span class="scc-clean-footer__arrow">›</span></a>
+                </div>
+            </nav>
+
+            <nav class="scc-clean-footer__help" aria-label="도움말 및 정보">
+                <h2 class="scc-clean-footer__title">도움말 / 정보</h2>
+                <div class="scc-clean-footer__help-list">
+                    <a class="scc-clean-footer__help-link" href="#"><span class="scc-clean-footer__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h12.5v15H7a2.5 2.5 0 0 0-2.5 2.5z"></path><path d="M4.5 20.5v-15"></path><path d="M8 7h8"></path></svg></span><span>이용 안내</span></a>
+                    <a class="scc-clean-footer__help-link" href="#"><span class="scc-clean-footer__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.7 9.2a2.4 2.4 0 1 1 3.9 1.9c-.9.6-1.6 1.2-1.6 2.5"></path><path d="M12 17.2h.01"></path></svg></span><span>자주 묻는 질문</span></a>
+                    <a class="scc-clean-footer__help-link" href="#"><span class="scc-clean-footer__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 8-3 8h18s-3-1-3-8"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg></span><span>서비스·앱 소식</span></a>
+                    <a class="scc-clean-footer__help-link" href="https://pf.kakao.com/_UXpfX/chat" target="_blank" rel="noopener noreferrer" onclick="return confirm('카카오톡으로 문의를 진행할까요?');"><span class="scc-clean-footer__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M8.3 14.2s1.4 1.8 3.7 1.8 3.7-1.8 3.7-1.8"></path><path d="M9 9.2h.01"></path><path d="M15 9.2h.01"></path></svg></span><span>문의하기</span></a>
+                </div>
+            </nav>
+
+            <section class="scc-clean-footer__notice" aria-label="안내 및 유의사항">
+                <div class="scc-clean-footer__notice-wrap">
+                    <div>
+                        <h2 class="scc-clean-footer__title">안내 및 유의사항</h2>
+                        <p class="scc-clean-footer__notice-text">
+                            본 서비스는 주요 정보를 제공하며,<br>
+                            자세한 사항은 각 기관의<br>
+                            예고·공고 및 공식 안내를 확인해 주세요.
+                        </p>
+                    </div>
+                    <div class="scc-clean-footer__shield" aria-hidden="true">
+                        <svg viewBox="0 0 96 112"><path d="M48 6 86 23v30c0 25.5-15.4 42.5-38 52-22.6-9.5-38-26.5-38-52V23L48 6Z"></path><path d="M30 58l13 13 25-30"></path></svg>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="scc-clean-footer__bottom">
+        <div class="scc-clean-footer__legal">
+            <a href="#">개인정보처리방침</a>
+            <span aria-hidden="true">|</span>
+            <a href="#">이용약관</a>
+        </div>
+        <p class="scc-clean-footer__copy">© 2026 서울 케어넥트.</p>
+    </div>
+</footer>

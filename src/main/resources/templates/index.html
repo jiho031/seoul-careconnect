@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서울 케어넥트</title>
+  <link rel="stylesheet" th:href="@{/css/favorite.css}" href="/css/favorite.css">
+  <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
+  <link rel="stylesheet" th:href="@{/css/index.css}" href="/css/index.css">
+    <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+</head>
+<body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
+        ? 'large-text-mode'
+        : ''}"
+      th:attr="data-ui-mode=${currentUiMode}">
+  <div th:replace="~{fragments/nav :: nav}"></div>
+
+  <main>
+    <section class="hero">
+      <img class="hero-city" th:src="@{/images/hero-city.png}" src="/images/hero-city.png" alt="" aria-hidden="true" onerror="this.remove();">
+
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h1>복잡한 정책 정보,<br><strong>쉽게 찾고 바로 준비하세요</strong></h1>
+          <p>서울시의 복지·주거·건강·일자리·교육 등 다양한 정책을<br>내 상황에 맞게 검색하고, 신청까지 한 번에 지원받을 수 있습니다.</p>
+
+          <form class="search-card" th:action="@{/policies}" method="get">
+            <input type="hidden" name="page" value="0">
+            <div class="search-line">
+              <label class="sr-only" for="keyword">정책 검색어</label>
+              <span class="search-lens" aria-hidden="true">
+                <svg class="search-icon" viewBox="0 0 24 24" focusable="false">
+                  <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                  <path d="M15.5 15.5L21 21"></path>
+                </svg>
+              </span>
+              <input id="keyword" name="keyword" type="search" placeholder="찾고 싶은 정책을 검색하세요. (예: 청년 월세, 출산 지원, 주거 지원)">
+              <button type="submit">검색</button>
+            </div>
+
+            <div class="filter-grid">
+              <label>
+                <span><i class="ico-pin"></i>지역</span>
+                <select name="district">
+                  <option value="">전체</option>
+                  <option value="서울시 전체">서울시 전체</option>
+                  <option value="강남구">강남구</option>
+                  <option value="강동구">강동구</option>
+                  <option value="강북구">강북구</option>
+                  <option value="강서구">강서구</option>
+                  <option value="관악구">관악구</option>
+                  <option value="광진구">광진구</option>
+                  <option value="구로구">구로구</option>
+                  <option value="금천구">금천구</option>
+                  <option value="노원구">노원구</option>
+                  <option value="도봉구">도봉구</option>
+                  <option value="동대문구">동대문구</option>
+                  <option value="동작구">동작구</option>
+                  <option value="마포구">마포구</option>
+                  <option value="서대문구">서대문구</option>
+                  <option value="서초구">서초구</option>
+                  <option value="성동구">성동구</option>
+                  <option value="성북구">성북구</option>
+                  <option value="송파구">송파구</option>
+                  <option value="양천구">양천구</option>
+                  <option value="영등포구">영등포구</option>
+                  <option value="용산구">용산구</option>
+                  <option value="은평구">은평구</option>
+                  <option value="종로구">종로구</option>
+                  <option value="중구">중구</option>
+                  <option value="중랑구">중랑구</option>
+                </select>
+              </label>
+
+              <label>
+                <span><i class="ico-people"></i>생애주기</span>
+                <select name="ageGroup">
+                  <option value="">전체</option>
+                  <option value="UNDER_40">30대 이하</option>
+                  <option value="FORTIES">40대</option>
+                  <option value="FIFTIES">50대</option>
+                  <option value="SIXTIES_PLUS">60대 이상</option>
+                </select>
+              </label>
+
+              <label>
+                <span><i class="ico-grid"></i>분야</span>
+                <select name="category">
+                  <option value="">전체</option>
+                  <option value="EDUCATION">교육</option>
+                  <option value="JOB">일자리</option>
+                  <option value="HOUSING">주거</option>
+                  <option value="LIVING_SUPPORT">생활지원</option>
+                  <option value="CARE">돌봄</option>
+                  <option value="CULTURE_LIFE">문화·생활</option>
+                </select>
+              </label>
+
+              <label>
+                <span><i class="ico-bag"></i>지원 대상</span>
+                <select name="targetKeyword">
+                  <option value="">전체</option>
+                  <option value="구직자">구직자</option>
+                  <option value="1인가구">1인가구</option>
+                  <option value="저소득층">저소득층</option>
+                  <option value="소상공인">소상공인</option>
+                  <option value="장애인">장애인</option>
+                  <option value="돌봄가구">돌봄가구</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="search-foot">
+              <div class="keyword-area">
+                <strong>인기 정책</strong>
+
+                <div class="keyword-list"
+                     data-drag-scroll
+                     tabindex="0"
+                     aria-label="인기 정책 목록">
+
+                  <a class="popular-policy-link"
+                     th:each="policy : ${popularPolicies}"
+                     th:href="@{/policies/{policyId}(policyId=${policy.policyId})}"
+                     th:attr="
+                         data-preview-title=${policy.title},
+                         data-preview-category=${policy.categoryLabel},
+                         data-preview-agency=${policy.agency},
+                         data-preview-region=${policy.regionDisplay},
+                         data-preview-target=${policy.target},
+                         data-preview-status=${policy.applyStatusLabel},
+                         data-preview-period=${policy.applyPeriod},
+                         aria-label=${policy.title}"
+                                       draggable="false">
+
+                    <span th:text="${policy.title}">
+                      인기 정책
+                    </span>
+                  </a>
+
+                  <span class="keyword-empty"
+                        th:if="${popularPolicies == null
+                                or #lists.isEmpty(popularPolicies)}">
+                    아직 인기 정책이 없습니다.
+                  </span>
+                </div>
+              </div>
+
+              <div class="preset-area">
+                <a th:href="@{/policies/personalized}"
+                   title="내 정보에 맞는 정책을 검색합니다.">
+                  <span aria-hidden="true">↔</span>
+                  내 맞춤 검색
+                </a>
+
+                <button type="button"
+                        id="resetSearchButton"
+                        title="입력한 검색어와 필터를 초기화합니다.">
+                  <span aria-hidden="true">↻</span>
+                  초기화
+                </button>
+
+                <button sec:authorize="isAuthenticated()"
+                        id="openPresetModal"
+                        type="button"
+                        title="저장한 검색 조건을 관리합니다.">
+                  검색 조건 저장
+                </button>
+
+                <a sec:authorize="isAnonymous()"
+                   th:href="@{/login}"
+                   title="로그인 후 검색 조건을 저장할 수 있습니다.">
+                  <span aria-hidden="true">□</span>
+                  검색 조건 저장
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <aside class="ai-card" aria-label="AI 신청 준비 안내">
+          <div class="ai-title">
+            <span>AI</span>
+            <div>
+              <h2>AI가 쉽게 풀어드려요</h2>
+              <p>정책을 쉽게 이해하고,<br>신청 준비를 도와드려요.</p>
+            </div>
+          </div>
+
+          <div class="ai-list">
+            <button type="button"
+                    data-ai-assistant-open
+                    data-ai-assistant-prompt="내 상황에 맞는 서울 정책을 쉽게 찾아서 설명해 주세요.">
+              <em class="mint">▤</em>
+              <span><b>정책 쉽게 설명받기</b><small>내 상황에 맞는 정책을 쉽고 명확하게 설명해드려요.</small></span>
+              <i>›</i>
+            </button>
+            <button type="button"
+                    data-ai-assistant-open
+                    data-ai-assistant-prompt="신청할 때 필요한 서류를 확인할 수 있는 정책을 찾아주세요.">
+              <em class="blue">▤</em>
+              <span><b>필요 서류 확인하기</b><small>신청에 필요한 서류와 준비물을 한눈에 확인하세요.</small></span>
+              <i>›</i>
+            </button>
+              <a th:href="@{/guides}">
+                  <em class="purple">☑</em>
+                  <span>
+                    <b>신청 절차 안내받기</b>
+                    <small>신청 방법과 절차를 단계별로 안내해드려요.</small>
+                  </span>
+                  <i>›</i>
+              </a>
+            <p><b>ⓘ</b> 본 서비스는 AI 기술을 활용한 정보 요약 및 안내 기능입니다.<br>정확한 신청은 개별 정책 페이지에서 확인해 주세요.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="favorite-banner" sec:authorize="isAuthenticated()">
+      <a th:href="@{/favorites}" class="favorite-banner-link">
+        <span class="favorite-banner-icon">♥</span>
+        <span class="favorite-banner-text">
+      <strong>내가 찜한 정책 확인하기</strong>
+      <small>저장해둔 관심 정책과 맞춤 추천 정책을 한 번에 확인해보세요.</small>
+    </span>
+        <span class="favorite-banner-arrow">›</span>
+      </a>
+    </section>
+
+    <section class="policy-section">
+      <div class="policy-inner">
+        <section class="policy-board">
+          <div class="board-head">
+            <h2>마감이 가까운 정책</h2>
+            <a th:href="@{/policies(sort='deadline', page=0)}">전체 보기 ›</a>
+          </div>
+          <div class="deadline-grid">
+            <a class="policy-card"
+               th:each="policy : ${closingSoonPolicies}"
+               th:href="@{|/policies/${policy.policyId}|}"
+               th:attr="
+                   data-preview-title=${policy.title},
+                   data-preview-category=${policy.categoryLabel},
+                   data-preview-agency=${policy.agency},
+                   data-preview-region=${policy.regionDisplay},
+                   data-preview-target=${policy.target},
+                   data-preview-status=${policy.applyStatusLabel},
+                   data-preview-period=${policy.applyPeriod},
+                   aria-label=${policy.title}">
+
+              <div class="policy-card-top">
+                <span class="policy-dday"
+                      th:classappend="${policy.dDayCssClass}"
+                      th:text="${policy.dDayLabel}">
+                  D-5
+                </span>
+
+                <strong class="policy-title"
+                        th:text="${policy.title}">
+                  정책명
+                </strong>
+              </div>
+
+              <div class="policy-meta">
+                <span class="policy-status"
+                      th:text="${#strings.equals(policy.applyStatus, 'INFORMATION_ONLY')
+                          ? '공고 확인'
+                          : policy.applyStatusLabel}">
+                  신청 가능
+                </span>
+
+                <span class="policy-meta-label">신청 기간</span>
+                <span class="policy-meta-divider"></span>
+
+                <span class="policy-date"
+                      th:text="${policy.applyPeriod}">
+                  공고 확인
+                </span>
+              </div>
+            </a>
+
+            <p class="policy-empty"
+               th:if="${closingSoonPolicies == null or #lists.isEmpty(closingSoonPolicies)}">
+              현재 마감이 가까운 정책이 없습니다.
+            </p>
+          </div>
+
+        </section>
+
+        <section class="policy-board">
+          <div class="board-head">
+            <h2>최근 등록 정책</h2>
+            <a th:href="@{/policies(sort='latest', quick='new', page=0)}">
+              전체 보기 ›
+            </a>
+          </div>
+          <div class="recent-grid">
+            <a class="recent-card"
+               th:each="policy : ${recentPolicies}"
+               th:href="@{|/policies/${policy.policyId}|}"
+               th:attr="
+                   data-preview-title=${policy.title},
+                   data-preview-category=${policy.categoryLabel},
+                   data-preview-agency=${policy.agency},
+                   data-preview-region=${policy.regionDisplay},
+                   data-preview-target=${policy.target},
+                   data-preview-status=${policy.applyStatusLabel},
+                   data-preview-period=${policy.applyPeriod},
+                   aria-label=${policy.title}">
+
+              <em class="recent-category-icon"
+                  th:classappend="${policy.category != null
+        ? ' category-' + policy.category
+        : ' category-default'}"
+                  role="img"
+                  th:attr="aria-label=${policy.categoryLabel}">
+
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <g th:switch="${policy.category}">
+
+                    <!-- 교육 -->
+                    <g th:case="'EDUCATION'">
+                      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v16H6.5A2.5 2.5 0 0 0 4 21.5V5.5Z"/>
+                      <path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v16h5.5A2.5 2.5 0 0 1 20 21.5V5.5Z"/>
+                    </g>
+
+                    <!-- 일자리 -->
+                    <g th:case="'JOB'">
+                      <rect x="3" y="7" width="18" height="12" rx="2"/>
+                      <path d="M9 7V5h6v2"/>
+                      <path d="M3 12h18"/>
+                      <path d="M10 12v2h4v-2"/>
+                    </g>
+
+                    <!-- 주거 -->
+                    <g th:case="'HOUSING'">
+                      <path d="M3 11.5 12 4l9 7.5"/>
+                      <path d="M5.5 10.5V20h13v-9.5"/>
+                      <path d="M9.5 20v-6h5v6"/>
+                    </g>
+
+                    <!-- 생활지원 -->
+                    <g th:case="'LIVING_SUPPORT'">
+                      <path d="M8 5l2 14 2-9 2 9 2-14"/>
+                      <path d="M7 10h10"/>
+                      <path d="M7 14h10"/>
+                    </g>
+
+                    <!-- 돌봄 -->
+                    <g th:case="'CARE'">
+                      <path d="M20.5 5.5a5 5 0 0 0-7.1 0L12 6.9l-1.4-1.4a5 5 0 0 0-7.1 7.1L12 21l8.5-8.4a5 5 0 0 0 0-7.1Z"/>
+                    </g>
+
+                    <!-- 문화·생활 -->
+                    <g th:case="'CULTURE_LIFE'">
+                      <path d="M9 18V6l10-2v12"/>
+                      <circle cx="6.5" cy="18" r="2.5"/>
+                      <circle cx="16.5" cy="16" r="2.5"/>
+                    </g>
+
+                    <!-- 카테고리 없음 -->
+                    <g th:case="*">
+                      <rect x="5" y="3" width="14" height="18" rx="2"/>
+                      <path d="M8 8h8"/>
+                      <path d="M8 12h8"/>
+                      <path d="M8 16h5"/>
+                    </g>
+
+                  </g>
+                </svg>
+              </em>
+
+              <span>
+                <b th:text="${policy.title}">
+                  정책명
+                </b>
+
+                <small>
+                  등록일 <i>|</i>
+                  <span th:text="${policy.createdDate}">-</span>
+                </small>
+              </span>
+            </a>
+
+            <p class="policy-empty"
+               th:if="${recentPolicies == null or #lists.isEmpty(recentPolicies)}">
+              현재 등록된 정책이 없습니다.
+            </p>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+  <div class="preset-modal"
+       id="presetModal"
+       aria-hidden="true">
+    <div class="preset-modal-backdrop" data-preset-close></div>
+    <section class="preset-dialog"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="presetModalTitle">
+      <div class="preset-dialog-head">
+        <div>
+          <h2 id="presetModalTitle">검색 조건 저장</h2>
+          <p>현재 검색 조건을 저장하거나 다시 불러올 수 있어요.</p>
+        </div>
+        <button class="preset-close" type="button" aria-label="검색 조건 저장 창 닫기" data-preset-close>×</button>
+      </div>
+
+      <form class="preset-save-form" id="presetSaveForm">
+        <label for="presetName">검색 조건 이름</label>
+        <div>
+          <input id="presetName"
+                 name="presetName"
+                 type="text"
+                 maxlength="30"
+                 placeholder="예: 우리 동네 주거 지원"
+                 required>
+          <button type="submit">현재 조건 저장</button>
+        </div>
+      </form>
+
+      <div class="preset-list-wrap">
+        <h3>저장한 검색 조건</h3>
+        <div class="preset-list" id="presetList" aria-live="polite"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 인기 정책 간단 미리보기 -->
+  <aside class="popular-policy-preview"
+         id="popularPolicyPreview"
+         role="tooltip"
+         aria-hidden="true">
+
+    <div class="popular-policy-preview-head">
+    <span class="popular-policy-preview-category"
+          data-preview-field="category">
+      분야
+    </span>
+
+      <span class="popular-policy-preview-status"
+            data-preview-field="status">
+      신청 상태
+    </span>
+    </div>
+
+    <strong class="popular-policy-preview-title"
+            data-preview-field="title">
+      정책명
+    </strong>
+
+    <dl class="popular-policy-preview-info">
+      <div data-preview-row="agency">
+        <dt>기관</dt>
+        <dd data-preview-field="agency"></dd>
+      </div>
+
+      <div data-preview-row="region">
+        <dt>지역</dt>
+        <dd data-preview-field="region"></dd>
+      </div>
+
+      <div data-preview-row="target">
+        <dt>대상</dt>
+        <dd data-preview-field="target"></dd>
+      </div>
+
+      <div data-preview-row="period">
+        <dt>신청 기간</dt>
+        <dd data-preview-field="period"></dd>
+      </div>
+    </dl>
+
+    <p class="popular-policy-preview-guide">
+      클릭하면 정책 상세 내용을 확인할 수 있습니다.
+    </p>
+  </aside>
+
+  <script th:src="@{/js/common.js}" src="/js/common.js"></script>
+  <script th:src="@{/js/index-presets.js}" src="/js/index-presets.js"></script>
+  <script th:src="@{/js/index.js}" src="/js/index.js"></script>
+</body>
+</html>
