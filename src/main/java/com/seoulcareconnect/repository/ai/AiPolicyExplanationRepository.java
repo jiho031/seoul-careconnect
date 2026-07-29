@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExplanation, Long> {
 
@@ -45,6 +46,11 @@ public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExp
     );
 
     long countByReviewStatus(ReviewStatus reviewStatus);
+
+    long countByReviewStatusAndCreatedAtAfter(
+            ReviewStatus reviewStatus,
+            LocalDateTime createdAt
+    );
 
     @Modifying(flushAutomatically = true)
     @Query("""

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class AiPolicyExplanationService {
     private final ObjectMapper objectMapper;
     private final AiProperties properties;
 
-    public Optional<AiPolicyExplanationDto> findApproved(Long policyId) {
+    public Optional<AiPolicyExplanationDto> findGenerated(Long policyId) {
         return explanationRepository
                 .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
                         policyId,
@@ -49,83 +50,86 @@ public class AiPolicyExplanationService {
                 .map(this::toDto);
     }
 
-    public List<AiPolicyExplanationDto> findRecent(ReviewStatus status) {
-        List<AiPolicyExplanation> explanations = status == null
-                ? explanationRepository.findTop100ByReviewStatusNotOrderByCreatedAtDesc(
-                        ReviewStatus.SUPERSEDED
-                )
-                : explanationRepository.findTop100ByReviewStatusOrderByCreatedAtDesc(status);
-
-        return explanations.stream().map(this::toDto).toList();
+    public List<AiPolicyExplanationDto> findRecentGenerated() {
+        return explanationRepository
+                .findTop100ByReviewStatusOrderByCreatedAtDesc(ReviewStatus.APPROVED)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    public long count(ReviewStatus status) {
-        return explanationRepository.countByReviewStatus(status);
+    public long countGenerated() {
+        return explanationRepository.countByReviewStatus(ReviewStatus.APPROVED);
+    }
+
+    public long countGeneratedSince(LocalDateTime since) {
+        return explanationRepository.countByReviewStatusAndCreatedAtAfter(
+                ReviewStatus.APPROVED,
+                since
+        );
     }
 
     @Transactional
-    public AiPolicyExplanationDto generate(Long policyId) {
+    public synchronized AiPolicyExplanationDto getOrCreate(Long policyId) {
+        Optional<AiPolicyExplanation> existing = explanationRepository
+                .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
+                        policyId,
+                        ReviewStatus.APPROVED
+                );
+        if (existing.isPresent()) {
+            return toDto(existing.get());
+        }
+
         Policy policy = policyRepository.findWithSourceAndDetailByPolicyId(policyId)
                 .orElseThrow(() -> new IllegalArgumentException("정책을 찾을 수 없습니다. ID=" + policyId));
-
-        supersedeExistingDrafts(policyId);
-        return createDraft(policy);
+        return createGenerated(policy);
     }
 
     @Transactional
-    public AiPolicyExplanationDto regenerate(Long explanationId) {
-        AiPolicyExplanation current = findExplanation(explanationId);
-        Policy policy = policyRepository.findWithSourceAndDetailByPolicyId(current.getPolicy().getPolicyId())
-                .orElseThrow(() -> new IllegalArgumentException("정책을 찾을 수 없습니다."));
-
-        if (current.getReviewStatus() != ReviewStatus.APPROVED) {
-            current.supersede();
-        }
-        supersedeExistingDrafts(policy.getPolicyId());
-        return createDraft(policy);
-    }
-
-    @Transactional
-    public AiPolicyExplanationDto approve(Long explanationId, String reviewer, String comment) {
+    public AiPolicyExplanationDto update(
+            Long explanationId,
+            String easySummary,
+            String eligibilitySummary,
+            String benefitSummary,
+            String applicationSummary,
+            String cautionSummary,
+            String editor
+    ) {
         AiPolicyExplanation target = findExplanation(explanationId);
-        if (target.getReviewStatus() != ReviewStatus.DRAFT) {
-            throw new IllegalStateException("검수 대기 상태의 설명만 승인할 수 있습니다.");
+        if (target.getReviewStatus() != ReviewStatus.APPROVED) {
+            throw new IllegalStateException("현재 사용 중인 AI 요약만 수정할 수 있습니다.");
         }
 
-        explanationRepository.findByPolicyPolicyIdAndReviewStatus(
-                        target.getPolicy().getPolicyId(),
-                        ReviewStatus.APPROVED
-                )
-                .stream()
-                .filter(existing -> !existing.getExplanationId().equals(target.getExplanationId()))
-                .forEach(AiPolicyExplanation::supersede);
-
-        target.approve(reviewer, comment);
+        AiPolicyExplanation.Content content = new AiPolicyExplanation.Content(
+                normalizedField(easySummary),
+                normalizedField(eligibilitySummary),
+                normalizedField(benefitSummary),
+                normalizedField(applicationSummary),
+                normalizedField(cautionSummary)
+        );
+        validateContent(content);
+        target.updateContent(content, editor);
         return toDto(target);
     }
 
     @Transactional
-    public AiPolicyExplanationDto reject(Long explanationId, String reviewer, String comment) {
+    public void delete(Long explanationId) {
         AiPolicyExplanation target = findExplanation(explanationId);
-        if (target.getReviewStatus() != ReviewStatus.DRAFT) {
-            throw new IllegalStateException("검수 대기 상태의 설명만 반려할 수 있습니다.");
-        }
-        target.reject(reviewer, comment);
-        return toDto(target);
+        explanationRepository.delete(target);
     }
 
-    public boolean isEnabled() {
-        return modelGateway.isEnabled();
+    public boolean isOpenAiConfigured() {
+        return modelGateway.isOpenAiConfigured();
     }
 
     public String modelName() {
-        return modelGateway.preferredGenerationModelName();
+        return modelGateway.openAiModelName();
     }
 
-    private AiPolicyExplanationDto createDraft(Policy policy) {
+    private AiPolicyExplanationDto createGenerated(Policy policy) {
         GeneratedContent generated = generateContent(policy);
         AiPolicyExplanation saved = explanationRepository.save(
-                AiPolicyExplanation.draft(
+                AiPolicyExplanation.generated(
                         policy,
                         generated.content(),
                         generated.modelName(),
@@ -136,7 +140,7 @@ public class AiPolicyExplanationService {
     }
 
     private GeneratedContent generateContent(Policy policy) {
-        AiModelGateway.GeneratedJson generated = modelGateway.generateJson(
+        AiModelGateway.GeneratedJson generated = modelGateway.generateJsonOpenAiOnly(
                 "policy_easy_explanation",
                 SYSTEM_PROMPT,
                 List.of(new AiModelGateway.Message("user", buildPolicySource(policy))),
@@ -250,9 +254,15 @@ public class AiPolicyExplanationService {
         }
     }
 
-    private void supersedeExistingDrafts(Long policyId) {
-        explanationRepository.findByPolicyPolicyIdAndReviewStatus(policyId, ReviewStatus.DRAFT)
-                .forEach(AiPolicyExplanation::supersede);
+    private String normalizedField(String value) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException("AI 요약의 모든 항목을 입력해 주세요.");
+        }
+        String normalized = value.trim();
+        if (normalized.length() > FIELD_LIMIT) {
+            throw new IllegalArgumentException("AI 요약 항목은 8,000자 이하로 입력해 주세요.");
+        }
+        return normalized;
     }
 
     private AiPolicyExplanation findExplanation(Long explanationId) {

@@ -120,7 +120,7 @@ public class PolicyController {
         model.addAttribute("aiAssistantPolicyTitle", policy.getTitle());
         model.addAttribute(
                 "aiExplanation",
-                aiPolicyExplanationService.findApproved(policyId).orElse(null)
+                aiPolicyExplanationService.findGenerated(policyId).orElse(null)
         );
         return "policy/detail";
     }

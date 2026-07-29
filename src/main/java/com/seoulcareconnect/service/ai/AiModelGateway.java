@@ -25,6 +25,10 @@ public class AiModelGateway {
 
     private static final String UNAVAILABLE_MESSAGE =
             "AI 기능을 일시적으로 이용할 수 없습니다. OpenAI와 Ollama 연결 상태를 확인해 주세요.";
+    private static final String OPENAI_SUMMARY_CONFIGURATION_MESSAGE =
+            "AI 정책 요약을 생성하려면 서버 환경변수 OPENAI_API_KEY를 설정해 주세요.";
+    private static final String OPENAI_SUMMARY_UNAVAILABLE_MESSAGE =
+            "OpenAI 정책 요약을 생성하지 못했습니다. OPENAI_API_KEY와 OpenAI 연결 상태를 확인해 주세요.";
 
     private final ObjectMapper objectMapper;
     private final AiProperties properties;
@@ -50,6 +54,31 @@ public class AiModelGateway {
         );
     }
 
+    public GeneratedJson generateJsonOpenAiOnly(
+            String schemaName,
+            String systemPrompt,
+            List<Message> messages,
+            Map<String, Object> schema,
+            int maxOutputTokens,
+            List<String> requiredTextFields
+    ) {
+        if (!hasOpenAiConfiguration()) {
+            throw new UnavailableException(OPENAI_SUMMARY_CONFIGURATION_MESSAGE, null);
+        }
+
+        try {
+            return validateRequiredTextFields(
+                    openAiGenerate(schemaName, systemPrompt, messages, schema, maxOutputTokens),
+                    requiredTextFields
+            );
+        } catch (UnavailableException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            log.warn("OpenAI 정책 요약 생성 실패: {}", exception.getClass().getSimpleName());
+            throw new UnavailableException(OPENAI_SUMMARY_UNAVAILABLE_MESSAGE, exception);
+        }
+    }
+
     public EmbeddingBatch embed(List<String> inputs) {
         if (inputs == null || inputs.isEmpty()) {
             return new EmbeddingBatch(preferredEmbeddingProfile(), List.of());
@@ -63,7 +92,15 @@ public class AiModelGateway {
     }
 
     public boolean isEnabled() {
-        return properties.isEnabled();
+        return properties.isEnabled() || hasOpenAiConfiguration();
+    }
+
+    public boolean isOpenAiConfigured() {
+        return hasOpenAiConfiguration();
+    }
+
+    public String openAiModelName() {
+        return properties.getModel();
     }
 
     public String preferredGenerationModelName() {
@@ -109,7 +146,7 @@ public class AiModelGateway {
 
         JsonNode response = openAiClient().post()
                 .uri("/responses")
-                .header("Authorization", "Bearer " + properties.getApiKey().trim())
+                .header("Authorization", "Bearer " + properties.resolvedApiKey())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .body(request)
@@ -162,7 +199,7 @@ public class AiModelGateway {
 
         JsonNode response = openAiClient().post()
                 .uri("/embeddings")
-                .header("Authorization", "Bearer " + properties.getApiKey().trim())
+                .header("Authorization", "Bearer " + properties.resolvedApiKey())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .body(request)
@@ -358,13 +395,13 @@ public class AiModelGateway {
     }
 
     private void ensureEnabled() {
-        if (!properties.isEnabled()) {
+        if (!isEnabled()) {
             throw new UnavailableException("AI 기능이 비활성화되어 있습니다.", null);
         }
     }
 
     private boolean hasOpenAiConfiguration() {
-        return StringUtils.hasText(properties.getApiKey())
+        return StringUtils.hasText(properties.resolvedApiKey())
                 && StringUtils.hasText(properties.getBaseUrl())
                 && StringUtils.hasText(properties.getModel())
                 && StringUtils.hasText(properties.getEmbeddingModel());

@@ -57,7 +57,7 @@
 .ai-alert.warning { background: #fff8e8; border-color: #f4dca1; color: #856211; }
 .ai-alert code { font-weight: 900; }
 
-.ai-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ai-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .ai-generate-card { margin-bottom: 16px; }
 .ai-generate-card .admin-card-head p { margin: 6px 0 0; color: #66758f; font-size: 12px; }
@@ -75,6 +75,7 @@
 
 .ai-review-card { margin-top: 0; }
 .ai-list-head { align-items: flex-start; }
+.ai-list-head p { margin: 6px 0 0; color: #66758f; font-size: 12px; }
 .ai-status-filter { display: flex; flex-wrap: wrap; gap: 7px; }
 .ai-status-filter a {
     padding: 7px 10px;
@@ -128,6 +129,29 @@
 .ai-decision-form { display: flex; align-items: center; gap: 7px; }
 .ai-decision-form .admin-input { width: 190px; min-height: 40px; }
 
+.ai-edit-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ai-edit-form label {
+    display: grid;
+    gap: 7px;
+    padding: 14px;
+    border: 1px solid #d8e4ef;
+    border-radius: 13px;
+    background: #fff;
+}
+.ai-edit-form label:first-child { grid-column: 1 / -1; background: #f1fbfa; border-color: #bfe8e4; }
+.ai-edit-form label.caution { background: #fff9ec; border-color: #f0dba7; }
+.ai-edit-form label > span { color: #167b7e; font-size: 12px; font-weight: 900; }
+.ai-edit-form label.caution > span { color: #8a6815; }
+.ai-edit-form textarea {
+    width: 100%;
+    min-height: 108px;
+    resize: vertical;
+    line-height: 1.6;
+}
+.ai-edit-form .ai-review-meta,
+.ai-edit-form .ai-review-actions { grid-column: 1 / -1; }
+.ai-delete-form { display: flex; justify-content: flex-end; margin-top: 8px; }
+
 .ai-rule-card { margin-top: 16px; }
 .ai-rule-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .ai-rule-list article { padding: 14px; border: 1px solid #edf2f7; border-radius: 13px; background: #fbfdff; }
@@ -138,6 +162,10 @@
 @media (max-width: 980px) {
     .ai-stat-grid, .ai-rule-list { grid-template-columns: 1fr; }
     .ai-explanation-grid { grid-template-columns: 1fr; }
+    .ai-edit-form { grid-template-columns: 1fr; }
+    .ai-edit-form label:first-child,
+    .ai-edit-form .ai-review-meta,
+    .ai-edit-form .ai-review-actions { grid-column: auto; }
     .ai-explanation-box.main { grid-column: auto; }
     .ai-generate-form { grid-template-columns: 1fr; }
     .ai-review-top { flex-direction: column; }

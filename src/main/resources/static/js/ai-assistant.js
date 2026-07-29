@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const policyTitle = root.dataset.policyTitle || "";
     const history = [];
     let busy = false;
+    let policySummaryLoaded = false;
+    let policySummaryLoading = false;
     let lastFocusedElement = null;
 
     contextText.textContent = policyId && policyTitle
@@ -27,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         panel.setAttribute("aria-hidden", "false");
         launcher.setAttribute("aria-expanded", "true");
         if (prompt) input.value = prompt;
+        if (policyId) void loadPolicySummary();
         window.requestAnimationFrame(() => input.focus());
     }
 
@@ -127,6 +130,43 @@ document.addEventListener("DOMContentLoaded", () => {
         root.querySelectorAll("[data-ai-suggestion]").forEach(button => {
             button.disabled = value;
         });
+    }
+
+    async function loadPolicySummary() {
+        if (!policyId || policySummaryLoaded || policySummaryLoading) return;
+
+        policySummaryLoading = true;
+        root.querySelector("[data-ai-initial-message]")?.remove();
+        const loading = appendMessage("loading", "이 정책을 쉽게 정리하고 있습니다. 처음 한 번만 생성해 저장합니다.");
+        setBusy(true);
+
+        try {
+            const response = await fetch(`/api/ai/assistant/policies/${encodeURIComponent(policyId)}/summary`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"}
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload.message || "AI 정책 요약을 준비할 수 없습니다.");
+            }
+
+            loading.remove();
+            appendMessage("assistant", payload.answer, payload.sources);
+            history.push({role: "assistant", content: payload.answer});
+            policySummaryLoaded = true;
+        } catch (error) {
+            loading.remove();
+            appendMessage(
+                "assistant",
+                error instanceof Error
+                    ? error.message
+                    : "AI 정책 요약을 일시적으로 준비할 수 없습니다."
+            );
+        } finally {
+            policySummaryLoading = false;
+            setBusy(false);
+            input.focus();
+        }
     }
 
     async function ask(question) {
