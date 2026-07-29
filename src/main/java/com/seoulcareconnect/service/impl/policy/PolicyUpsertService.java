@@ -117,7 +117,12 @@ public class PolicyUpsertService {
         policy.setEndDate(item.getEndDate());
         policy.setApplyStatus(resolveApplyStatus(item));
         policy.setApplyMethod(limit(normalizeSingleLine(item.getApplyMethod()), 500));
-        policy.setOfficialUrl(limit(safeUrl(item.getOfficialUrl()), 1000));
+        String incomingOfficialUrl = limit(safeUrl(item.getOfficialUrl()), 1000);
+        if (newPolicy || incomingOfficialUrl != null) {
+            policy.setOfficialUrl(
+                    incomingOfficialUrl
+            );
+        }
         policy.setContact(limit(buildContact(item), 200));
         policy.setStatus(resolvePolicyStatus(item, existing == null ? null : existing.getStatus()));
 
@@ -131,7 +136,18 @@ public class PolicyUpsertService {
                 item.getSummary()
         )));
         detail.setSelectionCriteria(normalizeText(item.getSelectionCriteria()));
-        detail.setRequiredDocumentsText(normalizeText(item.getRequiredDocumentsText()));
+        String incomingDocuments =
+                normalizeText(
+                        item.getRequiredDocumentsText()
+                );
+
+        if (newPolicy
+                || incomingDocuments != null) {
+
+            detail.setRequiredDocumentsText(
+                    incomingDocuments
+            );
+        }
         detail.setContentText(normalizeText(item.getContentText()));
         detail.setContentHtml(null);
         policy.attachDetail(detail);
