@@ -1,6 +1,7 @@
 package com.seoulcareconnect.service.admin;
 
 import com.seoulcareconnect.dto.admin.AdminPolicyFormDTO;
+import com.seoulcareconnect.entity.admin.enums.AdminActivityType;
 import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.entity.policy.PolicyDetail;
 import com.seoulcareconnect.entity.policy.PolicySource;
@@ -29,6 +30,8 @@ public class AdminPolicyFormService {
     private final PolicySourceRepository policySourceRepository;
     private final MissingPolicyReportRepository
             missingPolicyReportRepository;
+    private final AdminActivityLogService
+            adminActivityLogService;
 
     public AdminPolicyFormDTO createEmptyForm() {
         AdminPolicyFormDTO dto =
@@ -66,9 +69,13 @@ public class AdminPolicyFormService {
     ) {
         validateForm(form);
 
-        Policy policy = findOrCreatePolicy(
-                form.getPolicyId()
-        );
+        boolean isNewPolicy =
+                form.getPolicyId() == null;
+
+        Policy policy =
+                findOrCreatePolicy(
+                        form.getPolicyId()
+                );
 
         PolicySource source =
                 findOrCreateManualSource(
@@ -77,24 +84,49 @@ public class AdminPolicyFormService {
                 );
 
         policy.setSource(source);
-        policy.setTitle(form.getTitle().trim());
-        policy.setCategory(form.getCategory());
-        policy.setTarget(trimToNull(form.getTarget()));
-        policy.setRegion(trimToNull(form.getRegion()));
-        policy.setDistrict(trimToNull(form.getDistrict()));
-        policy.setStartDate(form.getStartDate());
-        policy.setEndDate(form.getEndDate());
+
+        policy.setTitle(
+                form.getTitle().trim()
+        );
+
+        policy.setCategory(
+                form.getCategory()
+        );
+
+        policy.setTarget(
+                trimToNull(form.getTarget())
+        );
+
+        policy.setRegion(
+                trimToNull(form.getRegion())
+        );
+
+        policy.setDistrict(
+                trimToNull(form.getDistrict())
+        );
+
+        policy.setStartDate(
+                form.getStartDate()
+        );
+
+        policy.setEndDate(
+                form.getEndDate()
+        );
+
         policy.setApplyStatus(
                 form.getApplyStatus() != null
                         ? form.getApplyStatus()
                         : ApplyStatus.OPEN
         );
+
         policy.setApplyMethod(
                 trimToNull(form.getApplyMethod())
         );
+
         policy.setOfficialUrl(
                 trimToNull(form.getOfficialUrl())
         );
+
         policy.setContact(
                 trimToNull(form.getContact())
         );
@@ -107,8 +139,13 @@ public class AdminPolicyFormService {
             );
         }
 
+        PolicyStatus policyStatus =
+                resolvePolicyStatus(
+                        saveAction
+                );
+
         policy.setStatus(
-                resolvePolicyStatus(saveAction)
+                policyStatus
         );
 
         PolicyDetail detail =
@@ -122,14 +159,19 @@ public class AdminPolicyFormService {
         detail.setBenefit(
                 trimToNull(form.getBenefit())
         );
+
         detail.setSelectionCriteria(
-                trimToNull(form.getSelectionCriteria())
+                trimToNull(
+                        form.getSelectionCriteria()
+                )
         );
+
         detail.setRequiredDocumentsText(
                 trimToNull(
                         form.getRequiredDocumentsText()
                 )
         );
+
         detail.setContentText(
                 trimToNull(form.getContentText())
         );
@@ -138,6 +180,22 @@ public class AdminPolicyFormService {
 
         Policy savedPolicy =
                 policyRepository.save(policy);
+
+        AdminActivityType activityType =
+                resolvePolicyActivityType(
+                        isNewPolicy,
+                        saveAction
+                );
+
+        adminActivityLogService.recordCurrentAdmin(
+                activityType,
+                savedPolicy.getPolicyId(),
+                savedPolicy.getTitle(),
+                createPolicyLogDescription(
+                        isNewPolicy,
+                        saveAction
+                )
+        );
 
         return savedPolicy.getPolicyId();
     }
@@ -333,5 +391,49 @@ public class AdminPolicyFormService {
         }
 
         return memo.toString();
+    }
+
+    private AdminActivityType resolvePolicyActivityType(
+            boolean isNewPolicy,
+            String saveAction
+    ) {
+        if (isNewPolicy) {
+            return AdminActivityType.POLICY_CREATE;
+        }
+
+        if ("APPROVE".equals(saveAction)) {
+            return AdminActivityType.POLICY_APPROVE;
+        }
+
+        return AdminActivityType.POLICY_UPDATE;
+    }
+
+    private String createPolicyLogDescription(
+            boolean isNewPolicy,
+            String saveAction
+    ) {
+        if (isNewPolicy) {
+            return switch (saveAction) {
+                case "DRAFT" ->
+                        "신규 정책을 임시 저장했습니다.";
+
+                case "APPROVE" ->
+                        "신규 정책을 등록하고 승인했습니다.";
+
+                default ->
+                        "신규 정책을 등록하고 검수 대기로 저장했습니다.";
+            };
+        }
+
+        return switch (saveAction) {
+            case "DRAFT" ->
+                    "정책 정보를 수정하고 비공개 상태로 저장했습니다.";
+
+            case "APPROVE" ->
+                    "정책 정보를 수정하고 승인했습니다.";
+
+            default ->
+                    "정책 정보를 수정하고 검수 대기로 저장했습니다.";
+        };
     }
 }
