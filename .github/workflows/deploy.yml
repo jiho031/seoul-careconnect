@@ -30,7 +30,7 @@ jobs:
           cache: gradle
 
       - name: Build JAR
-        run: ./gradlew clean bootJar --no-daemon
+        run: bash ./gradlew clean bootJar --no-daemon
 
       - name: Deploy to server
         run: sudo /usr/local/sbin/deploy-seoul-careconnect build/libs/seoul-careconnect-0.0.1-SNAPSHOT.jar
