@@ -101,7 +101,8 @@
             <form class="report-card"
                   th:action="@{/reports}"
                   th:object="${reportRequest}"
-                  method="post">
+                  method="post"
+                  enctype="multipart/form-data">
 
                 <input type="hidden" th:field="*{policyId}">
 
@@ -203,12 +204,25 @@
                     </div>
                 </div>
 
-                <div class="report-file-box">
-                    <div>
-                        <strong>첨부파일</strong>
-                        <p>지금은 화면 UI만 표시됩니다. 추후 공고 캡처나 문서 첨부 기능으로 연결할 수 있어요.</p>
+                <div class="report-file-box report-file-box-column">
+                    <div class="report-file-box-head">
+                        <div>
+                            <strong>첨부 사진</strong>
+                            <p>공고 캡처나 현장 사진을 최대 5장, 장당 5MB까지 첨부할 수 있어요. (jpg, png, gif, webp)</p>
+                        </div>
+                        <button type="button" id="reportPhotoTrigger">사진 선택</button>
                     </div>
-                    <button type="button">파일 선택</button>
+
+                    <input type="file"
+                           id="reportPhotoInput"
+                           name="photos"
+                           accept="image/png,image/jpeg,image/gif,image/webp"
+                           multiple
+                           hidden>
+
+                    <small class="field-error" id="reportPhotoError"></small>
+
+                    <div class="report-photo-preview" id="reportPhotoPreview"></div>
                 </div>
 
                 <div class="report-agree-box">
@@ -383,6 +397,100 @@
                 event.preventDefault();
                 openValidationModal(missing.message, missing.focusTarget);
             }
+        });
+    });
+</script>
+
+<!-- 첨부 사진 선택 / 미리보기 / 삭제 -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const MAX_PHOTO_COUNT = 5;
+        const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
+        const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+
+        const triggerButton = document.getElementById("reportPhotoTrigger");
+        const fileInput = document.getElementById("reportPhotoInput");
+        const preview = document.getElementById("reportPhotoPreview");
+        const errorBox = document.getElementById("reportPhotoError");
+
+        if (!triggerButton || !fileInput || !preview) {
+            return;
+        }
+
+        let selectedFiles = [];
+
+        function showError(message) {
+            errorBox.textContent = message || "";
+        }
+
+        function syncInputFiles() {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(function (file) {
+                dataTransfer.items.add(file);
+            });
+            fileInput.files = dataTransfer.files;
+        }
+
+        function renderPreview() {
+            preview.innerHTML = "";
+
+            selectedFiles.forEach(function (file, index) {
+                const item = document.createElement("div");
+                item.className = "report-photo-item";
+
+                const img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+                img.alt = file.name;
+                img.onload = function () {
+                    URL.revokeObjectURL(img.src);
+                };
+
+                const removeButton = document.createElement("button");
+                removeButton.type = "button";
+                removeButton.className = "report-photo-remove";
+                removeButton.setAttribute("aria-label", file.name + " 삭제");
+                removeButton.textContent = "×";
+                removeButton.addEventListener("click", function () {
+                    selectedFiles.splice(index, 1);
+                    syncInputFiles();
+                    renderPreview();
+                });
+
+                item.appendChild(img);
+                item.appendChild(removeButton);
+                preview.appendChild(item);
+            });
+        }
+
+        triggerButton.addEventListener("click", function () {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", function () {
+            const newFiles = Array.from(fileInput.files || []);
+            showError("");
+
+            for (const file of newFiles) {
+                if (!ALLOWED_TYPES.includes(file.type)) {
+                    showError("이미지 파일(jpg, png, gif, webp)만 첨부할 수 있습니다.");
+                    continue;
+                }
+
+                if (file.size > MAX_PHOTO_SIZE) {
+                    showError("사진 1장의 용량은 5MB를 넘을 수 없습니다.");
+                    continue;
+                }
+
+                if (selectedFiles.length >= MAX_PHOTO_COUNT) {
+                    showError("사진은 최대 " + MAX_PHOTO_COUNT + "장까지 첨부할 수 있습니다.");
+                    break;
+                }
+
+                selectedFiles.push(file);
+            }
+
+            syncInputFiles();
+            renderPreview();
         });
     });
 </script>

@@ -142,6 +142,22 @@
             font-size: 13px;
             font-weight: 600;
         }
+
+        .report-card-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .report-card-photos img {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid #dce8f1;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -1812,6 +1828,8 @@
             접수일 ${formatReportDate(item.createdAt)}
         </p>
 
+        ${renderReportPhotos(item.photoUrls)}
+
     </div>
 
     <span class="policy-card-status ${reportStatusCssClass(item.status)}">
@@ -1834,6 +1852,16 @@
         if (status === "IN_REVIEW") return "in-review";
         if (status === "COMPLETED") return "completed";
         return "received";
+    }
+
+    function renderReportPhotos(photoUrls) {
+        if (!photoUrls || photoUrls.length === 0) return "";
+
+        const thumbs = photoUrls.map(url => `
+            <img src="${url}" alt="첨부 사진" onclick="window.open('${url}', '_blank')">
+        `).join("");
+
+        return `<div class="report-card-photos">${thumbs}</div>`;
     }
 
     function formatReportDate(createdAt) {

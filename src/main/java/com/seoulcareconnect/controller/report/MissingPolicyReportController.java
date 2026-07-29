@@ -118,7 +118,14 @@ public class MissingPolicyReportController {
         }
 
         requestDto.setUserId(user.getUserId());
-        missingPolicyReportService.submitReport(requestDto);
+
+        try {
+            missingPolicyReportService.submitReport(requestDto);
+        } catch (IllegalArgumentException e) {
+            // 첨부 사진 개수 초과, 지원하지 않는 파일 형식 등
+            bindingResult.reject("photoError", e.getMessage());
+            return "report/form";
+        }
 
         redirectAttributes.addFlashAttribute("reportSuccess", "신고가 접수되었습니다. 확인 후 반영해드릴게요.");
         return "redirect:/reports";

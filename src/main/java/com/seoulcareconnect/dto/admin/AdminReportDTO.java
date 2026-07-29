@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Getter
 public class AdminReportDTO {
@@ -32,6 +33,8 @@ public class AdminReportDTO {
 
     private final String adminMemo;
 
+    private final List<String> photoUrlList;
+
     private final LocalDateTime createdAt;
     private final LocalDateTime processedAt;
 
@@ -52,6 +55,7 @@ public class AdminReportDTO {
             String statusLabel,
             String statusCssClass,
             String adminMemo,
+            List<String> photoUrlList,
             LocalDateTime createdAt,
             LocalDateTime processedAt
     ) {
@@ -71,6 +75,7 @@ public class AdminReportDTO {
         this.statusLabel = statusLabel;
         this.statusCssClass = statusCssClass;
         this.adminMemo = adminMemo;
+        this.photoUrlList = photoUrlList;
         this.createdAt = createdAt;
         this.processedAt = processedAt;
     }
@@ -118,6 +123,7 @@ public class AdminReportDTO {
                 getStatusLabel(report.getStatus()),
                 getStatusCssClass(report.getStatus()),
                 report.getAdminMemo(),
+                report.getPhotoUrlList(),
                 report.getCreatedAt(),
                 report.getProcessedAt()
         );

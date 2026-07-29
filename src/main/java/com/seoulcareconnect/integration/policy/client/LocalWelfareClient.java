@@ -334,13 +334,22 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 ongoingService ? "상시" : null
         );
 
-        String documents = first(
-                detail,
-                list,
-                "rqutDcmnt",
-                "requiredDocuments",
-                "reqstMthPapersCn"
-        );
+        String documents =
+                reader.joinNonBlank(
+                        "\n",
+
+                        first(
+                                detail,
+                                list,
+                                "rqutDcmnt",
+                                "requiredDocuments",
+                                "reqstMthPapersCn"
+                        ),
+
+                        extractAttachedApplicationDocuments(
+                                detail
+                        )
+                );
 
         String content = reader.joinNonBlank(
                 "\n",
@@ -386,6 +395,105 @@ public class LocalWelfareClient implements ExternalPolicyClient {
                 .rawXml(rawXml)
                 .httpStatus(200)
                 .build();
+    }
+
+    private String extractAttachedApplicationDocuments(
+            JsonNode detail
+    ) {
+        if (detail == null) {
+            return null;
+        }
+
+        List<String> documents =
+                new ArrayList<>();
+
+        for (JsonNode node :
+                reader.findObjectsContainingAny(
+                        detail,
+                        "servSeDetailNm",
+                        "wlfareInfoReldNm"
+                )) {
+
+            String code =
+                    reader.firstText(
+                            node,
+                            "servSeCode",
+                            "wlfareInfoDtlCd"
+                    );
+
+            if (!"040".equals(code)) {
+                continue;
+            }
+
+            String fileName =
+                    reader.firstText(
+                            node,
+                            "servSeDetailNm",
+                            "wlfareInfoReldNm"
+                    );
+
+            if (fileName != null
+                    && isApplicationDocumentName(fileName)
+                    && !documents.contains(fileName)) {
+
+                documents.add(fileName);
+            }
+        }
+
+        return documents.isEmpty()
+                ? null
+                : String.join("\n", documents);
+    }
+
+    private boolean isApplicationDocumentName(
+            String fileName
+    ) {
+        String normalized =
+                fileName.replaceAll("\\s+", "");
+
+        if (containsAny(
+                normalized,
+                "사업안내",
+                "공고문",
+                "모집안내",
+                "추진계획",
+                "조례",
+                "지침",
+                "매뉴얼",
+                "포스터"
+        )) {
+            return false;
+        }
+
+        return containsAny(
+                normalized,
+                "신청서",
+                "신청양식",
+                "제출서류",
+                "제출서식",
+                "서식",
+                "양식",
+                "동의서",
+                "서약서",
+                "신고서",
+                "확인서",
+                "증빙",
+                "별지"
+        );
+    }
+
+    private boolean containsAny(
+            String text,
+            String... keywords
+    ) {
+        for (String keyword : keywords) {
+
+            if (text.contains(keyword)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean isOpenEndedEnforcement(String enforcementEndText) {

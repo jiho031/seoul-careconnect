@@ -109,6 +109,7 @@ public class SeoulOpenDataWelfareClient implements ExternalPolicyClient {
     }
 
     private ExternalPolicyItem mapItem(JsonNode row) {
+        String servId = reader.firstText(row, "SERV_ID");
         String title = reader.firstText(row, "SERV_NM");
         String summary = reader.firstText(row, "SERV_DGST");
         String lifeCycle = reader.firstText(row, "LIFE_NM_ARRAY");
@@ -135,7 +136,7 @@ public class SeoulOpenDataWelfareClient implements ExternalPolicyClient {
         return ExternalPolicyItem.builder()
                 .sourceName(sourceName())
                 .sourceBaseUrl(sourceBaseUrl())
-                .externalId(reader.firstText(row, "SERV_ID"))
+                .externalId(servId)
                 .title(reader.stripHtml(title))
                 .agencyName(reader.stripHtml(reader.firstText(row, "BIZ_CHR_DEPT_NM")))
                 .summary(reader.stripHtml(summary))
@@ -151,7 +152,7 @@ public class SeoulOpenDataWelfareClient implements ExternalPolicyClient {
                 .district(reader.firstText(row, "SGG_NM"))
                 .statusText(resolveStatus(row))
                 .applyMethod(reader.stripHtml(applyMethod))
-                .officialUrl(reader.firstText(row, "SERV_DTL_LINK", "SERV_URL", "LINK"))
+                .officialUrl(resolveOfficialUrl(row, servId))
                 .contact(reader.stripHtml(reader.firstText(row, "INQ_NUM")))
                 .benefit(reader.stripHtml(benefit))
                 .selectionCriteria(reader.stripHtml(selectionCriteria))
@@ -160,6 +161,38 @@ public class SeoulOpenDataWelfareClient implements ExternalPolicyClient {
                 .rawJson(row.toString())
                 .httpStatus(200)
                 .build();
+    }
+
+    private String resolveOfficialUrl(
+            JsonNode row,
+            String servId
+    ) {
+        String provided =
+                reader.firstText(
+                        row,
+                        "SERV_DTL_LINK",
+                        "SERV_URL",
+                        "LINK"
+                );
+
+        if (provided != null
+                && !provided.isBlank()) {
+
+            return provided;
+        }
+
+        if (servId == null
+                || servId.isBlank()) {
+
+            return null;
+        }
+
+        return "https://www.bokjiro.go.kr/"
+                + "ssis-tbu/twataa/wlfareInfo/"
+                + "moveTWAT52011M.do?"
+                + "wlfareInfoId="
+                + servId
+                + "&wlfareInfoReldBztpCd=02";
     }
 
     private String resolveStatus(JsonNode row) {

@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Entity
 @Getter
@@ -56,6 +59,11 @@ public class MissingPolicyReport {
     @Column(name = "admin_memo", length = 1000)
     private String adminMemo;
 
+    // 첨부 사진 상대 경로(/uploads/reports/...)를 콤마로 이어붙여 저장
+    @Lob
+    @Column(name = "photo_urls", columnDefinition = "TEXT")
+    private String photoUrls;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -66,5 +74,28 @@ public class MissingPolicyReport {
     public void prePersist() {
         if (status == null) status = "RECEIVED";
         if (createdAt == null) createdAt = LocalDateTime.now();
+    }
+
+    /**
+     * 저장된 photoUrls(콤마 구분 문자열)를 URL 목록으로 변환한다.
+     */
+    public List<String> getPhotoUrlList() {
+        if (photoUrls == null || photoUrls.isBlank()) {
+            return new ArrayList<>();
+        }
+
+        return Arrays.stream(photoUrls.split(","))
+                .map(String::trim)
+                .filter(url -> !url.isEmpty())
+                .toList();
+    }
+
+    public void setPhotoUrlList(List<String> urls) {
+        if (urls == null || urls.isEmpty()) {
+            this.photoUrls = null;
+            return;
+        }
+
+        this.photoUrls = String.join(",", urls);
     }
 }
