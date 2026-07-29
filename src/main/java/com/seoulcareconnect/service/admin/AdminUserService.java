@@ -1,6 +1,7 @@
 package com.seoulcareconnect.service.admin;
 
 import com.seoulcareconnect.dto.admin.AdminUserDTO;
+import com.seoulcareconnect.entity.admin.enums.AdminActivityType;
 import com.seoulcareconnect.entity.user.User;
 import com.seoulcareconnect.repository.user.UserRepository;
 import jakarta.persistence.criteria.Predicate;
@@ -26,9 +27,9 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
 
-    /**
-     * 회원 목록 조회
-     */
+    private final AdminActivityLogService
+            adminActivityLogService;
+
     public Page<AdminUserDTO> getUsers(
             String keyword,
             String role,
@@ -59,16 +60,10 @@ public class AdminUserService {
                 .map(AdminUserDTO::from);
     }
 
-    /**
-     * 전체 회원 수
-     */
     public long getTotalUserCount() {
         return userRepository.count();
     }
 
-    /**
-     * 오늘 가입 회원 수
-     */
     public long getTodayJoinedCount() {
         LocalDate today = LocalDate.now();
 
@@ -84,53 +79,57 @@ public class AdminUserService {
         );
     }
 
-    /**
-     * 관리자 수
-     *
-     * 최고 관리자는 별도 집계하고
-     * 일반 관리자만 계산한다.
-     */
     public long getAdminCount() {
         return userRepository.countByRole("ADMIN");
     }
 
-    /**
-     * 비활성 회원 수
-     */
     public long getInactiveUserCount() {
         return userRepository.countByIsActiveFalse();
     }
 
-    /**
-     * 회원 비활성화
-     */
     @Transactional
-    public void deactivateUser(Long userId) {
-        User user = findUser(userId);
+    public void deactivateUser(
+            Long userId
+    ) {
+        User user =
+                findUser(userId);
 
-        if ("SUPER_ADMIN".equals(user.getRole())) {
+        if ("SUPER_ADMIN".equals(
+                user.getRole()
+        )) {
             throw new IllegalStateException(
                     "최고 관리자는 비활성화할 수 없습니다."
             );
         }
 
-        if (!Boolean.TRUE.equals(user.getIsActive())) {
+        if (!Boolean.TRUE.equals(
+                user.getIsActive()
+        )) {
             throw new IllegalStateException(
                     "이미 비활성 상태인 회원입니다."
             );
         }
 
         user.setIsActive(false);
+
+        adminActivityLogService.recordCurrentAdmin(
+                AdminActivityType.USER_STATUS_UPDATE,
+                user.getUserId(),
+                resolveUserTargetName(user),
+                "회원 계정을 비활성화했습니다."
+        );
     }
 
-    /**
-     * 회원 활성화
-     */
     @Transactional
-    public void activateUser(Long userId) {
-        User user = findUser(userId);
+    public void activateUser(
+            Long userId
+    ) {
+        User user =
+                findUser(userId);
 
-        if (Boolean.TRUE.equals(user.getIsActive())) {
+        if (Boolean.TRUE.equals(
+                user.getIsActive()
+        )) {
             throw new IllegalStateException(
                     "이미 활성 상태인 회원입니다."
             );
@@ -138,6 +137,13 @@ public class AdminUserService {
 
         user.setIsActive(true);
         user.setDeletedAt(null);
+
+        adminActivityLogService.recordCurrentAdmin(
+                AdminActivityType.USER_STATUS_UPDATE,
+                user.getUserId(),
+                resolveUserTargetName(user),
+                "회원 계정을 활성화했습니다."
+        );
     }
 
     private User findUser(Long userId) {
@@ -149,9 +155,6 @@ public class AdminUserService {
                 );
     }
 
-    /**
-     * 검색 및 필터 조건 조합
-     */
     private Specification<User> buildSpecification(
             String keyword,
             String role,
@@ -225,5 +228,26 @@ public class AdminUserService {
                     )
             );
         };
+    }
+
+    private String resolveUserTargetName(
+            User user
+    ) {
+        if (user.getName() != null
+                && !user.getName().isBlank()) {
+
+            return user.getName()
+                    + " ("
+                    + user.getEmail()
+                    + ")";
+        }
+
+        if (user.getEmail() != null
+                && !user.getEmail().isBlank()) {
+
+            return user.getEmail();
+        }
+
+        return "회원 #" + user.getUserId();
     }
 }
