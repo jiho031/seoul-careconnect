@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
+                                "/uploads/**",
                                 "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/admin/**")
