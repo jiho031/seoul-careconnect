@@ -11,6 +11,8 @@ import com.seoulcareconnect.entity.policy.PolicyDetail;
 import com.seoulcareconnect.repository.ai.AiPolicyExplanationRepository;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -46,6 +48,18 @@ public class AiPolicyExplanationService {
                 .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
                         policyId,
                         ReviewStatus.APPROVED
+                )
+                .map(this::toDto);
+    }
+
+    public Page<AiPolicyExplanationDto> findGeneratedPage(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(1, Math.min(size, 50));
+
+        return explanationRepository
+                .findByReviewStatusOrderByCreatedAtDesc(
+                        ReviewStatus.APPROVED,
+                        PageRequest.of(safePage, safeSize)
                 )
                 .map(this::toDto);
     }

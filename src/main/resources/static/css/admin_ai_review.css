@@ -176,3 +176,228 @@
     .ai-decision-form { width: 100%; flex-wrap: wrap; }
     .ai-decision-form .admin-input { width: 100%; }
 }
+
+/* ===============================
+   제목형 목록 / 모달 / 10건 페이징
+================================ */
+.ai-page-summary {
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: #eef8f7;
+    color: #167b7e;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.ai-title-list {
+    display: grid;
+    gap: 8px;
+}
+
+.ai-title-list-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 15px 17px;
+    border: 1px solid #d8e4ef;
+    border-radius: 13px;
+    background: #fff;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease, transform .15s ease;
+}
+
+.ai-title-list-item:hover,
+.ai-title-list-item:focus-visible {
+    border-color: #67b9b7;
+    background: #f5fbfb;
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.ai-title-list-main {
+    min-width: 0;
+    display: grid;
+    gap: 5px;
+}
+
+.ai-title-list-main strong {
+    overflow: hidden;
+    color: #041b4d;
+    font-size: 15px;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ai-title-list-main small {
+    color: #748197;
+    font-size: 11px;
+}
+
+.ai-title-list-side {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-title-list-arrow {
+    color: #248c8f;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.ai-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 20px;
+}
+
+.ai-page-link {
+    min-width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border: 1px solid #d8e4ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #52617a;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.ai-page-link:hover {
+    border-color: #67b9b7;
+    color: #167b7e;
+}
+
+.ai-page-link.active {
+    border-color: #248c8f;
+    background: #248c8f;
+    color: #fff;
+}
+
+.ai-page-link.disabled {
+    background: #f5f7fa;
+    color: #a4adba;
+    cursor: default;
+}
+
+.ai-summary-modal {
+    width: min(1180px, calc(100vw - 40px));
+    max-height: 90vh;
+    padding: 0;
+    border: 0;
+    border-radius: 18px;
+    background: transparent;
+    box-shadow: 0 24px 70px rgba(4, 27, 77, .24);
+}
+
+.ai-summary-modal::backdrop {
+    background: rgba(4, 20, 47, .56);
+    backdrop-filter: blur(2px);
+}
+
+.ai-summary-modal-shell {
+    overflow: hidden;
+    border: 1px solid #d8e4ef;
+    border-radius: 18px;
+    background: #f8fbfd;
+}
+
+.ai-summary-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #d8e4ef;
+    background: #fff;
+}
+
+.ai-summary-modal-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: #248c8f;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.ai-summary-modal-header h2 {
+    margin: 0;
+    color: #041b4d;
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+.ai-summary-modal-header p {
+    margin: 7px 0 0;
+    color: #66758f;
+    font-size: 12px;
+}
+
+.ai-summary-modal-close {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #d8e4ef;
+    border-radius: 50%;
+    background: #fff;
+    color: #52617a;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ai-summary-modal-close:hover {
+    border-color: #67b9b7;
+    color: #167b7e;
+}
+
+.ai-summary-modal-body {
+    max-height: calc(90vh - 96px);
+    overflow-y: auto;
+    padding: 20px 22px 24px;
+}
+
+@media (max-width: 680px) {
+    .ai-title-list-item {
+        align-items: flex-start;
+        padding: 13px 14px;
+    }
+
+    .ai-title-list-main strong {
+        white-space: normal;
+    }
+
+    .ai-title-list-side .ai-review-badge {
+        display: none;
+    }
+
+    .ai-summary-modal {
+        width: calc(100vw - 18px);
+        max-height: 94vh;
+    }
+
+    .ai-summary-modal-header,
+    .ai-summary-modal-body {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .ai-summary-modal-body {
+        max-height: calc(94vh - 96px);
+    }
+}

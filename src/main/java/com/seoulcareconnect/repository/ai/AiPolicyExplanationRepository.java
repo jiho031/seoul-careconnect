@@ -2,6 +2,8 @@ package com.seoulcareconnect.repository.ai;
 
 import com.seoulcareconnect.entity.ai.AiPolicyExplanation;
 import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,6 +28,12 @@ public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExp
             "where explanation.explanationId = :explanationId")
     Optional<AiPolicyExplanation> findWithPolicyByExplanationId(
             @Param("explanationId") Long explanationId
+    );
+
+    @EntityGraph(attributePaths = "policy")
+    Page<AiPolicyExplanation> findByReviewStatusOrderByCreatedAtDesc(
+            ReviewStatus reviewStatus,
+            Pageable pageable
     );
 
     @EntityGraph(attributePaths = "policy")

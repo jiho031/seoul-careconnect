@@ -1,7 +1,9 @@
 package com.seoulcareconnect.controller.ai;
 
+import com.seoulcareconnect.dto.ai.AiPolicyExplanationDto;
 import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,11 +22,36 @@ import java.time.ZoneId;
 @RequestMapping("/admin/ai-review")
 public class AdminAiReviewController {
 
+    private static final int PAGE_SIZE = 10;
+
     private final AiPolicyExplanationService explanationService;
 
     @GetMapping
-    public String page(Model model) {
-        model.addAttribute("items", explanationService.findRecentGenerated());
+    public String page(
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ) {
+        int safePage = Math.max(page, 0);
+        Page<AiPolicyExplanationDto> itemPage =
+                explanationService.findGeneratedPage(safePage, PAGE_SIZE);
+
+        // 삭제 등으로 현재 페이지가 사라졌다면 마지막 유효 페이지로 이동한다.
+        if (itemPage.getTotalPages() > 0 && safePage >= itemPage.getTotalPages()) {
+            return "redirect:/admin/ai-review?page=" + (itemPage.getTotalPages() - 1);
+        }
+
+        int paginationStart = 0;
+        int paginationEnd = 0;
+        if (itemPage.getTotalPages() > 0) {
+            paginationStart = Math.max(0, itemPage.getNumber() - 2);
+            paginationEnd = Math.min(itemPage.getTotalPages() - 1, paginationStart + 4);
+            paginationStart = Math.max(0, paginationEnd - 4);
+        }
+
+        model.addAttribute("items", itemPage.getContent());
+        model.addAttribute("itemPage", itemPage);
+        model.addAttribute("paginationStart", paginationStart);
+        model.addAttribute("paginationEnd", paginationEnd);
         model.addAttribute("generatedCount", explanationService.countGenerated());
         model.addAttribute(
                 "todayGeneratedCount",
@@ -45,6 +72,7 @@ public class AdminAiReviewController {
             @RequestParam String benefitSummary,
             @RequestParam String applicationSummary,
             @RequestParam String cautionSummary,
+            @RequestParam(defaultValue = "0") int page,
             Authentication authentication,
             RedirectAttributes redirectAttributes
     ) {
@@ -59,6 +87,7 @@ public class AdminAiReviewController {
                         reviewer(authentication)
                 ),
                 "AI 정책 요약을 수정했습니다.",
+                page,
                 redirectAttributes
         );
     }
@@ -66,11 +95,13 @@ public class AdminAiReviewController {
     @PostMapping("/{explanationId}/delete")
     public String delete(
             @PathVariable Long explanationId,
+            @RequestParam(defaultValue = "0") int page,
             RedirectAttributes redirectAttributes
     ) {
         return runAction(
                 () -> explanationService.delete(explanationId),
                 "AI 정책 요약을 삭제했습니다. 다음 도우미 실행 때 다시 생성됩니다.",
+                page,
                 redirectAttributes
         );
     }
@@ -78,6 +109,7 @@ public class AdminAiReviewController {
     private String runAction(
             Runnable action,
             String successMessage,
+            int page,
             RedirectAttributes redirectAttributes
     ) {
         try {
@@ -86,6 +118,7 @@ public class AdminAiReviewController {
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
+        redirectAttributes.addAttribute("page", Math.max(page, 0));
         return "redirect:/admin/ai-review";
     }
 
