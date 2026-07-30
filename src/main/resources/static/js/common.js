@@ -15,6 +15,364 @@
 
         const mobileBreakpoint = 1320;
 
+        function initializeAdminFloatingMenu() {
+            const menu =
+                document.querySelector(".admin-menu");
+            const side =
+                menu?.closest(".admin-side");
+
+            if (
+                !menu
+                || !side
+                || menu.dataset.floatingMenuInitialized
+            ) {
+                return;
+            }
+
+            menu.dataset.floatingMenuInitialized = "true";
+
+            if (!menu.id) {
+                menu.id = "adminFloatingMenu";
+            }
+
+            const links =
+                Array.from(menu.querySelectorAll("a[href]"));
+            let activeLink =
+                menu.querySelector("a.active")
+                || links.find((link) => {
+                    const url =
+                        new URL(link.href, window.location.href);
+
+                    return (
+                        url.pathname === window.location.pathname
+                        && url.search === window.location.search
+                    );
+                })
+                || links[0];
+            let navigationPending = false;
+
+            links.forEach((link) => {
+                if (link === activeLink) {
+                    link.classList.add("active");
+                    link.setAttribute("aria-current", "page");
+                } else {
+                    link.removeAttribute("aria-current");
+                }
+            });
+
+            const indicator =
+                document.createElement("span");
+            indicator.className =
+                "admin-menu-active-indicator";
+            indicator.setAttribute("aria-hidden", "true");
+            menu.prepend(indicator);
+
+            const toggle =
+                document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "admin-menu-toggle";
+            toggle.setAttribute("aria-controls", menu.id);
+            toggle.setAttribute("aria-expanded", "false");
+
+            const toggleIcon =
+                document.createElement("span");
+            toggleIcon.className = "admin-menu-toggle-icon";
+            toggleIcon.setAttribute("aria-hidden", "true");
+
+            for (let index = 0; index < 3; index += 1) {
+                toggleIcon.append(
+                    document.createElement("span")
+                );
+            }
+
+            toggle.append(toggleIcon);
+            side.append(toggle);
+
+            const compactQuery =
+                window.matchMedia("(max-width: 1024px)");
+            const reducedMotionQuery =
+                window.matchMedia(
+                    "(prefers-reduced-motion: reduce)"
+                );
+
+            function activeLabel() {
+                return activeLink
+                    ? activeLink.textContent
+                        .replace(/\s+/g, " ")
+                        .trim()
+                    : "";
+            }
+
+            function updateToggleLabel(isOpen) {
+                const currentLabel = activeLabel();
+                const action = isOpen ? "닫기" : "열기";
+                const current = currentLabel
+                    ? `, 현재 ${currentLabel}`
+                    : "";
+
+                toggle.setAttribute(
+                    "aria-label",
+                    `관리자 메뉴 ${action}${current}`
+                );
+                toggle.title =
+                    `관리자 메뉴 ${action}${current}`;
+            }
+
+            function updateIndicator(
+                link = activeLink,
+                animate = true
+            ) {
+                if (!link || !compactQuery.matches) {
+                    return;
+                }
+
+                indicator.classList.toggle(
+                    "is-positioning",
+                    !animate
+                );
+                indicator.style.width =
+                    `${link.offsetWidth}px`;
+                indicator.style.height =
+                    `${link.offsetHeight}px`;
+                indicator.style.transform =
+                    `translate3d(${link.offsetLeft}px, `
+                    + `${link.offsetTop}px, 0)`;
+
+                if (!animate) {
+                    requestAnimationFrame(() => {
+                        indicator.classList.remove(
+                            "is-positioning"
+                        );
+                    });
+                }
+            }
+
+            function setMenuOpen(
+                isOpen,
+                focusTarget = false
+            ) {
+                if (!compactQuery.matches) {
+                    document.body.classList.remove(
+                        "admin-menu-open"
+                    );
+                    toggle.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+                    menu.removeAttribute("aria-hidden");
+                    menu.inert = false;
+                    updateToggleLabel(false);
+                    return;
+                }
+
+                document.body.classList.toggle(
+                    "admin-menu-open",
+                    isOpen
+                );
+
+                if (!isOpen && focusTarget) {
+                    toggle.focus({
+                        preventScroll: true
+                    });
+                }
+
+                toggle.setAttribute(
+                    "aria-expanded",
+                    String(isOpen)
+                );
+                menu.setAttribute(
+                    "aria-hidden",
+                    String(!isOpen)
+                );
+                menu.inert = !isOpen;
+                updateToggleLabel(isOpen);
+
+                if (isOpen) {
+                    requestAnimationFrame(() => {
+                        updateIndicator(activeLink, false);
+
+                        if (focusTarget) {
+                            activeLink?.focus({
+                                preventScroll: true
+                            });
+                        }
+                    });
+                }
+            }
+
+            function selectLink(link) {
+                links.forEach((item) => {
+                    item.classList.toggle(
+                        "active",
+                        item === link
+                    );
+
+                    if (item === link) {
+                        item.setAttribute(
+                            "aria-current",
+                            "page"
+                        );
+                    } else {
+                        item.removeAttribute(
+                            "aria-current"
+                        );
+                    }
+                });
+
+                activeLink = link;
+                updateToggleLabel(true);
+                updateIndicator(link);
+            }
+
+            function syncViewport() {
+                setMenuOpen(false);
+
+                if (compactQuery.matches) {
+                    menu.setAttribute(
+                        "aria-hidden",
+                        "true"
+                    );
+                    menu.inert = true;
+                }
+            }
+
+            toggle.addEventListener("click", () => {
+                if (navigationPending) {
+                    return;
+                }
+
+                const isOpen =
+                    !document.body.classList.contains(
+                        "admin-menu-open"
+                    );
+
+                setMenuOpen(isOpen, isOpen);
+            });
+
+            menu.addEventListener("click", (event) => {
+                const link =
+                    event.target.closest("a[href]");
+
+                if (
+                    !link
+                    || !compactQuery.matches
+                    || event.defaultPrevented
+                    || event.button !== 0
+                    || event.metaKey
+                    || event.ctrlKey
+                    || event.shiftKey
+                    || event.altKey
+                ) {
+                    return;
+                }
+
+                if (navigationPending) {
+                    event.preventDefault();
+                    return;
+                }
+
+                const url =
+                    new URL(link.href, window.location.href);
+
+                if (url.origin !== window.location.origin) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (
+                    url.pathname === window.location.pathname
+                    && url.search === window.location.search
+                ) {
+                    selectLink(link);
+                    setMenuOpen(false, true);
+                    return;
+                }
+
+                selectLink(link);
+                navigationPending = true;
+                toggle.disabled = true;
+
+                window.setTimeout(
+                    () => {
+                        document.body.classList.add(
+                            "admin-page-leaving"
+                        );
+                    },
+                    reducedMotionQuery.matches ? 0 : 230
+                );
+
+                window.setTimeout(
+                    () => {
+                        window.location.assign(url.href);
+                    },
+                    reducedMotionQuery.matches ? 0 : 420
+                );
+            });
+
+            document.addEventListener(
+                "pointerdown",
+                (event) => {
+                    if (
+                        !compactQuery.matches
+                        || !document.body.classList.contains(
+                            "admin-menu-open"
+                        )
+                        || menu.contains(event.target)
+                        || toggle.contains(event.target)
+                    ) {
+                        return;
+                    }
+
+                    setMenuOpen(false);
+                }
+            );
+
+            document.addEventListener(
+                "keydown",
+                (event) => {
+                    if (
+                        event.key === "Escape"
+                        && document.body.classList.contains(
+                            "admin-menu-open"
+                        )
+                    ) {
+                        setMenuOpen(false, true);
+                    }
+                }
+            );
+
+            compactQuery.addEventListener(
+                "change",
+                syncViewport
+            );
+
+            window.addEventListener("resize", () => {
+                if (
+                    compactQuery.matches
+                    && document.body.classList.contains(
+                        "admin-menu-open"
+                    )
+                ) {
+                    updateIndicator(activeLink, false);
+                }
+            });
+
+            window.addEventListener("pageshow", () => {
+                navigationPending = false;
+                toggle.disabled = false;
+                document.body.classList.remove(
+                    "admin-page-leaving"
+                );
+            });
+
+            document.body.classList.add(
+                "admin-floating-menu-ready"
+            );
+            updateToggleLabel(false);
+            syncViewport();
+        }
+
     function initializeFormResets() {
         document
             .querySelectorAll("[data-reset-form]")
@@ -333,6 +691,7 @@
 
         initializeFormResets();
         initializeAsyncPagination();
+        initializeAdminFloatingMenu();
     }
 
     /*

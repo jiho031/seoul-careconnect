@@ -130,6 +130,23 @@ textarea {
     -webkit-overflow-scrolling: touch;
 }
 
+.admin-menu-toggle,
+.admin-menu-active-indicator {
+    display: none;
+}
+
+@keyframes admin-content-enter {
+    from {
+        opacity: .42;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 1500px) {
     .policy-form-top,
     .policy-form-ai {
@@ -218,6 +235,204 @@ textarea {
         line-height: 1.35;
     }
 
+    body.admin-floating-menu-ready .admin-menu {
+        right: 14px;
+        bottom: 84px;
+        left: auto;
+        z-index: 501;
+        width: min(390px, calc(100% - 28px));
+        max-height: calc(100dvh - 112px);
+        margin: 0;
+        padding: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: scale(.92) translate3d(12px, 12px, 0);
+        transform-origin: right bottom;
+        transition:
+            opacity .2s ease,
+            transform .28s cubic-bezier(.22, 1, .36, 1),
+            visibility 0s linear .28s;
+    }
+
+    body.admin-floating-menu-ready.admin-menu-open .admin-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: scale(1) translate3d(0, 0, 0);
+        transition-delay: 0s;
+    }
+
+    body.admin-floating-menu-ready .admin-menu a {
+        position: relative;
+        z-index: 1;
+        min-height: 54px;
+        transition:
+            color .2s ease,
+            transform .18s ease;
+    }
+
+    body.admin-floating-menu-ready .admin-menu a:hover {
+        border-color: transparent;
+        background: transparent;
+        transform: translateY(-1px);
+    }
+
+    body.admin-floating-menu-ready .admin-menu a.active {
+        border-color: transparent;
+        background: transparent;
+        color: #167b7e;
+    }
+
+    body.admin-floating-menu-ready
+    .admin-menu-active-indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+        display: block;
+        border: 1px solid #bfe8e4;
+        border-radius: 12px;
+        box-sizing: border-box;
+        background: #e8f7f5;
+        pointer-events: none;
+        transition:
+            width .24s cubic-bezier(.22, 1, .36, 1),
+            height .24s cubic-bezier(.22, 1, .36, 1),
+            transform .24s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    body.admin-floating-menu-ready
+    .admin-menu-active-indicator.is-positioning {
+        transition: none;
+    }
+
+    body.admin-floating-menu-ready .admin-menu-toggle {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 502;
+        display: inline-flex;
+        width: 56px;
+        height: 56px;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, .58);
+        border-radius: 18px;
+        background:
+            linear-gradient(145deg, #168b8e, #08747b);
+        color: #fff;
+        box-shadow:
+            0 12px 28px rgba(9, 77, 90, .28),
+            inset 0 1px 0 rgba(255, 255, 255, .24);
+        cursor: pointer;
+        transition:
+            transform .22s ease,
+            box-shadow .22s ease,
+            background .22s ease;
+    }
+
+    body.admin-floating-menu-ready
+    .admin-menu-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 15px 32px rgba(9, 77, 90, .34),
+            inset 0 1px 0 rgba(255, 255, 255, .24);
+    }
+
+    body.admin-floating-menu-ready
+    .admin-menu-toggle:focus-visible {
+        outline: 3px solid rgba(22, 139, 142, .3);
+        outline-offset: 3px;
+    }
+
+    body.admin-floating-menu-ready
+    .admin-menu-toggle:disabled {
+        cursor: wait;
+    }
+
+    body.admin-menu-open .admin-menu-toggle {
+        background:
+            linear-gradient(145deg, #123d68, #082c55);
+        transform: rotate(2deg);
+    }
+
+    .admin-menu-toggle-icon {
+        position: relative;
+        display: block;
+        width: 23px;
+        height: 18px;
+    }
+
+    .admin-menu-toggle-icon span {
+        position: absolute;
+        left: 0;
+        width: 23px;
+        height: 2.5px;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+            top .22s ease,
+            opacity .16s ease,
+            transform .22s ease;
+    }
+
+    .admin-menu-toggle-icon span:nth-child(1) {
+        top: 0;
+    }
+
+    .admin-menu-toggle-icon span:nth-child(2) {
+        top: 7.5px;
+    }
+
+    .admin-menu-toggle-icon span:nth-child(3) {
+        top: 15px;
+    }
+
+    body.admin-menu-open
+    .admin-menu-toggle-icon span:nth-child(1) {
+        top: 7.5px;
+        transform: rotate(45deg);
+    }
+
+    body.admin-menu-open
+    .admin-menu-toggle-icon span:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(.35);
+    }
+
+    body.admin-menu-open
+    .admin-menu-toggle-icon span:nth-child(3) {
+        top: 7.5px;
+        transform: rotate(-45deg);
+    }
+
+    body.admin-floating-menu-ready .admin-content {
+        padding-bottom: 100px;
+        animation:
+            admin-content-enter .28s
+            cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    body.admin-page-leaving .admin-content {
+        opacity: 0;
+        transform: translateY(8px);
+        animation: none;
+        transition:
+            opacity .18s ease,
+            transform .18s ease;
+    }
+
+    body.admin-page-leaving .admin-menu {
+        opacity: 0;
+        transform: scale(.96) translate3d(6px, 6px, 0);
+    }
+
     .admin-content {
         padding-bottom: 200px;
     }
@@ -248,6 +463,21 @@ textarea {
     .admin-menu a {
         min-height: 54px;
         font-size: 13px;
+    }
+
+    body.admin-floating-menu-ready .admin-menu {
+        right: 12px;
+        bottom: 78px;
+        width: calc(100% - 24px);
+        max-height: calc(100dvh - 102px);
+    }
+
+    body.admin-floating-menu-ready .admin-menu-toggle {
+        right: 12px;
+        bottom: 12px;
+        width: 54px;
+        height: 54px;
+        border-radius: 17px;
     }
 
     .admin-content {
@@ -472,5 +702,21 @@ textarea {
     .session-timeout-dialog {
         padding-right: 18px;
         padding-left: 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.admin-floating-menu-ready .admin-content,
+    body.admin-page-leaving .admin-content {
+        animation: none;
+        transition: none;
+    }
+
+    body.admin-floating-menu-ready .admin-menu,
+    body.admin-floating-menu-ready
+    .admin-menu-active-indicator,
+    body.admin-floating-menu-ready .admin-menu-toggle,
+    .admin-menu-toggle-icon span {
+        transition: none;
     }
 }
