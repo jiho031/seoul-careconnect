@@ -31,6 +31,7 @@ public class PolicyCollectServiceImpl implements PolicyCollectService {
     private final PolicySourceRepository sourceRepository;
     private final SyncLogRepository syncLogRepository;
     private final PolicyUpsertService upsertService;
+    private final PolicyDocumentEnrichmentService documentEnrichmentService;
     private final SeoulPolicyFilter seoulPolicyFilter;
 
     private final AtomicBoolean collectionRunning = new AtomicBoolean(false);
@@ -146,7 +147,8 @@ public class PolicyCollectServiceImpl implements PolicyCollectService {
                         continue;
                     }
 
-                    boolean saved = upsertService.upsert(source, item);
+                    ExternalPolicyItem enrichedItem = documentEnrichmentService.enrich(item);
+                    boolean saved = upsertService.upsert(source, enrichedItem);
 
                     if (saved) {
                         success++;

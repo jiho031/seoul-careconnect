@@ -219,17 +219,20 @@
                                           th:text="${source.statusLabel}">
                                         정상
                                     </span>
+                                                        <form th:action="@{/admin/collection/run-source}"
+                                                              method="post">
 
-                                <form th:action="@{/admin/collection/run/{sourceId}(sourceId=${source.sourceId})}"
-                                      method="post">
+                                                            <input type="hidden"
+                                                                   name="sourceName"
+                                                                   th:value="${source.sourceName}">
 
-                                    <button type="submit"
-                                            class="admin-btn api-collect-btn"
-                                            th:disabled="${!source.active}"
-                                            onclick="return confirm('이 API만 수동으로 수집하시겠습니까?');">
-                                        이 API 수집
-                                    </button>
-                                </form>
+                                                            <button type="submit"
+                                                                    class="admin-btn api-collect-btn"
+                                                                    th:disabled="${!source.active}"
+                                                                    onclick="return confirm('이 API만 수동으로 수집하시겠습니까?');">
+                                                                이 API 수집
+                                                            </button>
+                                                        </form>
 
                             </div>
                         </div>
