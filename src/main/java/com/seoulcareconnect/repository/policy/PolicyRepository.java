@@ -1,5 +1,6 @@
 package com.seoulcareconnect.repository.policy;
 
+import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
 import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyStatus;
@@ -61,6 +62,43 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
             Collection<Long> policyIds,
             Collection<PolicyStatus> statuses,
             ApplyStatus excludedApplyStatus
+    );
+
+    @Query("""
+            select p.policyId
+            from Policy p
+            where p.status in :statuses
+              and p.applyStatus <> :expired
+              and not exists (
+                  select explanation.explanationId
+                  from AiPolicyExplanation explanation
+                  where explanation.policy = p
+                    and explanation.reviewStatus = :reviewStatus
+              )
+            order by p.createdAt asc, p.policyId asc
+            """)
+    List<Long> findIdsWithoutAiExplanation(
+            @Param("statuses") Collection<PolicyStatus> statuses,
+            @Param("expired") ApplyStatus expired,
+            @Param("reviewStatus") ReviewStatus reviewStatus
+    );
+
+    @Query("""
+            select count(p)
+            from Policy p
+            where p.status in :statuses
+              and p.applyStatus <> :expired
+              and not exists (
+                  select explanation.explanationId
+                  from AiPolicyExplanation explanation
+                  where explanation.policy = p
+                    and explanation.reviewStatus = :reviewStatus
+              )
+            """)
+    long countWithoutAiExplanation(
+            @Param("statuses") Collection<PolicyStatus> statuses,
+            @Param("expired") ApplyStatus expired,
+            @Param("reviewStatus") ReviewStatus reviewStatus
     );
 
     @EntityGraph(attributePaths = {"source", "detail"})

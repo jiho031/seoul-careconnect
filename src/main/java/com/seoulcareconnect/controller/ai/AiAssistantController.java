@@ -4,6 +4,7 @@ import com.seoulcareconnect.dto.ai.AiAssistantRequest;
 import com.seoulcareconnect.dto.ai.AiAssistantResponse;
 import com.seoulcareconnect.service.ai.AiPolicyAssistantService;
 import com.seoulcareconnect.service.ai.AiModelGateway;
+import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,16 @@ public class AiAssistantController {
     @ExceptionHandler(AiModelGateway.UnavailableException.class)
     public ResponseEntity<java.util.Map<String, String>> handleUnavailable(
             AiModelGateway.UnavailableException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(java.util.Map.of(
+                "message",
+                exception.getMessage()
+        ));
+    }
+
+    @ExceptionHandler(AiPolicyExplanationService.GenerationDisabledException.class)
+    public ResponseEntity<java.util.Map<String, String>> handleGenerationDisabled(
+            AiPolicyExplanationService.GenerationDisabledException exception
     ) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(java.util.Map.of(
                 "message",

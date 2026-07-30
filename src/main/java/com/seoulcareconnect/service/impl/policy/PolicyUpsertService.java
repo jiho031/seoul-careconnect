@@ -14,7 +14,9 @@ import com.seoulcareconnect.integration.policy.ExternalPolicyItem;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.RawCollectedItemRepository;
 import com.seoulcareconnect.integration.policy.SeoulPolicyFilter;
+import com.seoulcareconnect.service.ai.AiSummaryAutomationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -38,6 +40,7 @@ public class PolicyUpsertService {
     private final ExternalDateParser dateParser;
     private final ExternalPolicyClassifier classifier;
     private final SeoulPolicyFilter seoulPolicyFilter;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${app.policy.sync.zone-id:Asia/Seoul}")
     private String zoneId;
@@ -153,6 +156,12 @@ public class PolicyUpsertService {
         policy.attachDetail(detail);
 
         policyRepository.save(policy);
+
+        if (newPolicy) {
+            eventPublisher.publishEvent(
+                    new AiSummaryAutomationService.PolicyCreated(policy.getPolicyId())
+            );
+        }
 
         log.info(
                 "{} 정책 처리 완료: source={}, externalId={}, title={}",

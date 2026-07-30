@@ -13,7 +13,9 @@ import com.seoulcareconnect.entity.report.MissingPolicyReport;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
 import com.seoulcareconnect.repository.report.MissingPolicyReportRepository;
+import com.seoulcareconnect.service.ai.AiSummaryAutomationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,8 @@ public class AdminPolicyFormService {
             missingPolicyReportRepository;
     private final AdminActivityLogService
             adminActivityLogService;
+    private final ApplicationEventPublisher
+            eventPublisher;
 
     public AdminPolicyFormDTO createEmptyForm() {
         AdminPolicyFormDTO dto =
@@ -196,6 +200,14 @@ public class AdminPolicyFormService {
                         saveAction
                 )
         );
+
+        if (isNewPolicy) {
+            eventPublisher.publishEvent(
+                    new AiSummaryAutomationService.PolicyCreated(
+                            savedPolicy.getPolicyId()
+                    )
+            );
+        }
 
         return savedPolicy.getPolicyId();
     }

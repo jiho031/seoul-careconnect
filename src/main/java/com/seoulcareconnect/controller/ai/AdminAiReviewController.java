@@ -2,6 +2,8 @@ package com.seoulcareconnect.controller.ai;
 
 import com.seoulcareconnect.dto.ai.AiPolicyExplanationDto;
 import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
+import com.seoulcareconnect.service.ai.AiSummaryAutomationService;
+import com.seoulcareconnect.service.ai.AiSummarySettingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,8 @@ public class AdminAiReviewController {
     private static final int PAGE_SIZE = 10;
 
     private final AiPolicyExplanationService explanationService;
+    private final AiSummaryAutomationService automationService;
+    private final AiSummarySettingService settingService;
 
     @GetMapping
     public String page(
@@ -61,7 +65,60 @@ public class AdminAiReviewController {
         );
         model.addAttribute("openAiConfigured", explanationService.isOpenAiConfigured());
         model.addAttribute("aiModel", explanationService.modelName());
+        model.addAttribute("automaticSummaryEnabled", settingService.isAutomaticSummaryEnabled());
+        model.addAttribute("missingSummaryCount", automationService.countMissingSummaries());
+        model.addAttribute("manualGenerationStatus", automationService.manualGenerationStatus());
         return "admin/ai-review";
+    }
+
+    @PostMapping("/automatic")
+    public String updateAutomaticSummary(
+            @RequestParam(defaultValue = "false") boolean enabled,
+            @RequestParam(defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes
+    ) {
+        return runAction(
+                () -> {
+                    if (enabled && !explanationService.isOpenAiConfigured()) {
+                        throw new IllegalStateException(
+                                "AI 기능을 활성화하고 OPENAI_API_KEY를 설정한 뒤 자동 요약을 켜 주세요."
+                        );
+                    }
+                    settingService.updateAutomaticSummaryEnabled(enabled);
+                },
+                enabled
+                        ? "자동 AI 요약을 켰습니다. 새로 등록되는 정책부터 자동으로 요약합니다."
+                        : "자동 AI 요약을 껐습니다. 기존 요약은 유지되며 수동 전체 요약을 사용할 수 있습니다.",
+                page,
+                redirectAttributes
+        );
+    }
+
+    @PostMapping("/generate-missing")
+    public String generateMissing(
+            @RequestParam(defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            AiSummaryAutomationService.StartResult result =
+                    automationService.startManualGeneration();
+            if (result.started()) {
+                redirectAttributes.addFlashAttribute(
+                        "successMessage",
+                        "미요약 정책 " + result.requestedCount()
+                                + "건의 전체 요약을 시작했습니다."
+                );
+            } else {
+                redirectAttributes.addFlashAttribute(
+                        "successMessage",
+                        "요약이 필요한 정책이 없습니다."
+                );
+            }
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        redirectAttributes.addAttribute("page", Math.max(page, 0));
+        return "redirect:/admin/ai-review";
     }
 
     @PostMapping("/{explanationId}/edit")
@@ -100,7 +157,7 @@ public class AdminAiReviewController {
     ) {
         return runAction(
                 () -> explanationService.delete(explanationId),
-                "AI 정책 요약을 삭제했습니다. 다음 도우미 실행 때 다시 생성됩니다.",
+                "AI 정책 요약을 삭제했습니다. 자동 요약 또는 수동 전체 요약으로 다시 생성할 수 있습니다.",
                 page,
                 redirectAttributes
         );
