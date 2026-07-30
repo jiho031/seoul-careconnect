@@ -8,6 +8,7 @@ import com.seoulcareconnect.entity.ai.AiPolicyExplanation;
 import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
 import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.entity.policy.PolicyDetail;
+import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.repository.ai.AiPolicyExplanationRepository;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,8 +60,10 @@ public class AiPolicyExplanationService {
         int safeSize = Math.max(1, Math.min(size, 50));
 
         return explanationRepository
-                .findByReviewStatusOrderByCreatedAtDesc(
+                .findActiveGeneratedPage(
                         ReviewStatus.APPROVED,
+                        ApplyStatus.EXPIRED,
+                        today(),
                         PageRequest.of(safePage, safeSize)
                 )
                 .map(this::toDto);
@@ -73,12 +78,18 @@ public class AiPolicyExplanationService {
     }
 
     public long countGenerated() {
-        return explanationRepository.countByReviewStatus(ReviewStatus.APPROVED);
+        return explanationRepository.countActiveGenerated(
+                ReviewStatus.APPROVED,
+                ApplyStatus.EXPIRED,
+                today()
+        );
     }
 
     public long countGeneratedSince(LocalDateTime since) {
-        return explanationRepository.countByReviewStatusAndCreatedAtAfter(
+        return explanationRepository.countActiveGeneratedSince(
                 ReviewStatus.APPROVED,
+                ApplyStatus.EXPIRED,
+                today(),
                 since
         );
     }
@@ -284,6 +295,11 @@ public class AiPolicyExplanationService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "AI 정책 설명을 찾을 수 없습니다. ID=" + explanationId
                 ));
+    }
+
+
+    private LocalDate today() {
+        return LocalDate.now(ZoneId.of("Asia/Seoul"));
     }
 
     private AiPolicyExplanationDto toDto(AiPolicyExplanation explanation) {
