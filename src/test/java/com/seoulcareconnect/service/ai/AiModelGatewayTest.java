@@ -74,6 +74,7 @@ class AiModelGatewayTest {
     void sendsJsonEmbeddingRequestToOllama() {
         AiProperties properties = new AiProperties();
         properties.setEnabled(true);
+        properties.setBaseUrl("");
         properties.setOllamaBaseUrl("http://localhost:" + server.getAddress().getPort());
 
         AiModelGateway gateway = new AiModelGateway(new ObjectMapper(), properties);
