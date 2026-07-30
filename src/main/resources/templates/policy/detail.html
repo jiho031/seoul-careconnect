@@ -58,7 +58,14 @@
                 <div class="detail-action-box" aria-label="정책 바로가기 버튼">
                     <button type="button"
                             class="primary-action policy-save-btn"
-                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            th:classappend="${favoriteSaved} ? ' is-saved' : ''"
+                            th:attr="data-user-id=${user != null ? user.userId : ''},
+                                data-policy-id=${policy.policyId},
+                                data-favorited=${favoriteSaved},
+                                aria-pressed=${favoriteSaved}"
+                            th:text="${favoriteSaved}
+                                ? '찜 완료'
+                                : '관심 정책 저장'"
                             onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
@@ -288,7 +295,14 @@
 
                     <button type="button"
                             class="side-save-button policy-save-btn"
-                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            th:classappend="${favoriteSaved} ? ' is-saved' : ''"
+                            th:attr="data-user-id=${user != null ? user.userId : ''},
+                                data-policy-id=${policy.policyId},
+                                data-favorited=${favoriteSaved},
+                                aria-pressed=${favoriteSaved}"
+                            th:text="${favoriteSaved}
+                                ? '찜 완료'
+                                : '관심 정책 저장'"
                             onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
@@ -309,40 +323,59 @@
     function handleFavoriteClick(btn) {
         const userId = btn.dataset.userId;
         const policyId = btn.dataset.policyId;
-        addFavorite(userId, policyId, policyId);
+        toggleFavorite(userId, policyId, btn);
     }
 
-    function addFavorite(userId, policyId) {
+    function setFavoriteState(policyId, favorited) {
+        document.querySelectorAll('.policy-save-btn').forEach(btn => {
+            if (btn.dataset.policyId === String(policyId)) {
+                btn.dataset.favorited = String(favorited);
+                btn.setAttribute("aria-pressed", String(favorited));
+                btn.classList.toggle("is-saved", favorited);
+                btn.textContent = favorited
+                    ? "찜 완료"
+                    : "관심 정책 저장";
+            }
+        });
+    }
+
+    function setFavoriteBusy(policyId, busy) {
+        document.querySelectorAll('.policy-save-btn').forEach(btn => {
+            if (btn.dataset.policyId === String(policyId)) {
+                btn.disabled = busy;
+            }
+        });
+    }
+
+    function toggleFavorite(userId, policyId, btn) {
         if (!userId) {
             alert("로그인 후 이용 가능합니다.");
             return;
         }
 
+        const favorited = btn.dataset.favorited === "true";
+        setFavoriteBusy(policyId, true);
+
         fetch(`/api/users/${userId}/favorites/${policyId}`, {
-            method: 'POST'
+            method: favorited ? "DELETE" : "POST"
         })
             .then(response => {
-                if (response.ok || response.status === 409) {
-                    markSaved(policyId);
-                    if (response.status === 409) {
-                        alert("이미 관심 정책으로 등록된 정책입니다.");
-                    } else {
-                        alert("관심 정책에 추가되었습니다!");
-                    }
+                if (response.ok) {
+                    setFavoriteState(policyId, !favorited);
+                    alert(
+                        favorited
+                            ? "관심 정책에서 해제되었습니다."
+                            : "관심 정책에 추가되었습니다!"
+                    );
+                } else if (response.status === 409) {
+                    setFavoriteState(policyId, true);
+                    alert("이미 관심 정책으로 등록된 정책입니다.");
                 } else {
                     alert("오류가 발생했습니다.");
                 }
             })
-            .catch(error => console.error('Error:', error));
-    }
-
-    function markSaved(policyId) {
-        document.querySelectorAll('.policy-save-btn').forEach(btn => {
-            if (btn.dataset.policyId === String(policyId)) {
-                btn.innerText = "찜 완료";
-                btn.disabled = true;
-            }
-        });
+            .catch(error => console.error('Error:', error))
+            .finally(() => setFavoriteBusy(policyId, false));
     }
 </script>
 

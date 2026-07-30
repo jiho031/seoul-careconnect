@@ -166,6 +166,18 @@ public class FavoriteService {
         return recommended;
     }
 
+    public Set<Long> getFavoritePolicyIds(Long userId) {
+        return favoriteRepository.findByUserId(userId)
+                .stream()
+                .map(Favorite::getPolicyId)
+                .collect(Collectors.toSet());
+    }
+
+    public boolean isFavorite(Long userId, Long policyId) {
+        return favoriteRepository
+                .existsByUserIdAndPolicyId(userId, policyId);
+    }
+
     @Transactional
     public void addFavorite(Long userId, Long policyId) {
         if (favoriteRepository.existsByUserIdAndPolicyId(userId, policyId)) {

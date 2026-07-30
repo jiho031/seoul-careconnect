@@ -190,7 +190,7 @@
                     <div class="filter-actions">
                         <button class="reset-btn"
                                 type="button"
-                                onclick="window.location.href='/policies'">
+                                data-reset-form>
                             초기화
                         </button>
                     </div>
@@ -199,7 +199,8 @@
         </div>
     </section>
 
-    <section class="result-section">
+    <section class="result-section"
+             data-pagination-container="policy-list">
         <div class="policy-container">
             <div class="result-head">
                 <div>
@@ -268,7 +269,14 @@
                         </div>
 
                         <button class="bookmark-btn" type="button"
-                                th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                                th:classappend="${favoritePolicyIds.contains(policy.policyId)} ? ' is-saved' : ''"
+                                th:attr="data-user-id=${user != null ? user.userId : ''},
+                                    data-policy-id=${policy.policyId},
+                                    data-favorited=${favoritePolicyIds.contains(policy.policyId)},
+                                    aria-pressed=${favoritePolicyIds.contains(policy.policyId)}"
+                                th:text="${favoritePolicyIds.contains(policy.policyId)}
+                                    ? '찜 완료'
+                                    : '관심 저장'"
                                 onclick="handleFavoriteClick(this)">
                             관심 저장
                         </button>
@@ -346,11 +354,25 @@
 
             <nav class="pagination"
                  th:if="${policyPage.totalPages > 1}"
+                 data-async-pagination
                  aria-label="페이지 이동">
 
                 <a th:if="${policyPage.first}"
                    href="#"
                    class="disabled"
+                   aria-disabled="true"
+                   onclick="return false;">
+                    맨앞
+                </a>
+                <a th:unless="${policyPage.first}"
+                   th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick=${search.quick}, page=0, size=${policyPage.size})}">
+                    맨앞
+                </a>
+
+                <a th:if="${policyPage.first}"
+                   href="#"
+                   class="disabled"
+                   aria-disabled="true"
                    onclick="return false;">
                     이전
                 </a>
@@ -362,19 +384,33 @@
                 <a th:each="pageNumber : ${pageNumbers}"
                    th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick=${search.quick}, page=${pageNumber}, size=${policyPage.size})}"
                    th:text="${pageNumber + 1}"
-                   th:classappend="${pageNumber == policyPage.number} ? ' active' : ''">
+                   th:classappend="${pageNumber == policyPage.number} ? ' active' : ''"
+                   th:attr="aria-current=${pageNumber == policyPage.number ? 'page' : null}">
                     1
                 </a>
 
                 <a th:if="${policyPage.last}"
                    href="#"
                    class="disabled"
+                   aria-disabled="true"
                    onclick="return false;">
                     다음
                 </a>
                 <a th:unless="${policyPage.last}"
                    th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick=${search.quick}, page=${policyPage.number + 1}, size=${policyPage.size})}">
                     다음
+                </a>
+
+                <a th:if="${policyPage.last}"
+                   href="#"
+                   class="disabled"
+                   aria-disabled="true"
+                   onclick="return false;">
+                    맨뒤
+                </a>
+                <a th:unless="${policyPage.last}"
+                   th:href="@{/policies(keyword=${search.keyword}, district=${search.district}, ageGroup=${search.ageGroup}, category=${search.category}, targetKeyword=${search.targetKeyword}, applyStatus=${search.applyStatus}, sort=${search.sort}, quick=${search.quick}, page=${policyPage.totalPages - 1}, size=${policyPage.size})}">
+                    맨뒤
                 </a>
             </nav>
         </div>
@@ -426,24 +462,42 @@
     function handleFavoriteClick(btn) {
         const userId = btn.dataset.userId;
         const policyId = btn.dataset.policyId;
-        addFavorite(userId, policyId, btn);
+        toggleFavorite(userId, policyId, btn);
     }
 
-    function addFavorite(userId, policyId, btn) {
+    function setFavoriteState(btn, favorited) {
+        btn.dataset.favorited = String(favorited);
+        btn.setAttribute("aria-pressed", String(favorited));
+        btn.classList.toggle("is-saved", favorited);
+        btn.textContent = favorited ? "찜 완료" : "관심 저장";
+    }
+
+    function toggleFavorite(userId, policyId, btn) {
         if (!userId) {
             showFavoriteModal("notice", "로그인이 필요합니다", "로그인 후 이용 가능합니다.");
             return;
         }
 
+        const favorited = btn.dataset.favorited === "true";
+        btn.disabled = true;
+
         fetch(`/api/users/${userId}/favorites/${policyId}`, {
-            method: 'POST'
+            method: favorited ? "DELETE" : "POST"
         })
             .then(response => {
                 if (response.ok) {
-                    showFavoriteModal("success", "관심 정책에 추가되었습니다", "마이페이지에서 관심 정책을 확인할 수 있어요.");
-                    btn.innerText = "찜 완료";
-                    btn.disabled = true;
+                    setFavoriteState(btn, !favorited);
+                    showFavoriteModal(
+                        "success",
+                        favorited
+                            ? "관심 정책에서 해제되었습니다"
+                            : "관심 정책에 추가되었습니다",
+                        favorited
+                            ? "이 정책을 다시 관심 목록에 저장할 수 있어요."
+                            : "마이페이지에서 관심 정책을 확인할 수 있어요."
+                    );
                 } else if (response.status === 409) {
+                    setFavoriteState(btn, true);
                     showFavoriteModal("notice", "이미 등록된 정책입니다", "이미 관심 정책으로 등록된 정책입니다.");
                 } else {
                     showFavoriteModal("notice", "오류가 발생했습니다", "잠시 후 다시 시도해주세요.");
@@ -452,6 +506,9 @@
             .catch(error => {
                 console.error('Error:', error);
                 showFavoriteModal("notice", "오류가 발생했습니다", "네트워크 상태를 확인 후 다시 시도해주세요.");
+            })
+            .finally(() => {
+                btn.disabled = false;
             });
     }
 </script>

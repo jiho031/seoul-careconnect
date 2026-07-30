@@ -12,6 +12,7 @@ import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import com.seoulcareconnect.service.policy.PolicyDetailService;
 import com.seoulcareconnect.service.policy.PolicyService;
 import com.seoulcareconnect.service.policy.PolicyViewLogService;
+import com.seoulcareconnect.service.user.FavoriteService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,6 +50,7 @@ public class PolicyController {
     private final PolicyViewLogService policyViewLogService;
     private final UserRepository userRepository;
     private final AiPolicyExplanationService aiPolicyExplanationService;
+    private final FavoriteService favoriteService;
 
     @GetMapping("/policies")
     public String list(
@@ -63,8 +66,18 @@ public class PolicyController {
         )
                 : policyService.search(search);
 
+        User currentUser = resolveCurrentUserOrNull(authentication);
+
         model.addAttribute("policyPage", policyPage);
-        model.addAttribute("user", resolveCurrentUserOrNull(authentication));
+        model.addAttribute("user", currentUser);
+        model.addAttribute(
+                "favoritePolicyIds",
+                currentUser == null
+                        ? Set.of()
+                        : favoriteService.getFavoritePolicyIds(
+                                currentUser.getUserId()
+                        )
+        );
         model.addAttribute("pageNumbers", pageNumbers(policyPage));
         model.addAttribute("districts", SEOUL_DISTRICTS);
         model.addAttribute("ageGroups", AgeGroup.values());
@@ -116,6 +129,13 @@ public class PolicyController {
 
         model.addAttribute("policy", policy);
         model.addAttribute("user", currentUser);
+        model.addAttribute(
+                "favoriteSaved",
+                favoriteService.isFavorite(
+                        currentUser.getUserId(),
+                        policyId
+                )
+        );
         model.addAttribute("aiAssistantPolicyId", policyId);
         model.addAttribute("aiAssistantPolicyTitle", policy.getTitle());
         model.addAttribute(

@@ -1,7 +1,7 @@
 
 .error-filter {
     display: grid;
-    grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(130px, 1fr)) 90px;
+    grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(130px, 1fr)) 90px 90px;
     gap: 10px;
 }
 
@@ -173,7 +173,8 @@
     color: #66758f;
     font-size: 10.5px;
     line-height: 1.35;
-    word-break: break-all;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 /* 오류 유형 배지 */
@@ -448,7 +449,8 @@
     color: #27364a;
 
     white-space: pre-wrap;
-    word-break: break-word;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 @media (max-width: 640px) {

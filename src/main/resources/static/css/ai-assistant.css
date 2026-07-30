@@ -150,7 +150,8 @@
     font-weight: 500;
     line-height: 1.7;
     white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .ai-assistant-avatar {

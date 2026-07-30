@@ -197,6 +197,17 @@ input {
     background: #fff;
 }
 
+.policy-save-btn.is-saved {
+    border: 1px solid #91d4cf;
+    color: #08716f;
+    background: #e6f7f5;
+}
+
+.policy-save-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
 .detail-report-action {
     border-color: #e7a2a2;
     color: #c83f46;

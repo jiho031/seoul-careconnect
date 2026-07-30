@@ -129,7 +129,7 @@ public class AdminReportDTO {
         }
 
         return switch (reportType) {
-            case "MISSING_POLICY" -> "누락 정책";
+            case "MISSING", "MISSING_POLICY" -> "누락 정책";
             case "INFO_ERROR" -> "정보 오류";
             case "DEADLINE_ERROR" -> "기간 오류";
             case "LINK_ERROR" -> "링크 오류";
@@ -143,7 +143,7 @@ public class AdminReportDTO {
         }
 
         return switch (reportType) {
-            case "MISSING_POLICY" -> "missing";
+            case "MISSING", "MISSING_POLICY" -> "missing";
             case "INFO_ERROR" -> "info";
             case "DEADLINE_ERROR" -> "date";
             case "LINK_ERROR" -> "url";

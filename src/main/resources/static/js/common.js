@@ -2,6 +2,193 @@ document.addEventListener("DOMContentLoaded", () => {
     const navToggle = document.querySelector(".nav-toggle");
     const mobileBreakpoint = 1320;
 
+    function initializeFormResets() {
+        document
+            .querySelectorAll("[data-reset-form]")
+            .forEach((button) => {
+                button.addEventListener("click", () => {
+                    const form =
+                        button.form
+                        || button
+                            .closest(".admin-card, .policy-container")
+                            ?.querySelector("form");
+
+                    if (!form) {
+                        return;
+                    }
+
+                    Array.from(form.elements).forEach((control) => {
+                        if (control.tagName === "SELECT") {
+                            const emptyOption =
+                                Array.from(control.options)
+                                    .find((option) =>
+                                        option.value === ""
+                                    );
+
+                            control.value = emptyOption
+                                ? ""
+                                : control.options[0]?.value || "";
+                            return;
+                        }
+
+                        if (control.tagName !== "INPUT") {
+                            return;
+                        }
+
+                        if (control.type === "hidden") {
+                            control.value =
+                                control.name === "page"
+                                    ? "0"
+                                    : "";
+                            return;
+                        }
+
+                        if (
+                            control.type === "checkbox"
+                            || control.type === "radio"
+                        ) {
+                            control.checked = false;
+                            return;
+                        }
+
+                        if (
+                            control.type !== "submit"
+                            && control.type !== "button"
+                        ) {
+                            control.value = "";
+                        }
+                    });
+
+                    form
+                        .querySelector(
+                            "input:not([type='hidden']), select"
+                        )
+                        ?.focus();
+                });
+            });
+    }
+
+    let paginationRequestController = null;
+
+    function initializeAsyncPagination() {
+        document.addEventListener("click", async (event) => {
+            if (!(event.target instanceof Element)) {
+                return;
+            }
+
+            const link =
+                event.target.closest(
+                    "[data-async-pagination] a[href]"
+                );
+
+            if (
+                !link
+                || event.defaultPrevented
+                || event.button !== 0
+                || event.metaKey
+                || event.ctrlKey
+                || event.shiftKey
+                || event.altKey
+            ) {
+                return;
+            }
+
+            if (
+                link.classList.contains("disabled")
+                || link.getAttribute("aria-current") === "page"
+            ) {
+                event.preventDefault();
+                return;
+            }
+
+            const container =
+                link.closest("[data-pagination-container]");
+
+            if (!container) {
+                return;
+            }
+
+            const containerName =
+                container.dataset.paginationContainer;
+            const url =
+                new URL(link.href, window.location.href);
+
+            if (
+                !containerName
+                || url.origin !== window.location.origin
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const scrollX = window.scrollX;
+            const scrollY = window.scrollY;
+
+            paginationRequestController?.abort();
+            paginationRequestController =
+                new AbortController();
+
+            container.setAttribute("aria-busy", "true");
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    signal:
+                        paginationRequestController.signal
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `페이지 조회 실패: ${response.status}`
+                    );
+                }
+
+                const nextDocument =
+                    new DOMParser().parseFromString(
+                        await response.text(),
+                        "text/html"
+                    );
+
+                const nextContainer =
+                    Array.from(
+                        nextDocument.querySelectorAll(
+                            "[data-pagination-container]"
+                        )
+                    ).find((element) =>
+                        element.dataset.paginationContainer
+                        === containerName
+                    );
+
+                if (!nextContainer) {
+                    throw new Error(
+                        "페이지 목록 영역을 찾지 못했습니다."
+                    );
+                }
+
+                container.replaceWith(nextContainer);
+                window.history.replaceState(
+                    null,
+                    "",
+                    url.href
+                );
+                window.scrollTo(scrollX, scrollY);
+
+                nextContainer
+                    .querySelector('[aria-current="page"]')
+                    ?.focus({ preventScroll: true });
+            } catch (error) {
+                if (error.name === "AbortError") {
+                    return;
+                }
+
+                window.location.assign(url.href);
+            }
+        });
+    }
+
     function closeNavigation() {
         document.body.classList.remove("nav-open");
 
@@ -78,4 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 event.preventDefault();
             });
         });
+
+    initializeFormResets();
+    initializeAsyncPagination();
 });

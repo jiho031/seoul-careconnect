@@ -184,7 +184,8 @@
                         </option>
 
                         <option value="MISSING"
-                                th:selected="${selectedReportType == 'MISSING'}">
+                                th:selected="${selectedReportType == 'MISSING'
+                                    or selectedReportType == 'MISSING_POLICY'}">
                             누락 정책 신고
                         </option>
 
@@ -238,15 +239,17 @@
                         검색
                     </button>
 
-                    <a class="admin-btn"
-                       th:href="@{/admin/reports}">
+                    <button class="admin-btn"
+                            type="button"
+                            data-reset-form>
                         초기화
-                    </a>
+                    </button>
                 </form>
             </section>
 
             <!-- 사용자 신고 목록 -->
-            <section class="admin-card report-list-card">
+            <section class="admin-card report-list-card"
+                     data-pagination-container="admin-reports">
 
                 <div class="admin-card-head">
                     <h2>사용자 신고 목록</h2>
@@ -324,7 +327,8 @@
                         <!-- 연결 페이지 -->
                         <td>
                             <!-- 누락 정책 신고 -->
-                            <span th:if="${report.reportType == 'MISSING'}">
+                            <span th:if="${report.reportType == 'MISSING'
+                                or report.reportType == 'MISSING_POLICY'}">
                                 수동 등록/수정
                             </span>
 
@@ -355,7 +359,8 @@
                             <div class="table-actions">
 
                                 <!-- 누락 정책 신고 -->
-                                <a th:if="${report.reportType == 'MISSING'}"
+                                <a th:if="${report.reportType == 'MISSING'
+                                    or report.reportType == 'MISSING_POLICY'}"
                                    th:href="@{/admin/policies/new(
                                     reportId=${report.reportId}
                                     )}">
@@ -398,7 +403,25 @@
 
                 <!-- 페이지네이션 -->
                 <div class="admin-pagination"
-                     th:if="${reportPage.totalPages > 0}">
+                     th:if="${reportPage.totalPages > 0}"
+                     data-async-pagination
+                     aria-label="사용자 신고 페이지 이동">
+
+                    <a th:if="${!reportPage.first}"
+                       th:href="@{/admin/reports(
+                           page=0,
+                           keyword=${keyword},
+                           reportType=${selectedReportType},
+                           status=${selectedStatus}
+                       )}">
+                        맨앞
+                    </a>
+
+                    <span th:if="${reportPage.first}"
+                          class="disabled"
+                          aria-disabled="true">
+                        맨앞
+                    </span>
 
                     <!-- 이전 페이지 -->
                     <a th:if="${!reportPage.first}"
@@ -412,7 +435,8 @@
                     </a>
 
                     <span th:if="${reportPage.first}"
-                          class="disabled">
+                          class="disabled"
+                          aria-disabled="true">
                         ‹
                     </span>
 
@@ -423,6 +447,9 @@
                        th:classappend="${pageNumber == reportPage.number
                             ? 'active'
                             : ''}"
+                       th:attr="aria-current=${pageNumber == reportPage.number
+                            ? 'page'
+                            : null}"
                        th:href="@{/admin/reports(
                            page=${pageNumber},
                            keyword=${keyword},
@@ -444,8 +471,25 @@
                     </a>
 
                     <span th:if="${reportPage.last}"
-                          class="disabled">
+                          class="disabled"
+                          aria-disabled="true">
                         ›
+                    </span>
+
+                    <a th:if="${!reportPage.last}"
+                       th:href="@{/admin/reports(
+                           page=${reportPage.totalPages - 1},
+                           keyword=${keyword},
+                           reportType=${selectedReportType},
+                           status=${selectedStatus}
+                       )}">
+                        맨뒤
+                    </a>
+
+                    <span th:if="${reportPage.last}"
+                          class="disabled"
+                          aria-disabled="true">
+                        맨뒤
                     </span>
                 </div>
             </section>

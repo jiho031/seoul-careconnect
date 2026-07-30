@@ -22,5 +22,9 @@ public class MissingPolicyReportCardDto {
     private String status;
     private String statusLabel;
     private String policyTitle; // 연결된 정책이 있으면 정책명, 없으면 null
+    private String content;
+    private String sourceUrl;
+    private String adminMemo;
     private LocalDateTime createdAt;
+    private LocalDateTime processedAt;
 }

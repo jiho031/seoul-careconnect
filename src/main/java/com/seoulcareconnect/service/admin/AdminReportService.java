@@ -304,6 +304,14 @@ public class AdminReportService {
                 return criteriaBuilder.conjunction();
             }
 
+            if ("MISSING".equals(reportType)
+                    || "MISSING_POLICY".equals(reportType)) {
+                return root.get("reportType").in(
+                        "MISSING",
+                        "MISSING_POLICY"
+                );
+            }
+
             return criteriaBuilder.equal(
                     root.get("reportType"),
                     reportType

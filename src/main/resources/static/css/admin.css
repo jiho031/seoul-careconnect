@@ -208,9 +208,9 @@
 
 .admin-link {
     color: #248c8f;
-    text-decoration: none;
     font-size: 12px;
     font-weight: 900;
+    text-decoration: none;
 }
 
 
@@ -608,6 +608,7 @@
 .admin-pagination {
     width: 100%;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 6px;
@@ -673,9 +674,53 @@
     min-height: 34px;
 }
 
+.admin-select {
+    min-width: 0;
+    height: 40px;
+    padding: 0 34px 0 12px;
+    border: 1px solid #d8e4ef;
+    border-radius: 10px;
+    box-sizing: border-box;
+    color: #102044;
+    background-color: #fff;
+    line-height: 1.2;
+}
+
 .admin-textarea {
     resize: vertical;
     min-height: 60px;
+}
+
+.admin-date-fields {
+    display: grid;
+    grid-template-columns: minmax(88px, 1.4fr) auto minmax(54px, 0.8fr) auto minmax(54px, 0.8fr);
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-date-fields > span {
+    color: #66758f;
+    text-align: center;
+}
+
+.admin-date-part {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #d8e4ef;
+    border-radius: 10px;
+    box-sizing: border-box;
+    color: #102044;
+    background: #fff;
+    font: inherit;
+    text-align: center;
+}
+
+.admin-date-part:focus {
+    outline: none;
+    border-color: #248c8f;
+    box-shadow: 0 0 0 3px rgba(36, 140, 143, 0.12);
 }
 
 .detail-form-grid {
@@ -1428,7 +1473,7 @@ button.admin-link {
 .policy-table td {
     white-space: normal;
     word-break: keep-all;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 /* 정책명 */
