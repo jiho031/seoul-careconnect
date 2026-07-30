@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExternalPolicyItem {
