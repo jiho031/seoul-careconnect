@@ -202,8 +202,6 @@
         });
     }
 
-    function closeNavigation() {
-        document.body.classList.remove("nav-open");
         function closeNavigation() {
             document.body.classList.remove("nav-open");
 
@@ -332,12 +330,9 @@
                     }
                 );
             });
-        });
 
-    initializeFormResets();
-    initializeAsyncPagination();
-});
-
+        initializeFormResets();
+        initializeAsyncPagination();
     }
 
     /*

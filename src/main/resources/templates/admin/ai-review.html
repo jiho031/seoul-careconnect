@@ -8,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/admin.css}" href="/css/admin.css">
     <link rel="stylesheet" th:href="@{/css/admin_ai_review.css}" href="/css/admin_ai_review.css">
     <meta th:if="${manualGenerationStatus.running}" http-equiv="refresh" content="5">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" href="/css/responsive.css">
 </head>
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
@@ -82,11 +83,11 @@
                 <div class="ai-manual-panel" th:unless="${automaticSummaryEnabled}">
                     <div>
                         <strong>미요약 정책 전체 요약</strong>
-                        <p>기존 요약은 덮어쓰지 않고, 요약이 없는 공개·검수 대상 정책만 처리합니다.</p>
+                        <p>기존 요약은 덮어쓰지 않고, 신청 기간이 지나지 않은 공개·검수 대상 정책만 처리합니다.</p>
                     </div>
                     <form method="post"
                           th:action="@{/admin/ai-review/generate-missing}"
-                          onsubmit="return confirm('요약이 없는 정책을 모두 OpenAI로 요약할까요?');">
+                          onsubmit="return confirm('신청 기간이 지나지 않은 미요약 정책을 모두 OpenAI로 요약할까요?');">
                         <input type="hidden" name="page" th:value="${itemPage.number}">
                         <button class="admin-btn primary"
                                 type="submit"

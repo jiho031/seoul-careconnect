@@ -12,12 +12,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.task.TaskExecutor;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -54,8 +59,11 @@ class AiSummaryAutomationServiceTest {
         when(policyRepository.findIdsWithoutAiExplanation(
                 anyList(),
                 eq(ApplyStatus.EXPIRED),
-                eq(ReviewStatus.APPROVED)
+                eq(ReviewStatus.APPROVED),
+                any(LocalDate.class)
         )).thenReturn(List.of(11L, 12L));
+        when(policyRepository.findById(11L)).thenReturn(Optional.of(eligiblePolicy(null)));
+        when(policyRepository.findById(12L)).thenReturn(Optional.of(eligiblePolicy(seoulToday())));
 
         AiSummaryAutomationService.StartResult result = service.startManualGeneration();
         AiSummaryAutomationService.BatchStatus status = service.manualGenerationStatus();
@@ -68,6 +76,45 @@ class AiSummaryAutomationServiceTest {
         assertThat(status.failedCount()).isZero();
         verify(explanationService).generateIfMissing(11L);
         verify(explanationService).generateIfMissing(12L);
+    }
+
+    @Test
+    void excludesEndedPolicyBeforeManualSummaryRuns() {
+        when(settingService.isAutomaticSummaryEnabled()).thenReturn(false);
+        when(explanationService.isOpenAiConfigured()).thenReturn(true);
+        when(policyRepository.findIdsWithoutAiExplanation(
+                anyList(),
+                eq(ApplyStatus.EXPIRED),
+                eq(ReviewStatus.APPROVED),
+                any(LocalDate.class)
+        )).thenReturn(List.of(31L));
+        when(policyRepository.findById(31L))
+                .thenReturn(Optional.of(eligiblePolicy(seoulToday().minusDays(1))));
+
+        service.startManualGeneration();
+
+        AiSummaryAutomationService.BatchStatus status = service.manualGenerationStatus();
+        assertThat(status.requestedCount()).isZero();
+        assertThat(status.processedCount()).isZero();
+        verify(explanationService, never()).generateIfMissing(anyLong());
+    }
+
+    @Test
+    void countsOnlyPoliciesWhoseEndDateHasNotPassed() {
+        when(policyRepository.countWithoutAiExplanation(
+                anyList(),
+                eq(ApplyStatus.EXPIRED),
+                eq(ReviewStatus.APPROVED),
+                any(LocalDate.class)
+        )).thenReturn(4L);
+
+        assertThat(service.countMissingSummaries()).isEqualTo(4L);
+        verify(policyRepository).countWithoutAiExplanation(
+                anyList(),
+                eq(ApplyStatus.EXPIRED),
+                eq(ReviewStatus.APPROVED),
+                any(LocalDate.class)
+        );
     }
 
     @Test
@@ -90,5 +137,17 @@ class AiSummaryAutomationServiceTest {
         service.handlePolicyCreated(new AiSummaryAutomationService.PolicyCreated(21L));
 
         verify(explanationService).generateIfMissing(21L);
+    }
+
+    private Policy eligiblePolicy(LocalDate endDate) {
+        Policy policy = new Policy();
+        policy.setStatus(PolicyStatus.APPROVED);
+        policy.setApplyStatus(ApplyStatus.OPEN);
+        policy.setEndDate(endDate);
+        return policy;
+    }
+
+    private LocalDate seoulToday() {
+        return LocalDate.now(ZoneId.of("Asia/Seoul"));
     }
 }

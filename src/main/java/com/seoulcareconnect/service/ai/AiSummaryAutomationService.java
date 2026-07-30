@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class AiSummaryAutomationService {
 
+    private static final ZoneId SEOUL_ZONE = ZoneId.of("Asia/Seoul");
     private static final List<PolicyStatus> ELIGIBLE_STATUSES = List.of(
             PolicyStatus.AUTO_PUBLISHED,
             PolicyStatus.PENDING_REVIEW,
@@ -57,7 +60,8 @@ public class AiSummaryAutomationService {
         return policyRepository.countWithoutAiExplanation(
                 ELIGIBLE_STATUSES,
                 ApplyStatus.EXPIRED,
-                ReviewStatus.APPROVED
+                ReviewStatus.APPROVED,
+                today()
         );
     }
 
@@ -76,7 +80,8 @@ public class AiSummaryAutomationService {
             List<Long> policyIds = policyRepository.findIdsWithoutAiExplanation(
                     ELIGIBLE_STATUSES,
                     ApplyStatus.EXPIRED,
-                    ReviewStatus.APPROVED
+                    ReviewStatus.APPROVED,
+                    today()
             );
             resetStatus(policyIds.size());
 
@@ -136,6 +141,12 @@ public class AiSummaryAutomationService {
     private void generateMissing(List<Long> policyIds) {
         try {
             for (Long policyId : policyIds) {
+                Policy policy = policyRepository.findById(policyId).orElse(null);
+                if (!isManualCandidate(policy, today())) {
+                    requestedCount = Math.max(0, requestedCount - 1);
+                    continue;
+                }
+
                 try {
                     explanationService.generateIfMissing(policyId);
                     succeededCount.incrementAndGet();
@@ -151,6 +162,17 @@ public class AiSummaryAutomationService {
             completedAt = LocalDateTime.now();
             manualGenerationRunning.set(false);
         }
+    }
+
+    private boolean isManualCandidate(Policy policy, LocalDate today) {
+        return policy != null
+                && ELIGIBLE_STATUSES.contains(policy.getStatus())
+                && policy.getApplyStatus() != ApplyStatus.EXPIRED
+                && (policy.getEndDate() == null || !policy.getEndDate().isBefore(today));
+    }
+
+    private LocalDate today() {
+        return LocalDate.now(SEOUL_ZONE);
     }
 
     private void resetStatus(int count) {

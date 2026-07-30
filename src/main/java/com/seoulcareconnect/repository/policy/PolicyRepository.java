@@ -69,6 +69,7 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
             from Policy p
             where p.status in :statuses
               and p.applyStatus <> :expired
+              and (p.endDate is null or p.endDate >= :today)
               and not exists (
                   select explanation.explanationId
                   from AiPolicyExplanation explanation
@@ -80,7 +81,8 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
     List<Long> findIdsWithoutAiExplanation(
             @Param("statuses") Collection<PolicyStatus> statuses,
             @Param("expired") ApplyStatus expired,
-            @Param("reviewStatus") ReviewStatus reviewStatus
+            @Param("reviewStatus") ReviewStatus reviewStatus,
+            @Param("today") LocalDate today
     );
 
     @Query("""
@@ -88,6 +90,7 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
             from Policy p
             where p.status in :statuses
               and p.applyStatus <> :expired
+              and (p.endDate is null or p.endDate >= :today)
               and not exists (
                   select explanation.explanationId
                   from AiPolicyExplanation explanation
@@ -98,7 +101,8 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, JpaSpecif
     long countWithoutAiExplanation(
             @Param("statuses") Collection<PolicyStatus> statuses,
             @Param("expired") ApplyStatus expired,
-            @Param("reviewStatus") ReviewStatus reviewStatus
+            @Param("reviewStatus") ReviewStatus reviewStatus,
+            @Param("today") LocalDate today
     );
 
     @EntityGraph(attributePaths = {"source", "detail"})
