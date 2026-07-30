@@ -72,6 +72,46 @@ textarea {
     box-sizing: border-box;
 }
 
+.admin-content :is(
+    .policy-filter,
+    .user-filter,
+    .report-filter,
+    .error-filter,
+    .ai-filter
+) {
+    display: grid;
+    gap: 10px;
+}
+
+.policy-filter {
+    grid-template-columns:
+        minmax(240px, 1.5fr)
+        repeat(4, minmax(110px, 1fr))
+        minmax(90px, .65fr);
+}
+
+.user-filter,
+.ai-filter {
+    grid-template-columns:
+        minmax(240px, 1.5fr)
+        repeat(3, minmax(110px, 1fr))
+        minmax(90px, .65fr);
+}
+
+.report-filter {
+    grid-template-columns:
+        minmax(240px, 1.5fr)
+        repeat(2, minmax(130px, 1fr))
+        repeat(2, minmax(90px, .65fr));
+}
+
+.error-filter {
+    grid-template-columns:
+        minmax(240px, 1.5fr)
+        repeat(3, minmax(110px, 1fr))
+        repeat(2, minmax(90px, .65fr));
+}
+
 .admin-date-fields {
     grid-template-columns:
         minmax(0, 1.45fr)
@@ -135,13 +175,51 @@ textarea {
 }
 
 @media (max-width: 1024px) {
+    .admin-side {
+        width: 0;
+        min-height: 0;
+        height: 0;
+        padding: 0;
+        border: 0;
+        overflow: visible;
+    }
+
+    .admin-side-title {
+        display: none;
+    }
+
     .admin-menu {
-        overscroll-behavior-inline: contain;
-        scrollbar-width: thin;
+        position: fixed;
+        right: 12px;
+        bottom: 14px;
+        left: 12px;
+        z-index: 500;
+        width: min(760px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 14px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        overflow: visible;
+        border: 2px solid #cbdbea;
+        border-radius: 22px;
+        box-sizing: border-box;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(20, 60, 90, .22);
     }
 
     .admin-menu a {
-        min-height: 44px;
+        min-width: 0;
+        min-height: 58px;
+        padding: 9px 10px;
+        justify-content: center;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.35;
+    }
+
+    .admin-content {
+        padding-bottom: 200px;
     }
 
     .admin-card-head,
@@ -156,6 +234,24 @@ textarea {
 
     .report-list-card .report-table {
         min-width: 900px;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-menu {
+        bottom: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .admin-menu a {
+        min-height: 54px;
+        font-size: 13px;
+    }
+
+    .admin-content {
+        padding-bottom: 300px;
     }
 }
 
