@@ -65,6 +65,8 @@ public class PolicyUpsertService {
                 .orElse(null);
 
         boolean newPolicy = existing == null;
+        String previousSummarySourceHash =
+                newPolicy ? null : summarySourceHash(existing);
 
         RawCollectedItem rawItem = saveRawIfChanged(source, item, externalId);
 
@@ -160,6 +162,10 @@ public class PolicyUpsertService {
         if (newPolicy) {
             eventPublisher.publishEvent(
                     new AiSummaryAutomationService.PolicyCreated(policy.getPolicyId())
+            );
+        } else if (!previousSummarySourceHash.equals(summarySourceHash(policy))) {
+            eventPublisher.publishEvent(
+                    new AiSummaryAutomationService.PolicyUpdated(policy.getPolicyId())
             );
         }
 
@@ -292,6 +298,33 @@ public class PolicyUpsertService {
             return agency + " | " + contact;
         }
         return firstNonBlank(agency, contact);
+    }
+
+    private String summarySourceHash(Policy policy) {
+        PolicyDetail detail = policy.getDetail();
+        String sourceName = policy.getSource() == null
+                ? null
+                : policy.getSource().getSourceName();
+
+        return sha256(String.join(
+                "|",
+                valueOr(policy.getTitle(), ""),
+                valueOr(sourceName, ""),
+                valueOr(String.valueOf(policy.getCategory()), ""),
+                valueOr(policy.getTarget(), ""),
+                valueOr(policy.getRegion(), ""),
+                valueOr(policy.getDistrict(), ""),
+                valueOr(String.valueOf(policy.getStartDate()), ""),
+                valueOr(String.valueOf(policy.getEndDate()), ""),
+                valueOr(String.valueOf(policy.getApplyStatus()), ""),
+                valueOr(policy.getApplyMethod(), ""),
+                valueOr(policy.getContact(), ""),
+                valueOr(policy.getOfficialUrl(), ""),
+                valueOr(detail == null ? null : detail.getBenefit(), ""),
+                valueOr(detail == null ? null : detail.getSelectionCriteria(), ""),
+                valueOr(detail == null ? null : detail.getRequiredDocumentsText(), ""),
+                valueOr(detail == null ? null : detail.getContentText(), "")
+        ));
     }
 
     private String generatedExternalId(ExternalPolicyItem item) {

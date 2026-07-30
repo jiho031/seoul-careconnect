@@ -115,13 +115,22 @@ public class AiSummaryAutomationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePolicyCreated(PolicyCreated event) {
         try {
-            taskExecutor.execute(() -> generateAutomatically(event.policyId()));
+            taskExecutor.execute(() -> generateAutomatically(event.policyId(), false));
         } catch (RuntimeException exception) {
             log.warn("자동 AI 요약 작업 등록 실패: policyId={}", event.policyId(), exception);
         }
     }
 
-    private void generateAutomatically(Long policyId) {
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handlePolicyUpdated(PolicyUpdated event) {
+        try {
+            taskExecutor.execute(() -> generateAutomatically(event.policyId(), true));
+        } catch (RuntimeException exception) {
+            log.warn("AI 요약 재생성 작업 등록 실패: policyId={}", event.policyId(), exception);
+        }
+    }
+
+    private void generateAutomatically(Long policyId, boolean regenerate) {
         if (!settingService.isAutomaticSummaryEnabled()) return;
 
         Policy policy = policyRepository.findById(policyId).orElse(null);
@@ -132,9 +141,17 @@ public class AiSummaryAutomationService {
         }
 
         try {
-            explanationService.generateIfMissing(policyId);
+            if (regenerate) {
+                explanationService.regenerate(policyId);
+            } else {
+                explanationService.generateIfMissing(policyId);
+            }
         } catch (RuntimeException exception) {
-            log.warn("자동 AI 요약 생성 실패: policyId={}", policyId, exception);
+            log.warn(
+                    regenerate ? "AI 요약 재생성 실패: policyId={}" : "자동 AI 요약 생성 실패: policyId={}",
+                    policyId,
+                    exception
+            );
         }
     }
 
@@ -192,6 +209,9 @@ public class AiSummaryAutomationService {
     }
 
     public record PolicyCreated(Long policyId) {
+    }
+
+    public record PolicyUpdated(Long policyId) {
     }
 
     public record StartResult(int requestedCount, boolean started) {

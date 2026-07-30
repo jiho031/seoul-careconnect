@@ -17,6 +17,9 @@ public class AiProperties {
     private String model = "gpt-5.6";
     private String promptVersion = "policy-easy-v1";
     private int maxOutputTokens = 1200;
+    private boolean policyExtractionEnabled = true;
+    private String policyExtractionPromptVersion = "policy-application-extract-v1";
+    private int policyExtractionMaxOutputTokens = 1800;
     private String embeddingModel = "text-embedding-3-small";
     private int embeddingDimensions = 512;
     private int assistantCandidateLimit = 80;

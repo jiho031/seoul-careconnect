@@ -129,6 +129,32 @@ public class AiPolicyExplanationService {
         return createForPolicy(policyId);
     }
 
+    @Transactional
+    public synchronized AiPolicyExplanationDto regenerate(Long policyId) {
+        Policy policy = policyRepository.findWithSourceAndDetailByPolicyId(policyId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "정책을 찾을 수 없습니다. ID=" + policyId
+                ));
+        GeneratedContent generated = generateContent(policy);
+
+        explanationRepository
+                .findByPolicyPolicyIdAndReviewStatus(
+                        policyId,
+                        ReviewStatus.APPROVED
+                )
+                .forEach(AiPolicyExplanation::supersede);
+
+        AiPolicyExplanation saved = explanationRepository.save(
+                AiPolicyExplanation.generated(
+                        policy,
+                        generated.content(),
+                        generated.modelName(),
+                        properties.getPromptVersion()
+                )
+        );
+        return toDto(saved);
+    }
+
     private AiPolicyExplanationDto createForPolicy(Long policyId) {
         Policy policy = policyRepository.findWithSourceAndDetailByPolicyId(policyId)
                 .orElseThrow(() -> new IllegalArgumentException("정책을 찾을 수 없습니다. ID=" + policyId));

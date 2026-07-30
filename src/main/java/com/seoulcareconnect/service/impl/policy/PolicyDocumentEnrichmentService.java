@@ -1,6 +1,12 @@
 package com.seoulcareconnect.service.impl.policy;
 
+import com.seoulcareconnect.entity.policy.PolicySource;
+import com.seoulcareconnect.entity.policy.RawCollectedItem;
+import com.seoulcareconnect.entity.policy.enums.RawType;
 import com.seoulcareconnect.integration.policy.ExternalPolicyItem;
+import com.seoulcareconnect.repository.policy.RawCollectedItemRepository;
+import com.seoulcareconnect.service.ai.AiPolicyApplicationExtractionService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -18,21 +24,27 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HexFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PolicyDocumentEnrichmentService {
 
     private static final int MAX_RESULT_ITEMS = 30;
     private static final int MAX_ITEM_LENGTH = 300;
     private static final int MAX_HTML_BYTES = 2_000_000;
+    private static final int MAX_RAW_TEXT_LENGTH = 200_000;
 
     private static final String BROWSER_USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -63,7 +75,9 @@ public class PolicyDocumentEnrichmentService {
             "재무제표", "납세증명", "증빙", "제출서식", "제출양식",
             "신청양식", "별첨", "별지", "서식", "양식", "붙임",
             "신분증", "주민등록", "가족관계", "사업자등록", "통장사본",
-            "재직", "소득", "건강보험", "원천징수", "임대차", "사본"
+            "재직", "소득", "건강보험", "원천징수", "임대차", "사본",
+            "이력서", "자기소개서", "경력기술서", "포트폴리오",
+            "개인정보", "졸업", "자격증", "추천서", "고용보험"
     );
 
     // 공고문·교육일정 같은 일반 첨부파일을 서류로 오인하지 않도록
@@ -73,7 +87,9 @@ public class PolicyDocumentEnrichmentService {
             "증명서", "등록증", "등본", "초본", "계약서", "견적서",
             "재무제표", "납세증명", "증빙", "신분증", "주민등록",
             "가족관계", "사업자등록", "통장사본", "재직", "소득",
-            "건강보험", "원천징수", "임대차"
+            "건강보험", "원천징수", "임대차", "이력서", "자기소개서",
+            "경력기술서", "포트폴리오", "개인정보", "졸업", "자격증",
+            "추천서", "고용보험"
     );
 
     private static final List<String> EXCLUDED_FILE_KEYWORDS = List.of(
@@ -94,6 +110,11 @@ public class PolicyDocumentEnrichmentService {
             "신청 바로가기", "사업안내 바로가기", "구글폼", "forms.gle",
             "제출하신 서류는", "서류 반환", "반환 등 문의", "알림톡",
             "자세한 내용은", "문의하여 주시기 바랍니다", "다운로드 제한 안내"
+    );
+
+    private static final List<String> RELEVANT_LINK_KEYWORDS = List.of(
+            "신청", "접수", "제출", "서류", "서식", "양식",
+            "다운로드", "온라인", "홈페이지", "누리집", "구글폼"
     );
 
     private static final Pattern LEADING_BULLET = Pattern.compile(
@@ -131,7 +152,10 @@ public class PolicyDocumentEnrichmentService {
     @Value("${app.policy.documents.curl-fallback-hosts:k-startup.go.kr}")
     private String curlFallbackHosts;
 
-    public ExternalPolicyItem enrich(ExternalPolicyItem item) {
+    private final RawCollectedItemRepository rawCollectedItemRepository;
+    private final AiPolicyApplicationExtractionService aiExtractionService;
+
+    public ExternalPolicyItem enrich(PolicySource source, ExternalPolicyItem item) {
         if (item == null) {
             return null;
         }
@@ -142,9 +166,10 @@ public class PolicyDocumentEnrichmentService {
                 || !fetchOfficialPage
                 || (!apiDocuments.isEmpty() && !fetchWhenApiDocumentsExist)
                 || !isSafePublicHttpUrl(item.getOfficialUrl())) {
-            return withMergedDocuments(
+            return withEnrichedApplicationInfo(
                     item,
-                    mergeDocuments(apiDocuments, List.of(), List.of())
+                    item.getApplyMethod(),
+                    mergeDocuments(apiDocuments, List.of(), List.of(), List.of())
             );
         }
 
@@ -154,35 +179,62 @@ public class PolicyDocumentEnrichmentService {
 
             List<String> officialSectionDocuments = extractDocumentSectionItems(document);
             List<String> attachmentDocuments = extractAttachmentDocumentNames(document);
+            String officialText = extractOfficialPageText(document);
+
+            RawCollectedItem officialSnapshot = findOrCreateOfficialSnapshot(
+                    source,
+                    item,
+                    officialText,
+                    document.outerHtml()
+            ).orElse(null);
+
+            AiPolicyApplicationExtractionService.Extraction aiExtraction =
+                    resolveAiExtraction(item, officialText, officialSnapshot).orElse(null);
+            List<String> aiDocuments = aiExtraction == null
+                    ? List.of()
+                    : aiExtraction.documentNames();
 
             String merged = mergeDocuments(
                     apiDocuments,
                     officialSectionDocuments,
+                    aiDocuments,
                     attachmentDocuments
+            );
+            String enrichedApplicationMethod = resolveApplicationMethod(
+                    item.getApplyMethod(),
+                    aiExtraction == null ? null : aiExtraction.applicationMethod()
             );
 
             List<String> finalDocuments = splitDocumentItems(merged);
 
             log.debug(
-                    "정책 서류 병합: title={}, 수집방식={}, API={}건, 원문={}건, 첨부={}건, 최종={}건",
+                    "정책 신청정보 병합: title={}, 수집방식={}, API서류={}건, 원문서류={}건, "
+                            + "AI서류={}건, 첨부서류={}건, 최종서류={}건, AI신청방법={}",
                     item.getTitle(),
                     fetchResult.method(),
                     apiDocuments.size(),
                     officialSectionDocuments.size(),
+                    aiDocuments.size(),
                     attachmentDocuments.size(),
-                    finalDocuments.size()
+                    finalDocuments.size(),
+                    aiExtraction != null
+                            && StringUtils.hasText(aiExtraction.applicationMethod())
             );
 
             log.debug(
-                    "원문 제출서류 추출 결과: title={}, API서류={}, 원문서류={}, 첨부서류={}, 최종서류={}",
+                    "원문 제출서류 추출 결과: title={}, API서류={}, 원문서류={}, AI서류={}, "
+                            + "첨부서류={}, 최종서류={}",
                     item.getTitle(),
                     apiDocuments,
                     officialSectionDocuments,
+                    aiDocuments,
                     attachmentDocuments,
                     finalDocuments
             );
 
-            if (officialSectionDocuments.isEmpty() && attachmentDocuments.isEmpty()) {
+            if (officialSectionDocuments.isEmpty()
+                    && aiDocuments.isEmpty()
+                    && attachmentDocuments.isEmpty()) {
                 log.debug(
                         "공식 원문에서 제출서류명을 찾지 못했습니다: title={}, url={}",
                         item.getTitle(),
@@ -190,7 +242,11 @@ public class PolicyDocumentEnrichmentService {
                 );
             }
 
-            return withMergedDocuments(item, merged);
+            return withEnrichedApplicationInfo(
+                    item,
+                    enrichedApplicationMethod,
+                    merged
+            );
 
         } catch (Exception exception) {
             log.warn(
@@ -203,9 +259,10 @@ public class PolicyDocumentEnrichmentService {
                     exception
             );
 
-            return withMergedDocuments(
+            return withEnrichedApplicationInfo(
                     item,
-                    mergeDocuments(apiDocuments, List.of(), List.of())
+                    item.getApplyMethod(),
+                    mergeDocuments(apiDocuments, List.of(), List.of(), List.of())
             );
         }
     }
@@ -383,21 +440,216 @@ public class PolicyDocumentEnrichmentService {
         return false;
     }
 
-    private ExternalPolicyItem withMergedDocuments(
+    private String extractOfficialPageText(Document document) {
+        Document cleaned = document.clone();
+        cleaned.select(
+                "script,style,noscript,svg,canvas,iframe,header,nav,footer,aside"
+        ).remove();
+
+        Element body = cleaned.body();
+        if (body == null) {
+            return null;
+        }
+
+        Element content = cleaned.select(
+                        "main,article,#contents,#content,.contents,.content,.board-view,.view"
+                ).stream()
+                .max(Comparator.comparingInt(element -> element.wholeText().length()))
+                .orElse(body);
+
+        StringBuilder result = new StringBuilder();
+        String title = cleanInline(cleaned.title());
+        if (StringUtils.hasText(title)) {
+            result.append(title).append('\n');
+        }
+
+        String contentText = normalizeBlock(content.wholeText());
+        if (StringUtils.hasText(contentText)) {
+            result.append(contentText);
+        }
+
+        int linkCount = 0;
+        for (Element anchor : cleaned.select("a[href]")) {
+            String linkText = cleanInline(anchor.text());
+            String href = cleanInline(firstNonBlank(
+                    anchor.absUrl("href"),
+                    anchor.attr("href")
+            ));
+            if (!isRelevantOfficialLink(linkText, href)) {
+                continue;
+            }
+
+            if (!result.isEmpty()) {
+                result.append('\n');
+            }
+            result.append("[링크] ")
+                    .append(StringUtils.hasText(linkText) ? linkText : "바로가기")
+                    .append(" -> ")
+                    .append(href);
+
+            linkCount++;
+            if (linkCount >= 100 || result.length() >= MAX_RAW_TEXT_LENGTH) {
+                break;
+            }
+        }
+
+        return truncateNullable(normalizeBlock(result.toString()), MAX_RAW_TEXT_LENGTH);
+    }
+
+    private boolean isRelevantOfficialLink(String text, String href) {
+        if (!StringUtils.hasText(href)) {
+            return false;
+        }
+
+        String withoutQuery = href.split("[?#]", 2)[0];
+        String linkSource = (StringUtils.hasText(text) ? text : "") + " " + href;
+        return FILE_EXTENSION.matcher(withoutQuery).find()
+                || containsAny(linkSource, RELEVANT_LINK_KEYWORDS)
+                || containsAny(linkSource, DOCUMENT_NAME_KEYWORDS);
+    }
+
+    private Optional<RawCollectedItem> findOrCreateOfficialSnapshot(
+            PolicySource source,
             ExternalPolicyItem item,
+            String officialText,
+            String rawHtml
+    ) {
+        if (source == null
+                || source.getSourceId() == null
+                || !StringUtils.hasText(officialText)) {
+            return Optional.empty();
+        }
+
+        String sourceUrl = truncateNullable(cleanInline(item.getOfficialUrl()), 1000);
+        String policyIdentity = firstNonBlank(
+                cleanInline(item.getExternalId()),
+                cleanInline(item.getTitle()),
+                ""
+        );
+        String contentHash = sha256(
+                "WEB|"
+                        + firstNonBlank(sourceUrl, "")
+                        + "|"
+                        + policyIdentity
+                        + "|"
+                        + officialText
+        );
+
+        try {
+            return Optional.of(
+                    rawCollectedItemRepository
+                            .findFirstBySource_SourceIdAndRawTypeAndSourceUrlAndContentHashOrderByCollectedAtDesc(
+                                    source.getSourceId(),
+                                    RawType.WEB,
+                                    sourceUrl,
+                                    contentHash
+                            )
+                            .orElseGet(() -> {
+                                RawCollectedItem raw = new RawCollectedItem();
+                                raw.setSource(source);
+                                raw.setRawType(RawType.WEB);
+                                raw.setExternalId(
+                                        truncateNullable(cleanInline(item.getExternalId()), 100)
+                                );
+                                raw.setSourceUrl(sourceUrl);
+                                raw.setRawText(officialText);
+                                raw.setRawHtml(rawHtml);
+                                raw.setHttpStatus(200);
+                                raw.setContentHash(contentHash);
+                                return rawCollectedItemRepository.save(raw);
+                            })
+            );
+        } catch (RuntimeException exception) {
+            log.warn(
+                    "공식 페이지 원문 저장 실패. AI 추출은 캐시 없이 진행합니다: title={}, cause={}",
+                    item.getTitle(),
+                    exception.getClass().getSimpleName()
+            );
+            return Optional.empty();
+        }
+    }
+
+    private Optional<AiPolicyApplicationExtractionService.Extraction> resolveAiExtraction(
+            ExternalPolicyItem item,
+            String officialText,
+            RawCollectedItem officialSnapshot
+    ) {
+        if (!aiExtractionService.isEnabled() || !StringUtils.hasText(officialText)) {
+            return Optional.empty();
+        }
+
+        if (officialSnapshot != null) {
+            Optional<AiPolicyApplicationExtractionService.Extraction> cached =
+                    aiExtractionService.readCached(
+                            officialSnapshot.getRawJson(),
+                            officialText
+                    );
+            if (cached.isPresent()) {
+                log.debug(
+                        "공식 페이지 AI 신청정보 캐시 사용: title={}, model={}",
+                        item.getTitle(),
+                        cached.get().modelName()
+                );
+                return cached;
+            }
+        }
+
+        try {
+            AiPolicyApplicationExtractionService.Extraction extraction =
+                    aiExtractionService.extract(item, officialText);
+
+            if (officialSnapshot != null) {
+                officialSnapshot.setRawJson(aiExtractionService.writeCache(extraction));
+                rawCollectedItemRepository.save(officialSnapshot);
+            }
+            return Optional.of(extraction);
+        } catch (RuntimeException exception) {
+            log.warn(
+                    "공식 페이지 AI 신청정보 추출 실패. 규칙 기반 결과를 유지합니다: "
+                            + "title={}, url={}, cause={}",
+                    item.getTitle(),
+                    item.getOfficialUrl(),
+                    exception.getClass().getSimpleName()
+            );
+            return Optional.empty();
+        }
+    }
+
+    private ExternalPolicyItem withEnrichedApplicationInfo(
+            ExternalPolicyItem item,
+            String applicationMethod,
             String mergedDocuments
     ) {
+        String currentApplicationMethod = cleanInline(item.getApplyMethod());
+        String enrichedApplicationMethod = cleanInline(applicationMethod);
         String current = normalizeBlock(item.getRequiredDocumentsText());
         String merged = normalizeBlock(mergedDocuments);
 
-        if ((current == null && merged == null)
-                || (current != null && current.equals(merged))) {
+        boolean sameApplicationMethod =
+                (currentApplicationMethod == null && enrichedApplicationMethod == null)
+                        || (currentApplicationMethod != null
+                        && currentApplicationMethod.equals(enrichedApplicationMethod));
+        boolean sameDocuments =
+                (current == null && merged == null)
+                        || (current != null && current.equals(merged));
+
+        if (sameApplicationMethod && sameDocuments) {
             return item;
         }
 
         return item.toBuilder()
+                .applyMethod(truncateNullable(enrichedApplicationMethod, 500))
                 .requiredDocumentsText(merged)
                 .build();
+    }
+
+    private String resolveApplicationMethod(
+            String apiApplicationMethod,
+            String aiApplicationMethod
+    ) {
+        String current = cleanInline(apiApplicationMethod);
+        String official = cleanInline(aiApplicationMethod);
+        return StringUtils.hasText(official) ? official : current;
     }
 
     private List<String> extractDocumentSectionItems(Document document) {
@@ -514,13 +766,15 @@ public class PolicyDocumentEnrichmentService {
     private String mergeDocuments(
             List<String> apiDocuments,
             List<String> officialSectionDocuments,
+            List<String> aiDocuments,
             List<String> attachmentDocuments
     ) {
         List<String> merged = new ArrayList<>();
 
-        // 표시 순서 및 신뢰도: API 명시값 → 공식 원문 본문 → 공식 첨부파일명
+        // 표시 순서 및 신뢰도: API 명시값 → 공식 원문 본문 → AI 근거 추출 → 공식 첨부파일명
         addAllSpecific(merged, apiDocuments);
         addAllSpecific(merged, officialSectionDocuments);
+        addAllSpecific(merged, aiDocuments);
         addAllSpecific(merged, attachmentDocuments);
 
         return merged.isEmpty()
@@ -819,6 +1073,24 @@ public class PolicyDocumentEnrichmentService {
         return value.length() <= maxLength
                 ? value
                 : value.substring(0, maxLength);
+    }
+
+    private String truncateNullable(String value, int maxLength) {
+        if (value == null || value.length() <= maxLength) {
+            return value;
+        }
+        return value.substring(0, maxLength);
+    }
+
+    private String sha256(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(
+                    digest.digest(value.getBytes(StandardCharsets.UTF_8))
+            );
+        } catch (Exception exception) {
+            throw new IllegalStateException("공식 페이지 SHA-256 해시 생성 실패", exception);
+        }
     }
 
     private record FetchResult(Document document, String method) {

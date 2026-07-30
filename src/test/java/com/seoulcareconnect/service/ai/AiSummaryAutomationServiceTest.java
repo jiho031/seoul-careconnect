@@ -139,6 +139,28 @@ class AiSummaryAutomationServiceTest {
         verify(explanationService).generateIfMissing(21L);
     }
 
+    @Test
+    void skipsUpdatedPolicyWhenAutomaticModeIsDisabled() {
+        when(settingService.isAutomaticSummaryEnabled()).thenReturn(false);
+
+        service.handlePolicyUpdated(new AiSummaryAutomationService.PolicyUpdated(22L));
+
+        verifyNoInteractions(policyRepository, explanationService);
+    }
+
+    @Test
+    void regeneratesUpdatedPolicyWhenAutomaticModeIsEnabled() {
+        Policy policy = new Policy();
+        policy.setStatus(PolicyStatus.AUTO_PUBLISHED);
+        policy.setApplyStatus(ApplyStatus.OPEN);
+        when(settingService.isAutomaticSummaryEnabled()).thenReturn(true);
+        when(policyRepository.findById(22L)).thenReturn(Optional.of(policy));
+
+        service.handlePolicyUpdated(new AiSummaryAutomationService.PolicyUpdated(22L));
+
+        verify(explanationService).regenerate(22L);
+    }
+
     private Policy eligiblePolicy(LocalDate endDate) {
         Policy policy = new Policy();
         policy.setStatus(PolicyStatus.APPROVED);

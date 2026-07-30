@@ -147,7 +147,8 @@ public class PolicyCollectServiceImpl implements PolicyCollectService {
                         continue;
                     }
 
-                    ExternalPolicyItem enrichedItem = documentEnrichmentService.enrich(item);
+                    ExternalPolicyItem enrichedItem =
+                            documentEnrichmentService.enrich(source, item);
                     boolean saved = upsertService.upsert(source, enrichedItem);
 
                     if (saved) {
