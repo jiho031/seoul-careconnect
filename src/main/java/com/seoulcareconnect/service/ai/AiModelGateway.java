@@ -62,6 +62,7 @@ public class AiModelGateway {
             int maxOutputTokens,
             List<String> requiredTextFields
     ) {
+        ensureEnabled();
         if (!hasOpenAiConfiguration()) {
             throw new UnavailableException(OPENAI_SUMMARY_CONFIGURATION_MESSAGE, null);
         }
@@ -92,11 +93,11 @@ public class AiModelGateway {
     }
 
     public boolean isEnabled() {
-        return properties.isEnabled() || hasOpenAiConfiguration();
+        return properties.isEnabled();
     }
 
     public boolean isOpenAiConfigured() {
-        return hasOpenAiConfiguration();
+        return properties.isEnabled() && hasOpenAiConfiguration();
     }
 
     public String openAiModelName() {
