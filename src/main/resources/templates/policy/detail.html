@@ -136,12 +136,7 @@
                     </div>
 
                     <div th:unless="${aiExplanation != null}" class="easy-summary-box">
-                        <p>아직 생성된 요약이 없습니다. 요약이 준비된 뒤 다시 확인해 주세요.</p>
-                        <button type="button"
-                                class="outline-action detail-ai-action"
-                                data-ai-assistant-open>
-                            AI 정책 도우미 열기
-                        </button>
+                        <p>아직 생성된 요약이 없습니다. AI 정책 도우미를 이용해주세요.</p>
                     </div>
 
                     <p class="ai-notice" th:if="${aiExplanation != null}">
