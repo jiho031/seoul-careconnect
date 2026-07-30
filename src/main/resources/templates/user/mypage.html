@@ -184,6 +184,22 @@
             word-break: keep-all;
             overflow-wrap: break-word;
         }
+
+        .report-card-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .report-card-photos img {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid #dce8f1;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -204,7 +220,7 @@
             <h1>마이페이지</h1>
 
             <p>
-                회원정보와 관심 지역, 화면 모드를
+                회원정보와 관심 지역, 화면 표시 방식을
                 한 곳에서 관리하세요.
             </p>
         </div>
@@ -289,6 +305,10 @@
 
                 <a href="#reports">
                     신고 내역
+                </a>
+
+                <a href="#accessibility-setting">
+                    화면 설정
                 </a>
 
                 <a href="#account-security">
@@ -1872,6 +1892,8 @@
 
         ${renderReportDetails(item)}
 
+        ${renderReportPhotos(item.photoUrls)}
+
     </div>
 
     <span class="policy-card-status ${reportStatusCssClass(item.status)}">
@@ -1947,6 +1969,16 @@
             .replaceAll(">", "&gt;")
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#39;");
+    }
+
+    function renderReportPhotos(photoUrls) {
+        if (!photoUrls || photoUrls.length === 0) return "";
+
+        const thumbs = photoUrls.map(url => `
+            <img src="${url}" alt="첨부 사진" onclick="window.open('${url}', '_blank')">
+        `).join("");
+
+        return `<div class="report-card-photos">${thumbs}</div>`;
     }
 
     function formatReportDate(createdAt) {

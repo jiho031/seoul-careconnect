@@ -30,6 +30,7 @@ public class MissingPolicyReportService {
     private final PolicyCollectionErrorRepository policyCollectionErrorRepository;
     private final UserRepository userRepository;
     private final PolicyRepository policyRepository;
+    private final ReportPhotoStorageService reportPhotoStorageService;
 
     /**
      * 사용자 신고 등록
@@ -58,6 +59,9 @@ public class MissingPolicyReportService {
         report.setSourceUrl(requestDto.getSourceUrl());
         report.setReportType(requestDto.getReportType());
         report.setContent(buildContent(requestDto));
+        report.setPhotoUrlList(
+                reportPhotoStorageService.storeAll(requestDto.getPhotos())
+        );
 
         /*
          * saveAndFlush를 사용해 reportId 생성과 DB 저장을
@@ -333,6 +337,7 @@ public class MissingPolicyReportService {
                 .sourceUrl(report.getSourceUrl())
                 .adminMemo(report.getAdminMemo())
                 .createdAt(report.getCreatedAt())
+                .photoUrls(report.getPhotoUrlList())
                 .processedAt(report.getProcessedAt())
                 .build();
     }

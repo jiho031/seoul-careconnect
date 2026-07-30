@@ -1,6 +1,7 @@
 package com.seoulcareconnect.service.admin;
 
 import com.seoulcareconnect.dto.admin.AdminReportDTO;
+import com.seoulcareconnect.entity.admin.enums.AdminActivityType;
 import com.seoulcareconnect.entity.policy.enums.PolicyErrorStatus;
 import com.seoulcareconnect.entity.report.MissingPolicyReport;
 import com.seoulcareconnect.repository.policy.PolicyCollectionErrorRepository;
@@ -28,6 +29,9 @@ public class AdminReportService {
 
     private final PolicyCollectionErrorRepository
             policyCollectionErrorRepository;
+
+    private final AdminActivityLogService
+            adminActivityLogService;
 
     public long getTotalCount() {
         return missingPolicyReportRepository.count();
@@ -77,11 +81,6 @@ public class AdminReportService {
                 .map(AdminReportDTO::from);
     }
 
-    /**
-     * 사용자 신고 상태 변경
-     *
-     * 연결된 정책 오류가 있으면 정책 오류 상태도 함께 변경한다.
-     */
     @Transactional
     public void changeStatus(
             Long reportId,
@@ -99,7 +98,11 @@ public class AdminReportService {
 
         validateStatus(status);
 
+        String previousStatus =
+                report.getStatus();
+
         report.setStatus(status);
+
         report.setAdminMemo(
                 trimToNull(adminMemo)
         );
@@ -107,7 +110,9 @@ public class AdminReportService {
         LocalDateTime processedAt =
                 resolveProcessedAt(status);
 
-        report.setProcessedAt(processedAt);
+        report.setProcessedAt(
+                processedAt
+        );
 
         synchronizePolicyErrorStatus(
                 reportId,
@@ -115,16 +120,19 @@ public class AdminReportService {
                 adminMemo,
                 processedAt
         );
+
+        adminActivityLogService.recordCurrentAdmin(
+                AdminActivityType.REPORT_PROCESS,
+                report.getReportId(),
+                report.getTitle(),
+                "사용자 신고 상태를 "
+                        + getStatusLabel(previousStatus)
+                        + "에서 "
+                        + getStatusLabel(status)
+                        + " 상태로 변경했습니다."
+        );
     }
 
-    /**
-     * 사용자 신고 상태를 연결된 정책 오류 상태에 반영한다.
-     *
-     * RECEIVED  -> WAITING
-     * IN_REVIEW -> IN_PROGRESS
-     * COMPLETED -> COMPLETED
-     * REJECTED  -> EXCLUDED
-     */
     private void synchronizePolicyErrorStatus(
             Long reportId,
             String reportStatus,
@@ -357,5 +365,30 @@ public class AdminReportService {
         }
 
         return value.trim();
+    }
+
+    private String getStatusLabel(
+            String status
+    ) {
+        if (status == null) {
+            return "알 수 없음";
+        }
+
+        return switch (status) {
+            case "RECEIVED" ->
+                    "접수";
+
+            case "IN_REVIEW" ->
+                    "검토 중";
+
+            case "COMPLETED" ->
+                    "처리 완료";
+
+            case "REJECTED" ->
+                    "반려";
+
+            default ->
+                    status;
+        };
     }
 }

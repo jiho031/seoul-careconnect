@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seoulcareconnect.config.ai.AiProperties;
 import com.seoulcareconnect.dto.ai.AiAssistantRequest;
 import com.seoulcareconnect.dto.ai.AiAssistantResponse;
+import com.seoulcareconnect.dto.ai.AiPolicyExplanationDto;
 import com.seoulcareconnect.entity.ai.AiPolicyEmbedding;
 import com.seoulcareconnect.entity.ai.AiPolicyExplanation;
 import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
@@ -98,6 +99,7 @@ public class AiPolicyAssistantService {
     private final AiPolicyEmbeddingRepository embeddingRepository;
     private final UserRepository userRepository;
     private final AiModelGateway modelGateway;
+    private final AiPolicyExplanationService explanationService;
     private final ObjectMapper objectMapper;
     private final AiProperties properties;
 
@@ -153,6 +155,46 @@ public class AiPolicyAssistantService {
         } catch (RuntimeException exception) {
             throw new AiModelGateway.UnavailableException(
                     "AI 정책 도우미를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+                    exception
+            );
+        }
+    }
+
+    @Transactional
+    public AiAssistantResponse initializePolicy(Long policyId) {
+        try {
+            Policy policy = policyRepository.findAssistantPolicy(
+                            policyId,
+                            PUBLIC_STATUSES,
+                            ApplyStatus.EXPIRED,
+                            today()
+                    )
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "현재 공개 중인 정책을 찾을 수 없습니다."
+                    ));
+
+            AiPolicyExplanationDto explanation = explanationService.getOrCreate(policyId);
+            AiPolicyExplanation stored = explanationRepository
+                    .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
+                            policyId,
+                            ReviewStatus.APPROVED
+                    )
+                    .orElseThrow(() -> new IllegalStateException(
+                            "생성된 정책 요약을 불러오지 못했습니다."
+                    ));
+            Document document = buildDocument(policy, stored, 1);
+
+            return new AiAssistantResponse(
+                    initialSummary(explanation),
+                    List.of(toSource(document)),
+                    true,
+                    NOTICE
+            );
+        } catch (AiModelGateway.UnavailableException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            throw new AiModelGateway.UnavailableException(
+                    "AI 정책 요약을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.",
                     exception
             );
         }
@@ -383,13 +425,22 @@ public class AiPolicyAssistantService {
                 valueOr(policy.getTitle(), "제목 없음"),
                 agency,
                 category,
-                valueOr(policy.getTarget(), "공식 공고 확인"),
+                valueOr(
+                        explanation == null ? null : explanation.getEligibilitySummary(),
+                        valueOr(policy.getTarget(), "공식 공고 확인")
+                ),
                 region,
                 applicationPeriod(policy),
                 sourceUpdatedDate(policy),
-                valueOr(policy.getApplyMethod(), "공식 공고 확인"),
+                valueOr(
+                        explanation == null ? null : explanation.getApplicationSummary(),
+                        valueOr(policy.getApplyMethod(), "공식 공고 확인")
+                ),
                 valueOr(policy.getContact(), "공식 공고 확인"),
-                detail == null ? null : detail.getBenefit(),
+                valueOr(
+                        explanation == null ? null : explanation.getBenefitSummary(),
+                        detail == null ? null : detail.getBenefit()
+                ),
                 detail == null ? null : detail.getSelectionCriteria(),
                 detail == null ? null : detail.getRequiredDocumentsText(),
                 detail == null ? null : detail.getContentText(),
@@ -528,6 +579,27 @@ public class AiPolicyAssistantService {
         if (!StringUtils.hasText(value)) return "상세 내용은 정책 페이지에서 확인해 주세요.";
         String normalized = value.replaceAll("\\s+", " ").trim();
         return normalized.length() <= 180 ? normalized : normalized.substring(0, 180) + "…";
+    }
+
+    private String initialSummary(AiPolicyExplanationDto explanation) {
+        return """
+                이 정책을 쉽게 정리해 드릴게요. [1]
+
+                %s
+
+                지원 대상: %s
+                지원 내용: %s
+                신청 방법: %s
+                꼭 확인할 점: %s
+
+                이어서 궁금한 내용을 질문해 주세요.
+                """.formatted(
+                explanation.easySummary(),
+                explanation.eligibilitySummary(),
+                explanation.benefitSummary(),
+                explanation.applicationSummary(),
+                explanation.cautionSummary()
+        ).trim();
     }
 
     private String retrievalQuestion(String question, List<AiAssistantRequest.Message> history) {

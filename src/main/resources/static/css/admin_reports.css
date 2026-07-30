@@ -62,6 +62,21 @@
     -webkit-box-orient: vertical;
 }
 
+.report-photo-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.report-photo-thumbs img {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--line, #dfe6ef);
+}
+
 .admin-pagination span.disabled {
     display: inline-flex;
     align-items: center;

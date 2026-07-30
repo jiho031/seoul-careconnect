@@ -322,6 +322,16 @@
                                th:text="${report.content}">
                                 신고 내용
                             </p>
+
+                            <div class="report-photo-thumbs"
+                                 th:if="${!#lists.isEmpty(report.photoUrlList)}">
+                                <a th:each="photoUrl : ${report.photoUrlList}"
+                                   th:href="@{${photoUrl}}"
+                                   target="_blank"
+                                   rel="noopener">
+                                    <img th:src="@{${photoUrl}}" alt="첨부 사진">
+                                </a>
+                            </div>
                         </td>
 
                         <!-- 연결 페이지 -->

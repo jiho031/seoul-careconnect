@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 // 마이페이지 "신고 내역" 카드에서 사용하는 DTO (FavoriteCardDto와 동일한 스타일)
 @Getter
@@ -27,4 +28,5 @@ public class MissingPolicyReportCardDto {
     private String adminMemo;
     private LocalDateTime createdAt;
     private LocalDateTime processedAt;
+    private List<String> photoUrls; // 신고 접수 시 첨부한 사진 (없으면 빈 리스트)
 }

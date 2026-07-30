@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.ai")
 public class AiProperties {
 
-    private boolean enabled = false;
-    private String apiKey = "";
+    private String apiKey = environmentValue("OPENAI_API_KEY");
+    private boolean enabled = !apiKey.isBlank();
     private String baseUrl = "https://api.openai.com/v1";
     private String model = "gpt-5.6";
     private String promptVersion = "policy-easy-v1";
@@ -27,4 +27,15 @@ public class AiProperties {
     private String ollamaModel = "llama3.2";
     private String ollamaEmbeddingModel = "embeddinggemma";
     private int ollamaEmbeddingDimensions = 0;
+
+    public String resolvedApiKey() {
+        return apiKey == null || apiKey.isBlank()
+                ? environmentValue("OPENAI_API_KEY")
+                : apiKey.trim();
+    }
+
+    private static String environmentValue(String name) {
+        String value = System.getenv(name);
+        return value == null ? "" : value.trim();
+    }
 }

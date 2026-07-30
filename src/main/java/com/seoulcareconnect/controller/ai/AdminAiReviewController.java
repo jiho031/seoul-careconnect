@@ -1,6 +1,5 @@
 package com.seoulcareconnect.controller.ai;
 
-import com.seoulcareconnect.entity.ai.AiPolicyExplanation.ReviewStatus;
 import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -13,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/ai-review")
@@ -21,81 +23,54 @@ public class AdminAiReviewController {
     private final AiPolicyExplanationService explanationService;
 
     @GetMapping
-    public String page(
-            @RequestParam(required = false) ReviewStatus status,
-            Model model
-    ) {
-        model.addAttribute("items", explanationService.findRecent(status));
-        model.addAttribute("selectedStatus", status);
-        model.addAttribute("reviewStatuses", new ReviewStatus[]{
-                ReviewStatus.DRAFT,
-                ReviewStatus.APPROVED,
-                ReviewStatus.REJECTED
-        });
-        model.addAttribute("draftCount", explanationService.count(ReviewStatus.DRAFT));
-        model.addAttribute("approvedCount", explanationService.count(ReviewStatus.APPROVED));
-        model.addAttribute("rejectedCount", explanationService.count(ReviewStatus.REJECTED));
-        model.addAttribute("aiEnabled", explanationService.isEnabled());
+    public String page(Model model) {
+        model.addAttribute("items", explanationService.findRecentGenerated());
+        model.addAttribute("generatedCount", explanationService.countGenerated());
+        model.addAttribute(
+                "todayGeneratedCount",
+                explanationService.countGeneratedSince(
+                        LocalDate.now(ZoneId.of("Asia/Seoul")).atStartOfDay()
+                )
+        );
+        model.addAttribute("openAiConfigured", explanationService.isOpenAiConfigured());
         model.addAttribute("aiModel", explanationService.modelName());
         return "admin/ai-review";
     }
 
-    @PostMapping("/generate")
-    public String generate(
-            @RequestParam Long policyId,
-            RedirectAttributes redirectAttributes
-    ) {
-        return runAction(
-                () -> explanationService.generate(policyId),
-                "AI 설명 초안을 생성했습니다.",
-                redirectAttributes
-        );
-    }
-
-    @PostMapping("/{explanationId}/regenerate")
-    public String regenerate(
+    @PostMapping("/{explanationId}/edit")
+    public String edit(
             @PathVariable Long explanationId,
-            RedirectAttributes redirectAttributes
-    ) {
-        return runAction(
-                () -> explanationService.regenerate(explanationId),
-                "AI 설명을 다시 생성했습니다.",
-                redirectAttributes
-        );
-    }
-
-    @PostMapping("/{explanationId}/approve")
-    public String approve(
-            @PathVariable Long explanationId,
-            @RequestParam(required = false) String comment,
+            @RequestParam String easySummary,
+            @RequestParam String eligibilitySummary,
+            @RequestParam String benefitSummary,
+            @RequestParam String applicationSummary,
+            @RequestParam String cautionSummary,
             Authentication authentication,
             RedirectAttributes redirectAttributes
     ) {
         return runAction(
-                () -> explanationService.approve(
+                () -> explanationService.update(
                         explanationId,
-                        reviewer(authentication),
-                        comment
+                        easySummary,
+                        eligibilitySummary,
+                        benefitSummary,
+                        applicationSummary,
+                        cautionSummary,
+                        reviewer(authentication)
                 ),
-                "승인했습니다. 사용자 정책 상세 화면에 반영됩니다.",
+                "AI 정책 요약을 수정했습니다.",
                 redirectAttributes
         );
     }
 
-    @PostMapping("/{explanationId}/reject")
-    public String reject(
+    @PostMapping("/{explanationId}/delete")
+    public String delete(
             @PathVariable Long explanationId,
-            @RequestParam(required = false) String comment,
-            Authentication authentication,
             RedirectAttributes redirectAttributes
     ) {
         return runAction(
-                () -> explanationService.reject(
-                        explanationId,
-                        reviewer(authentication),
-                        comment
-                ),
-                "AI 설명 초안을 반려했습니다.",
+                () -> explanationService.delete(explanationId),
+                "AI 정책 요약을 삭제했습니다. 다음 도우미 실행 때 다시 생성됩니다.",
                 redirectAttributes
         );
     }

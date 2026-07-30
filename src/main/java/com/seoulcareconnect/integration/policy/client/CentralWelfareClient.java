@@ -372,20 +372,23 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                 "status"
         );
 
-        String documents = first(
-                detailItem,
-                listItem,
-                "rqutDcmnt",
-                "requiredDocuments",
-                "reqstMthPapersCn"
-        );
+        String documents =
+                reader.joinNonBlank(
+                        "\n",
 
-        /*
-         * 중앙부처 응답에 지역 정보가 명확히 있을 때만 넣습니다.
-         *
-         * 지역값이 null이면 SeoulPolicyFilter에서
-         * 중앙부처 정책을 전국 정책으로 판단합니다.
-         */
+                        first(
+                                detailItem,
+                                listItem,
+                                "rqutDcmnt",
+                                "requiredDocuments",
+                                "reqstMthPapersCn"
+                        ),
+
+                        extractAttachedApplicationDocuments(
+                                detailItem
+                        )
+                );
+
         String region = first(
                 detailItem,
                 listItem,
@@ -489,6 +492,105 @@ public class CentralWelfareClient implements ExternalPolicyClient {
                 .rawXml(rawXml)
                 .httpStatus(200)
                 .build();
+    }
+
+    private String extractAttachedApplicationDocuments(
+            JsonNode detail
+    ) {
+        if (detail == null) {
+            return null;
+        }
+
+        List<String> documents =
+                new ArrayList<>();
+
+        for (JsonNode node :
+                reader.findObjectsContainingAny(
+                        detail,
+                        "servSeDetailNm",
+                        "wlfareInfoReldNm"
+                )) {
+
+            String code =
+                    reader.firstText(
+                            node,
+                            "servSeCode",
+                            "wlfareInfoDtlCd"
+                    );
+
+            if (!"040".equals(code)) {
+                continue;
+            }
+
+            String fileName =
+                    reader.firstText(
+                            node,
+                            "servSeDetailNm",
+                            "wlfareInfoReldNm"
+                    );
+
+            if (fileName != null
+                    && isApplicationDocumentName(fileName)
+                    && !documents.contains(fileName)) {
+
+                documents.add(fileName);
+            }
+        }
+
+        return documents.isEmpty()
+                ? null
+                : String.join("\n", documents);
+    }
+
+    private boolean isApplicationDocumentName(
+            String fileName
+    ) {
+        String normalized =
+                fileName.replaceAll("\\s+", "");
+
+        if (containsAny(
+                normalized,
+                "사업안내",
+                "공고문",
+                "모집안내",
+                "추진계획",
+                "조례",
+                "지침",
+                "매뉴얼",
+                "포스터"
+        )) {
+            return false;
+        }
+
+        return containsAny(
+                normalized,
+                "신청서",
+                "신청양식",
+                "제출서류",
+                "제출서식",
+                "서식",
+                "양식",
+                "동의서",
+                "서약서",
+                "신고서",
+                "확인서",
+                "증빙",
+                "별지"
+        );
+    }
+
+    private boolean containsAny(
+            String text,
+            String... keywords
+    ) {
+        for (String keyword : keywords) {
+
+            if (text.contains(keyword)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private String first(
