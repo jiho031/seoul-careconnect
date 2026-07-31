@@ -121,6 +121,22 @@ public class AdminAiReviewController {
         return "redirect:/admin/ai-review";
     }
 
+    @PostMapping("/generate-missing/stop")
+    public String stopGeneratingMissing(
+            @RequestParam(defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes
+    ) {
+        boolean requested = automationService.requestManualGenerationStop();
+        redirectAttributes.addFlashAttribute(
+                requested ? "successMessage" : "errorMessage",
+                requested
+                        ? "중단을 요청했습니다. 현재 처리 중인 정책을 마친 뒤 작업을 멈춥니다."
+                        : "진행 중인 전체 요약 작업이 없습니다."
+        );
+        redirectAttributes.addAttribute("page", Math.max(page, 0));
+        return "redirect:/admin/ai-review";
+    }
+
     @PostMapping("/{explanationId}/edit")
     public String edit(
             @PathVariable Long explanationId,

@@ -16,4 +16,14 @@ public class AiSummaryTaskConfig {
         executor.setThreadNamePrefix("ai-summary-");
         return executor;
     }
+
+    @Bean(name = "aiPolicySummaryRequestExecutor")
+    public ThreadPoolTaskExecutor aiPolicySummaryRequestExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("ai-summary-request-");
+        return executor;
+    }
 }

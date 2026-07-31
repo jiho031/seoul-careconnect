@@ -4,7 +4,6 @@ import com.seoulcareconnect.dto.ai.AiAssistantRequest;
 import com.seoulcareconnect.dto.ai.AiAssistantResponse;
 import com.seoulcareconnect.service.ai.AiPolicyAssistantService;
 import com.seoulcareconnect.service.ai.AiModelGateway;
-import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,13 +31,6 @@ public class AiAssistantController {
         return assistantService.ask(request, authentication);
     }
 
-    @PostMapping("/policies/{policyId}/summary")
-    public AiAssistantResponse initializePolicy(
-            @PathVariable Long policyId
-    ) {
-        return assistantService.initializePolicy(policyId);
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<java.util.Map<String, String>> handleValidation() {
         return ResponseEntity.badRequest().body(java.util.Map.of(
@@ -51,16 +42,6 @@ public class AiAssistantController {
     @ExceptionHandler(AiModelGateway.UnavailableException.class)
     public ResponseEntity<java.util.Map<String, String>> handleUnavailable(
             AiModelGateway.UnavailableException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(java.util.Map.of(
-                "message",
-                exception.getMessage()
-        ));
-    }
-
-    @ExceptionHandler(AiPolicyExplanationService.GenerationDisabledException.class)
-    public ResponseEntity<java.util.Map<String, String>> handleGenerationDisabled(
-            AiPolicyExplanationService.GenerationDisabledException exception
     ) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(java.util.Map.of(
                 "message",

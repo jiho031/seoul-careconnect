@@ -112,20 +112,24 @@
             </div>
 
             <!-- 수동 재수집 결과 메시지 -->
-            <div class="result-message success"
-                 th:if="${collectionSuccess}"
-                 th:text="${collectionSuccess}">
-                수동 재수집이 완료되었습니다.
-            </div>
+            <div id="collectionResultMessages"
+                 aria-live="polite">
+                <div class="result-message success"
+                     th:if="${collectionSuccess}"
+                     th:text="${collectionSuccess}">
+                    수동 재수집이 완료되었습니다.
+                </div>
 
-            <div class="result-message error"
-                 th:if="${collectionError}"
-                 th:text="${collectionError}">
-                수동 재수집 중 오류가 발생했습니다.
+                <div class="result-message error"
+                     th:if="${collectionError}"
+                     th:text="${collectionError}">
+                    수동 재수집 중 오류가 발생했습니다.
+                </div>
             </div>
 
             <!-- 수집 통계 -->
-            <div class="admin-stat-grid">
+            <div class="admin-stat-grid"
+                 id="collectionStats">
 
                 <article class="admin-stat-card">
                     <span>최근 수집 처리</span>
@@ -173,7 +177,8 @@
             <div class="admin-grid-2 collection-top">
 
                 <!-- API 연동 상태 -->
-                <section class="admin-card">
+                <section class="admin-card"
+                         id="apiStatusCard">
                     <div class="admin-card-head">
                         <h2>API 연동 상태</h2>
 
@@ -220,7 +225,8 @@
                                         정상
                                     </span>
                                                         <form th:action="@{/admin/collection/run-source}"
-                                                              method="post">
+                                                              method="post"
+                                                              data-api-collect-form>
 
                                                             <input type="hidden"
                                                                    name="sourceName"
@@ -287,7 +293,8 @@
             </div>
 
             <!-- 최근 API 수집 로그 -->
-            <section class="admin-card">
+            <section class="admin-card"
+                     id="apiLogCard">
                 <div class="admin-card-head">
                     <h2>최근 API 수집 로그</h2>
 
@@ -422,7 +429,8 @@
                     </div>
                 </section>
 
-                <section class="admin-card">
+                <section class="admin-card"
+                         id="collectionScheduleCard">
                     <div class="admin-card-head">
                         <h2>자동 수집 일정</h2>
 
@@ -603,46 +611,11 @@
         src="/js/common.js">
 </script>
 
+<script th:src="@{/js/admin-collection-refresh.js}"
+        src="/js/admin-collection-refresh.js">
+</script>
+
 <script>
-    const refreshApiStatusBtn =
-        document.getElementById("refreshApiStatusBtn");
-
-    const refreshApiLogBtn =
-        document.getElementById("refreshApiLogBtn");
-
-    /**
-     * API 연동 상태 새로고침
-     */
-    refreshApiStatusBtn?.addEventListener(
-        "click",
-        function () {
-            this.classList.add("loading");
-
-            setTimeout(() => {
-                this.classList.remove("loading");
-
-                alert(
-                    "API 연동 상태 영역만 새로고침 예정"
-                );
-            }, 700);
-        }
-    );
-
-    refreshApiLogBtn?.addEventListener(
-        "click",
-        function () {
-            this.classList.add("loading");
-
-            setTimeout(() => {
-                this.classList.remove("loading");
-
-                alert(
-                    "최근 API 수집 로그 영역만 새로고침 예정"
-                );
-            }, 700);
-        }
-    );
-
     function openCollectionLogModal(row) {
         if (!row) {
             return;

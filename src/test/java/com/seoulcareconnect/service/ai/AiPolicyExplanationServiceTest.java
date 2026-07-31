@@ -17,16 +17,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,9 +40,6 @@ class AiPolicyExplanationServiceTest {
     @Mock
     private AiModelGateway modelGateway;
 
-    @Mock
-    private AiSummarySettingService settingService;
-
     private AiPolicyExplanationService service;
 
     @BeforeEach
@@ -53,56 +49,59 @@ class AiPolicyExplanationServiceTest {
                 policyRepository,
                 modelGateway,
                 new ObjectMapper(),
-                new AiProperties(),
-                settingService
+                new AiProperties()
         );
     }
 
     @Test
-    void blocksNewUserRequestedSummaryWhenAutomaticGenerationIsDisabled() {
+    void reportsSavingStageBeforePersistingGeneratedSummary() throws Exception {
+        Policy policy = new Policy();
+        ReflectionTestUtils.setField(policy, "policyId", 17L);
+        policy.setTitle("중장년 일자리 지원");
+        ObjectMapper objectMapper = new ObjectMapper();
+        AtomicBoolean savingReported = new AtomicBoolean(false);
+
         when(explanationRepository
                 .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
                         17L,
                         ReviewStatus.APPROVED
                 ))
                 .thenReturn(Optional.empty());
-        when(settingService.isAutomaticSummaryEnabled()).thenReturn(false);
-
-        assertThatThrownBy(() -> service.getOrCreate(17L))
-                .isInstanceOf(AiPolicyExplanationService.GenerationDisabledException.class)
-                .hasMessageContaining("자동 AI 요약");
-
-        verifyNoInteractions(policyRepository, modelGateway);
-    }
-
-    @Test
-    void returnsStoredSummaryWhenAutomaticGenerationIsDisabled() {
-        Policy policy = new Policy();
-        ReflectionTestUtils.setField(policy, "policyId", 17L);
-        policy.setTitle("중장년 일자리 지원");
-        AiPolicyExplanation explanation = AiPolicyExplanation.generated(
-                policy,
-                new AiPolicyExplanation.Content(
-                        "핵심 요약",
-                        "지원 대상",
-                        "지원 내용",
-                        "신청 방법",
-                        "주의사항"
-                ),
+        when(policyRepository.findWithSourceAndDetailByPolicyId(17L))
+                .thenReturn(Optional.of(policy));
+        when(modelGateway.generateJsonOpenAiOnly(
+                anyString(),
+                anyString(),
+                anyList(),
+                anyMap(),
+                anyInt(),
+                anyList()
+        )).thenReturn(new AiModelGateway.GeneratedJson(
+                AiModelGateway.Provider.OPENAI,
                 "gpt-5-mini",
-                "policy-easy-v1"
+                objectMapper.readTree("""
+                        {
+                          "easySummary": "핵심 요약",
+                          "eligibilitySummary": "지원 대상",
+                          "benefitSummary": "지원 내용",
+                          "applicationSummary": "신청 방법",
+                          "cautionSummary": "공식 공고를 확인하세요."
+                        }
+                        """)
+        ));
+        when(explanationRepository.save(any(AiPolicyExplanation.class)))
+                .thenAnswer(invocation -> {
+                    assertThat(savingReported).isTrue();
+                    return invocation.getArgument(0);
+                });
+
+        var result = service.generateIfMissing(
+                17L,
+                () -> savingReported.set(true)
         );
-        ReflectionTestUtils.setField(explanation, "explanationId", 31L);
-        when(explanationRepository
-                .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
-                        17L,
-                        ReviewStatus.APPROVED
-                ))
-                .thenReturn(Optional.of(explanation));
 
-        assertThat(service.getOrCreate(17L).easySummary()).isEqualTo("핵심 요약");
-
-        verifyNoInteractions(settingService, policyRepository, modelGateway);
+        assertThat(result.easySummary()).isEqualTo("핵심 요약");
+        assertThat(savingReported).isTrue();
     }
 
     @Test

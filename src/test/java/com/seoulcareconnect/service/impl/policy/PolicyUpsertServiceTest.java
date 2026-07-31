@@ -14,6 +14,7 @@ import com.seoulcareconnect.integration.policy.SeoulPolicyFilter;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.RawCollectedItemRepository;
 import com.seoulcareconnect.service.ai.AiSummaryAutomationService;
+import com.seoulcareconnect.service.policy.PolicyDocumentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,9 @@ class PolicyUpsertServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private PolicyDocumentService policyDocumentService;
+
     private PolicyUpsertService service;
 
     @BeforeEach
@@ -55,7 +59,8 @@ class PolicyUpsertServiceTest {
                 new ExternalDateParser(),
                 new ExternalPolicyClassifier(),
                 seoulPolicyFilter,
-                eventPublisher
+                eventPublisher,
+                policyDocumentService
         );
         ReflectionTestUtils.setField(service, "zoneId", "Asia/Seoul");
         ReflectionTestUtils.setField(service, "closingSoonDays", 7);
@@ -124,5 +129,11 @@ class PolicyUpsertServiceTest {
         service.upsert(source, incoming);
 
         verify(eventPublisher).publishEvent(any(AiSummaryAutomationService.PolicyUpdated.class));
+        verify(policyDocumentService).sync(
+                eq(existing),
+                eq("참여신청서\n주민등록등본"),
+                eq(incoming.getDocumentCandidates()),
+                eq("https://example.go.kr/policy/17")
+        );
     }
 }

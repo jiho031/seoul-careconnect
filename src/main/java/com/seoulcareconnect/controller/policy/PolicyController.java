@@ -2,7 +2,10 @@ package com.seoulcareconnect.controller.policy;
 
 import com.seoulcareconnect.dto.policy.PolicyDTO;
 import com.seoulcareconnect.dto.policy.PolicyDetailDTO;
+import com.seoulcareconnect.dto.policy.PolicyDocumentChecklistResponse;
 import com.seoulcareconnect.dto.policy.PolicySearchDTO;
+import com.seoulcareconnect.dto.user.PolicyDocumentProgressRequest;
+import com.seoulcareconnect.dto.user.PolicyDocumentProgressResponse;
 import com.seoulcareconnect.entity.policy.enums.AgeGroup;
 import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyCategory;
@@ -13,6 +16,7 @@ import com.seoulcareconnect.service.policy.PolicyDetailService;
 import com.seoulcareconnect.service.policy.PolicyService;
 import com.seoulcareconnect.service.policy.PolicyViewLogService;
 import com.seoulcareconnect.service.user.FavoriteService;
+import com.seoulcareconnect.service.user.PolicyDocumentProgressService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +29,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -51,6 +58,7 @@ public class PolicyController {
     private final UserRepository userRepository;
     private final AiPolicyExplanationService aiPolicyExplanationService;
     private final FavoriteService favoriteService;
+    private final PolicyDocumentProgressService documentProgressService;
 
     @GetMapping("/policies")
     public String list(
@@ -142,7 +150,44 @@ public class PolicyController {
                 "aiExplanation",
                 aiPolicyExplanationService.findGenerated(policyId).orElse(null)
         );
+        model.addAttribute(
+                "completedDocumentKeys",
+                documentProgressService.completedKeys(currentUser.getUserId(), policyId)
+        );
         return "policy/detail";
+    }
+
+    @GetMapping("/api/policies/{policyId:\\d+}/documents")
+    @ResponseBody
+    public PolicyDocumentChecklistResponse documentChecklist(
+            @PathVariable Long policyId,
+            Authentication authentication
+    ) {
+        User currentUser = resolveCurrentUser(authentication);
+        PolicyDetailDTO policy = policyDetailService.get(policyId);
+        return new PolicyDocumentChecklistResponse(
+                policyId,
+                policy.getTitle(),
+                policy.getDocuments(),
+                documentProgressService.completedKeys(currentUser.getUserId(), policyId)
+        );
+    }
+
+    @PostMapping("/api/policies/{policyId:\\d+}/documents/{policyDocumentId:\\d+}/progress")
+    @ResponseBody
+    public PolicyDocumentProgressResponse updateDocumentProgress(
+            @PathVariable Long policyId,
+            @PathVariable Long policyDocumentId,
+            @RequestBody PolicyDocumentProgressRequest request,
+            Authentication authentication
+    ) {
+        User currentUser = resolveCurrentUser(authentication);
+        return documentProgressService.update(
+                currentUser.getUserId(),
+                policyId,
+                policyDocumentId,
+                request.completed()
+        );
     }
 
     private List<Integer> pageNumbers(Page<?> page) {

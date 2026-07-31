@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -45,7 +46,6 @@ public class AiPolicyExplanationService {
     private final AiModelGateway modelGateway;
     private final ObjectMapper objectMapper;
     private final AiProperties properties;
-    private final AiSummarySettingService settingService;
 
     public Optional<AiPolicyExplanationDto> findGenerated(Long policyId) {
         return explanationRepository
@@ -96,27 +96,16 @@ public class AiPolicyExplanationService {
     }
 
     @Transactional
-    public synchronized AiPolicyExplanationDto getOrCreate(Long policyId) {
-        Optional<AiPolicyExplanation> existing = explanationRepository
-                .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
-                        policyId,
-                        ReviewStatus.APPROVED
-                );
-        if (existing.isPresent()) {
-            return toDto(existing.get());
-        }
-
-        if (!settingService.isAutomaticSummaryEnabled()) {
-            throw new GenerationDisabledException(
-                    "관리자가 자동 AI 요약을 꺼 둔 상태입니다. 요약이 준비된 뒤 다시 이용해 주세요."
-            );
-        }
-
-        return createForPolicy(policyId);
+    public synchronized AiPolicyExplanationDto generateIfMissing(Long policyId) {
+        return generateIfMissing(policyId, () -> {});
     }
 
     @Transactional
-    public synchronized AiPolicyExplanationDto generateIfMissing(Long policyId) {
+    public synchronized AiPolicyExplanationDto generateIfMissing(
+            Long policyId,
+            Runnable beforeSave
+    ) {
+        Objects.requireNonNull(beforeSave);
         Optional<AiPolicyExplanation> existing = explanationRepository
                 .findFirstByPolicyPolicyIdAndReviewStatusOrderByCreatedAtDesc(
                         policyId,
@@ -126,7 +115,7 @@ public class AiPolicyExplanationService {
             return toDto(existing.get());
         }
 
-        return createForPolicy(policyId);
+        return createForPolicy(policyId, beforeSave);
     }
 
     @Transactional
@@ -155,10 +144,10 @@ public class AiPolicyExplanationService {
         return toDto(saved);
     }
 
-    private AiPolicyExplanationDto createForPolicy(Long policyId) {
+    private AiPolicyExplanationDto createForPolicy(Long policyId, Runnable beforeSave) {
         Policy policy = policyRepository.findWithSourceAndDetailByPolicyId(policyId)
                 .orElseThrow(() -> new IllegalArgumentException("정책을 찾을 수 없습니다. ID=" + policyId));
-        return createGenerated(policy);
+        return createGenerated(policy, beforeSave);
     }
 
     @Transactional
@@ -202,8 +191,9 @@ public class AiPolicyExplanationService {
         return modelGateway.openAiModelName();
     }
 
-    private AiPolicyExplanationDto createGenerated(Policy policy) {
+    private AiPolicyExplanationDto createGenerated(Policy policy, Runnable beforeSave) {
         GeneratedContent generated = generateContent(policy);
+        beforeSave.run();
         AiPolicyExplanation saved = explanationRepository.save(
                 AiPolicyExplanation.generated(
                         policy,
@@ -378,9 +368,4 @@ public class AiPolicyExplanationService {
     private record GeneratedContent(AiPolicyExplanation.Content content, String modelName) {
     }
 
-    public static class GenerationDisabledException extends IllegalStateException {
-        public GenerationDisabledException(String message) {
-            super(message);
-        }
-    }
 }

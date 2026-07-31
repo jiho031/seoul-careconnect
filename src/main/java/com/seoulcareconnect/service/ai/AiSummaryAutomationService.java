@@ -36,6 +36,7 @@ public class AiSummaryAutomationService {
     private final PolicyRepository policyRepository;
     private final TaskExecutor taskExecutor;
     private final AtomicBoolean manualGenerationRunning = new AtomicBoolean(false);
+    private final AtomicBoolean manualGenerationStopRequested = new AtomicBoolean(false);
     private final AtomicInteger processedCount = new AtomicInteger();
     private final AtomicInteger succeededCount = new AtomicInteger();
     private final AtomicInteger failedCount = new AtomicInteger();
@@ -43,6 +44,7 @@ public class AiSummaryAutomationService {
     private volatile String lastError;
     private volatile LocalDateTime startedAt;
     private volatile LocalDateTime completedAt;
+    private volatile boolean stopped;
 
     public AiSummaryAutomationService(
             AiSummarySettingService settingService,
@@ -106,10 +108,25 @@ public class AiSummaryAutomationService {
                 processedCount.get(),
                 succeededCount.get(),
                 failedCount.get(),
+                manualGenerationStopRequested.get(),
+                stopped,
                 lastError,
                 startedAt,
                 completedAt
         );
+    }
+
+    public boolean requestManualGenerationStop() {
+        if (!manualGenerationRunning.get()) {
+            return false;
+        }
+
+        manualGenerationStopRequested.set(true);
+        if (!manualGenerationRunning.get()) {
+            manualGenerationStopRequested.set(false);
+            return false;
+        }
+        return true;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -156,8 +173,15 @@ public class AiSummaryAutomationService {
     }
 
     private void generateMissing(List<Long> policyIds) {
+        boolean stoppedByRequest = false;
         try {
-            for (Long policyId : policyIds) {
+            for (int index = 0; index < policyIds.size(); index++) {
+                if (manualGenerationStopRequested.get()) {
+                    stoppedByRequest = true;
+                    break;
+                }
+
+                Long policyId = policyIds.get(index);
                 Policy policy = policyRepository.findById(policyId).orElse(null);
                 if (!isManualCandidate(policy, today())) {
                     requestedCount = Math.max(0, requestedCount - 1);
@@ -174,10 +198,17 @@ public class AiSummaryAutomationService {
                 } finally {
                     processedCount.incrementAndGet();
                 }
+
+                if (manualGenerationStopRequested.get() && index + 1 < policyIds.size()) {
+                    stoppedByRequest = true;
+                    break;
+                }
             }
         } finally {
+            stopped = stoppedByRequest;
             completedAt = LocalDateTime.now();
             manualGenerationRunning.set(false);
+            manualGenerationStopRequested.set(false);
         }
     }
 
@@ -200,6 +231,8 @@ public class AiSummaryAutomationService {
         lastError = null;
         startedAt = LocalDateTime.now();
         completedAt = null;
+        manualGenerationStopRequested.set(false);
+        stopped = false;
     }
 
     private String limitedMessage(RuntimeException exception) {
@@ -223,6 +256,8 @@ public class AiSummaryAutomationService {
             int processedCount,
             int succeededCount,
             int failedCount,
+            boolean stopRequested,
+            boolean stopped,
             String lastError,
             LocalDateTime startedAt,
             LocalDateTime completedAt

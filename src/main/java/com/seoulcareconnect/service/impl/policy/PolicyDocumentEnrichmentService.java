@@ -3,6 +3,7 @@ package com.seoulcareconnect.service.impl.policy;
 import com.seoulcareconnect.entity.policy.PolicySource;
 import com.seoulcareconnect.entity.policy.RawCollectedItem;
 import com.seoulcareconnect.entity.policy.enums.RawType;
+import com.seoulcareconnect.integration.policy.ExternalPolicyDocument;
 import com.seoulcareconnect.integration.policy.ExternalPolicyItem;
 import com.seoulcareconnect.repository.policy.RawCollectedItemRepository;
 import com.seoulcareconnect.service.ai.AiPolicyApplicationExtractionService;
@@ -109,7 +110,10 @@ public class PolicyDocumentEnrichmentService {
             "신청폼 제출", "온라인 신청", "온라인신청", "접수 바로가기",
             "신청 바로가기", "사업안내 바로가기", "구글폼", "forms.gle",
             "제출하신 서류는", "서류 반환", "반환 등 문의", "알림톡",
-            "자세한 내용은", "문의하여 주시기 바랍니다", "다운로드 제한 안내"
+            "자세한 내용은", "문의하여 주시기 바랍니다", "다운로드 제한 안내",
+            "중소벤처24 증명서 및 사업신청 통화서비스 제공",
+            "중소기업현황정보시스템 중소기업확인서 신청 및 발급 제공",
+            "개인정보처리방침", "이용약관", "이메일무단수집거부"
     );
 
     private static final List<String> RELEVANT_LINK_KEYWORDS = List.of(
@@ -166,10 +170,18 @@ public class PolicyDocumentEnrichmentService {
                 || !fetchOfficialPage
                 || (!apiDocuments.isEmpty() && !fetchWhenApiDocumentsExist)
                 || !isSafePublicHttpUrl(item.getOfficialUrl())) {
+            String merged = mergeDocuments(apiDocuments, List.of(), List.of(), List.of());
             return withEnrichedApplicationInfo(
                     item,
                     item.getApplyMethod(),
-                    mergeDocuments(apiDocuments, List.of(), List.of(), List.of())
+                    merged,
+                    buildExternalDocuments(
+                            splitDocumentItems(merged),
+                            apiDocuments,
+                            List.of(),
+                            List.of(),
+                            List.of()
+                    )
             );
         }
 
@@ -178,7 +190,10 @@ public class PolicyDocumentEnrichmentService {
             Document document = fetchResult.document();
 
             List<String> officialSectionDocuments = extractDocumentSectionItems(document);
-            List<String> attachmentDocuments = extractAttachmentDocumentNames(document);
+            List<AttachmentDocument> attachmentDocuments = extractAttachmentDocuments(document);
+            List<String> attachmentDocumentNames = attachmentDocuments.stream()
+                    .map(AttachmentDocument::name)
+                    .toList();
             String officialText = extractOfficialPageText(document);
 
             RawCollectedItem officialSnapshot = findOrCreateOfficialSnapshot(
@@ -198,7 +213,7 @@ public class PolicyDocumentEnrichmentService {
                     apiDocuments,
                     officialSectionDocuments,
                     aiDocuments,
-                    attachmentDocuments
+                    attachmentDocumentNames
             );
             String enrichedApplicationMethod = resolveApplicationMethod(
                     item.getApplyMethod(),
@@ -215,7 +230,7 @@ public class PolicyDocumentEnrichmentService {
                     apiDocuments.size(),
                     officialSectionDocuments.size(),
                     aiDocuments.size(),
-                    attachmentDocuments.size(),
+                    attachmentDocumentNames.size(),
                     finalDocuments.size(),
                     aiExtraction != null
                             && StringUtils.hasText(aiExtraction.applicationMethod())
@@ -228,13 +243,13 @@ public class PolicyDocumentEnrichmentService {
                     apiDocuments,
                     officialSectionDocuments,
                     aiDocuments,
-                    attachmentDocuments,
+                    attachmentDocumentNames,
                     finalDocuments
             );
 
             if (officialSectionDocuments.isEmpty()
                     && aiDocuments.isEmpty()
-                    && attachmentDocuments.isEmpty()) {
+                    && attachmentDocumentNames.isEmpty()) {
                 log.debug(
                         "공식 원문에서 제출서류명을 찾지 못했습니다: title={}, url={}",
                         item.getTitle(),
@@ -245,7 +260,16 @@ public class PolicyDocumentEnrichmentService {
             return withEnrichedApplicationInfo(
                     item,
                     enrichedApplicationMethod,
-                    merged
+                    merged,
+                    buildExternalDocuments(
+                            finalDocuments,
+                            apiDocuments,
+                            officialSectionDocuments,
+                            aiExtraction == null
+                                    ? List.of()
+                                    : aiExtraction.requiredDocuments(),
+                            attachmentDocuments
+                    )
             );
 
         } catch (Exception exception) {
@@ -259,10 +283,18 @@ public class PolicyDocumentEnrichmentService {
                     exception
             );
 
+            String merged = mergeDocuments(apiDocuments, List.of(), List.of(), List.of());
             return withEnrichedApplicationInfo(
                     item,
                     item.getApplyMethod(),
-                    mergeDocuments(apiDocuments, List.of(), List.of(), List.of())
+                    merged,
+                    buildExternalDocuments(
+                            splitDocumentItems(merged),
+                            apiDocuments,
+                            List.of(),
+                            List.of(),
+                            List.of()
+                    )
             );
         }
     }
@@ -618,7 +650,8 @@ public class PolicyDocumentEnrichmentService {
     private ExternalPolicyItem withEnrichedApplicationInfo(
             ExternalPolicyItem item,
             String applicationMethod,
-            String mergedDocuments
+            String mergedDocuments,
+            List<ExternalPolicyDocument> documentCandidates
     ) {
         String currentApplicationMethod = cleanInline(item.getApplyMethod());
         String enrichedApplicationMethod = cleanInline(applicationMethod);
@@ -632,14 +665,20 @@ public class PolicyDocumentEnrichmentService {
         boolean sameDocuments =
                 (current == null && merged == null)
                         || (current != null && current.equals(merged));
+        boolean sameCandidates = documentCandidates == null
+                || documentCandidates.isEmpty()
+                || documentCandidates.equals(item.getDocumentCandidates());
 
-        if (sameApplicationMethod && sameDocuments) {
+        if (sameApplicationMethod && sameDocuments && sameCandidates) {
             return item;
         }
 
         return item.toBuilder()
                 .applyMethod(truncateNullable(enrichedApplicationMethod, 500))
                 .requiredDocumentsText(merged)
+                .documentCandidates(
+                        documentCandidates == null ? List.of() : documentCandidates
+                )
                 .build();
     }
 
@@ -744,23 +783,141 @@ public class PolicyDocumentEnrichmentService {
         }
     }
 
-    private List<String> extractAttachmentDocumentNames(Document document) {
-        List<String> result = new ArrayList<>();
+    private List<AttachmentDocument> extractAttachmentDocuments(Document document) {
+        List<AttachmentDocument> result = new ArrayList<>();
+        Set<String> keys = new LinkedHashSet<>();
 
-        for (Element anchor : document.select("a[href]")) {
+        for (Element anchor : document.select(
+                "a[href],a[data-download-url],a[data-file-url],a[data-url],a[data-href]"
+        )) {
+            String href = extractAttachmentLink(anchor);
             String text = firstNonBlank(
                     cleanInline(anchor.text()),
-                    fileNameFromUrl(anchor.absUrl("href")),
-                    fileNameFromUrl(anchor.attr("href"))
+                    fileNameFromUrl(href)
             );
 
             String cleaned = cleanItem(text);
-            if (isUsefulDocumentItem(cleaned, false)) {
-                addIfMissing(result, cleaned);
+            String key = documentKey(cleaned);
+            if (isUsefulDocumentItem(cleaned, false) && keys.add(key)) {
+                result.add(new AttachmentDocument(cleaned, href));
             }
         }
 
-        return limit(result);
+        return result.stream().limit(MAX_RESULT_ITEMS).toList();
+    }
+
+    private String extractAttachmentLink(Element anchor) {
+        for (String attribute : List.of(
+                "href",
+                "data-download-url",
+                "data-file-url",
+                "data-url",
+                "data-href"
+        )) {
+            String rawValue = cleanInline(anchor.attr(attribute));
+            if (!StringUtils.hasText(rawValue)
+                    || rawValue.startsWith("#")
+                    || rawValue.toLowerCase(Locale.ROOT).startsWith("javascript:")) {
+                continue;
+            }
+
+            String safeLink = safeExternalLink(firstNonBlank(
+                    anchor.absUrl(attribute),
+                    rawValue
+            ));
+            if (safeLink != null) {
+                return safeLink;
+            }
+        }
+        return null;
+    }
+
+    private List<ExternalPolicyDocument> buildExternalDocuments(
+            List<String> finalDocuments,
+            List<String> apiDocuments,
+            List<String> officialSectionDocuments,
+            List<AiPolicyApplicationExtractionService.DocumentEvidence> aiDocuments,
+            List<AttachmentDocument> attachments
+    ) {
+        List<ExternalPolicyDocument> result = new ArrayList<>();
+
+        for (String document : finalDocuments) {
+            AttachmentDocument attachment = bestAttachment(document, attachments);
+            AiPolicyApplicationExtractionService.DocumentEvidence aiDocument =
+                    bestAiDocument(document, aiDocuments);
+            String sourceType;
+            int confidence;
+
+            if (containsDocument(officialSectionDocuments, document)) {
+                sourceType = "OFFICIAL_TEXT";
+                confidence = 95;
+            } else if (containsDocument(apiDocuments, document)) {
+                sourceType = "API";
+                confidence = 90;
+            } else if (aiDocument != null) {
+                sourceType = "AI_GROUNDED";
+                confidence = 85;
+            } else {
+                sourceType = "OFFICIAL_ATTACHMENT";
+                confidence = attachment == null ? 70 : 100;
+            }
+
+            result.add(ExternalPolicyDocument.builder()
+                    .text(document)
+                    .evidence(aiDocument == null ? null : aiDocument.evidence())
+                    .sourceType(sourceType)
+                    .attachmentName(attachment == null ? null : attachment.name())
+                    .downloadUrl(attachment == null ? null : attachment.url())
+                    .confidence(confidence)
+                    .build());
+        }
+
+        return result;
+    }
+
+    private AttachmentDocument bestAttachment(
+            String document,
+            List<AttachmentDocument> attachments
+    ) {
+        String key = documentKey(document);
+        return attachments.stream()
+                .filter(attachment -> {
+                    String attachmentKey = documentKey(attachment.name());
+                    return attachmentKey.equals(key)
+                            || attachmentKey.contains(key)
+                            || key.contains(attachmentKey);
+                })
+                .max(Comparator.comparingInt(
+                        attachment -> documentKey(attachment.name()).length()
+                ))
+                .orElse(null);
+    }
+
+    private AiPolicyApplicationExtractionService.DocumentEvidence bestAiDocument(
+            String document,
+            List<AiPolicyApplicationExtractionService.DocumentEvidence> aiDocuments
+    ) {
+        String key = documentKey(document);
+        return aiDocuments.stream()
+                .filter(candidate -> {
+                    String candidateKey = documentKey(candidate.name());
+                    return candidateKey.equals(key)
+                            || candidateKey.contains(key)
+                            || key.contains(candidateKey);
+                })
+                .max(Comparator.comparingInt(
+                        candidate -> documentKey(candidate.name()).length()
+                ))
+                .orElse(null);
+    }
+
+    private boolean containsDocument(List<String> documents, String candidate) {
+        String candidateKey = documentKey(candidate);
+        return documents.stream()
+                .map(this::documentKey)
+                .anyMatch(key -> key.equals(candidateKey)
+                        || key.contains(candidateKey)
+                        || candidateKey.contains(key));
     }
 
     private String mergeDocuments(
@@ -977,6 +1134,25 @@ public class PolicyDocumentEnrichmentService {
         return fileName.isBlank() ? null : fileName;
     }
 
+    private String safeExternalLink(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+
+        try {
+            URI uri = URI.create(value.trim());
+            if (!"https".equalsIgnoreCase(uri.getScheme())
+                    && !"http".equalsIgnoreCase(uri.getScheme())) {
+                return null;
+            }
+            return StringUtils.hasText(uri.getHost())
+                    ? truncateNullable(uri.toString(), 1000)
+                    : null;
+        } catch (RuntimeException exception) {
+            return null;
+        }
+    }
+
     private boolean isSafePublicHttpUrl(String value) {
         if (!StringUtils.hasText(value)) {
             return false;
@@ -1094,5 +1270,8 @@ public class PolicyDocumentEnrichmentService {
     }
 
     private record FetchResult(Document document, String method) {
+    }
+
+    private record AttachmentDocument(String name, String url) {
     }
 }

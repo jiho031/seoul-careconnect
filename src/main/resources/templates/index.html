@@ -199,8 +199,7 @@
               <i>›</i>
             </button>
             <button type="button"
-                    data-ai-assistant-open
-                    data-ai-assistant-prompt="신청할 때 필요한 서류를 확인할 수 있는 정책을 찾아주세요.">
+                    data-document-preparation-open>
               <em class="blue">▤</em>
               <span><b>필요 서류 확인하기</b><small>신청에 필요한 서류와 준비물을 한눈에 확인하세요.</small></span>
               <i>›</i>
@@ -395,6 +394,95 @@
     </section>
   </main>
 
+  <dialog class="document-preparation-modal"
+          id="documentPreparationModal"
+          aria-labelledby="documentPreparationTitle">
+    <div class="document-preparation-shell">
+      <header class="document-preparation-header">
+        <div>
+          <span>서울 케어넥트 신청 준비</span>
+          <h2 id="documentPreparationTitle">필요 서류 확인하기</h2>
+          <p>정책을 선택하면 체크리스트와 서류별 발급 안내를 이어서 볼 수 있어요.</p>
+        </div>
+        <button type="button"
+                data-document-preparation-close
+                aria-label="필요 서류 안내 닫기">×</button>
+      </header>
+
+      <div class="document-preparation-body">
+        <section sec:authorize="isAnonymous()"
+                 class="document-preparation-login">
+          <strong>체크 상태를 저장하려면 로그인이 필요해요.</strong>
+          <p>로그인한 뒤 정책별 필요 서류와 공식 발급 링크를 확인할 수 있습니다.</p>
+          <a th:href="@{/login}">로그인하고 확인하기</a>
+        </section>
+
+        <section sec:authorize="isAuthenticated()"
+                 data-document-preparation-select>
+          <div class="document-preparation-view-head">
+            <div>
+              <h3>준비할 정책을 선택해 주세요</h3>
+              <p>최근 등록된 정책부터 확인할 수 있습니다.</p>
+            </div>
+            <a th:href="@{/policies}">전체 정책 찾기</a>
+          </div>
+
+          <div class="document-policy-options"
+               th:if="${recentPolicies != null and !#lists.isEmpty(recentPolicies)}">
+            <button type="button"
+                    th:each="item : ${recentPolicies}"
+                    th:attr="data-document-policy-id=${item.policyId},
+                        data-document-policy-title=${item.title}">
+              <span>
+                <strong th:text="${item.title}">정책명</strong>
+                <small th:text="|${item.agency} · ${item.applyStatusLabel}|">
+                  담당기관 · 신청 가능
+                </small>
+              </span>
+              <i aria-hidden="true">›</i>
+            </button>
+          </div>
+
+          <div class="document-preparation-empty"
+               th:if="${recentPolicies == null or #lists.isEmpty(recentPolicies)}">
+            현재 확인할 수 있는 최근 정책이 없습니다.
+          </div>
+        </section>
+
+        <section data-document-preparation-checklist hidden>
+          <div class="document-preparation-view-head">
+            <button type="button"
+                    class="document-preparation-back"
+                    data-document-back-to-policies>
+              ‹ 정책 다시 선택
+            </button>
+            <a data-document-detail-link href="/policies">정책 상세 보기</a>
+          </div>
+          <h3 data-document-policy-heading>정책 필요 서류</h3>
+          <p class="document-preparation-loading"
+             data-document-preparation-loading
+             aria-live="polite">
+            필요 서류를 불러오고 있습니다.
+          </p>
+          <div class="document-modal-checklist"
+               data-document-modal-checklist></div>
+          <p class="document-modal-status"
+             data-document-modal-status
+             aria-live="polite"></p>
+        </section>
+
+        <section data-document-preparation-guide hidden>
+          <button type="button"
+                  class="document-preparation-back"
+                  data-document-back-to-checklist>
+            ‹ 체크리스트로 돌아가기
+          </button>
+          <div data-document-guide-content></div>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
   <div th:replace="~{fragments/footer :: footer}"></div>
 
   <div class="preset-modal"
@@ -486,5 +574,7 @@
   <script th:src="@{/js/common.js}" src="/js/common.js"></script>
   <script th:src="@{/js/index-presets.js}" src="/js/index-presets.js"></script>
   <script th:src="@{/js/index.js}" src="/js/index.js"></script>
+  <script th:src="@{/js/home-document-guide.js}"
+          src="/js/home-document-guide.js"></script>
 </body>
 </html>

@@ -86,18 +86,30 @@
                         <p>기존 요약은 덮어쓰지 않고, 신청 기간이 지나지 않은 공개·검수 대상 정책만 처리합니다.</p>
                     </div>
                     <form method="post"
+                          th:unless="${manualGenerationStatus.running}"
                           th:action="@{/admin/ai-review/generate-missing}"
                           onsubmit="return confirm('신청 기간이 지나지 않은 미요약 정책을 모두 OpenAI로 요약할까요?');">
                         <input type="hidden" name="page" th:value="${itemPage.number}">
                         <button class="admin-btn primary"
                                 type="submit"
-                                th:disabled="${manualGenerationStatus.running
-                                    or missingSummaryCount == 0
+                                th:disabled="${missingSummaryCount == 0
                                     or !openAiConfigured}"
-                                th:text="${manualGenerationStatus.running
-                                    ? '전체 요약 진행 중'
-                                    : '미요약 ' + missingSummaryCount + '건 전체 요약'}">
+                                th:text="|미요약 ${missingSummaryCount}건 전체 요약|">
                             미요약 정책 전체 요약
+                        </button>
+                    </form>
+                    <form method="post"
+                          th:if="${manualGenerationStatus.running}"
+                          th:action="@{/admin/ai-review/generate-missing/stop}"
+                          onsubmit="return confirm('현재 처리 중인 정책까지 완료한 뒤 전체 요약을 멈출까요?');">
+                        <input type="hidden" name="page" th:value="${itemPage.number}">
+                        <button class="admin-btn danger"
+                                type="submit"
+                                th:disabled="${manualGenerationStatus.stopRequested}"
+                                th:text="${manualGenerationStatus.stopRequested
+                                    ? '중단 요청됨'
+                                    : '전체 요약 중단'}">
+                            전체 요약 중단
                         </button>
                     </form>
                 </div>
@@ -106,8 +118,12 @@
                      th:if="${manualGenerationStatus.requestedCount > 0}">
                     <div>
                         <strong th:text="${manualGenerationStatus.running
-                            ? '전체 요약을 진행하고 있습니다.'
-                            : '최근 전체 요약 작업이 완료되었습니다.'}">
+                            ? (manualGenerationStatus.stopRequested
+                                ? '현재 정책을 마친 뒤 중단합니다.'
+                                : '전체 요약을 진행하고 있습니다.')
+                            : (manualGenerationStatus.stopped
+                                ? '최근 전체 요약 작업이 중단되었습니다.'
+                                : '최근 전체 요약 작업이 완료되었습니다.')}">
                             전체 요약 진행 상태
                         </strong>
                         <span th:text="|${manualGenerationStatus.processedCount}/${manualGenerationStatus.requestedCount}건 처리 · 성공 ${manualGenerationStatus.succeededCount}건 · 실패 ${manualGenerationStatus.failedCount}건|">

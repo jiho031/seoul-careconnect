@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -97,6 +98,34 @@ class AiSummaryAutomationServiceTest {
         assertThat(status.requestedCount()).isZero();
         assertThat(status.processedCount()).isZero();
         verify(explanationService, never()).generateIfMissing(anyLong());
+    }
+
+    @Test
+    void stopsAfterTheCurrentlyProcessingPolicyFinishes() {
+        when(settingService.isAutomaticSummaryEnabled()).thenReturn(false);
+        when(explanationService.isOpenAiConfigured()).thenReturn(true);
+        when(policyRepository.findIdsWithoutAiExplanation(
+                anyList(),
+                eq(ApplyStatus.EXPIRED),
+                eq(ReviewStatus.APPROVED),
+                any(LocalDate.class)
+        )).thenReturn(List.of(11L, 12L));
+        when(policyRepository.findById(11L)).thenReturn(Optional.of(eligiblePolicy(null)));
+        doAnswer(invocation -> {
+            assertThat(service.requestManualGenerationStop()).isTrue();
+            return null;
+        }).when(explanationService).generateIfMissing(11L);
+
+        service.startManualGeneration();
+
+        AiSummaryAutomationService.BatchStatus status = service.manualGenerationStatus();
+        assertThat(status.running()).isFalse();
+        assertThat(status.stopped()).isTrue();
+        assertThat(status.stopRequested()).isFalse();
+        assertThat(status.processedCount()).isEqualTo(1);
+        assertThat(status.succeededCount()).isEqualTo(1);
+        verify(explanationService).generateIfMissing(11L);
+        verify(explanationService, never()).generateIfMissing(12L);
     }
 
     @Test
