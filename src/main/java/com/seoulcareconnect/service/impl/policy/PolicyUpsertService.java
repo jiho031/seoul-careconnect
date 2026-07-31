@@ -14,7 +14,10 @@ import com.seoulcareconnect.integration.policy.ExternalPolicyItem;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.RawCollectedItemRepository;
 import com.seoulcareconnect.integration.policy.SeoulPolicyFilter;
+import com.seoulcareconnect.service.ai.AiSummaryAutomationService;
+import com.seoulcareconnect.service.policy.PolicyDocumentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -38,6 +41,8 @@ public class PolicyUpsertService {
     private final ExternalDateParser dateParser;
     private final ExternalPolicyClassifier classifier;
     private final SeoulPolicyFilter seoulPolicyFilter;
+    private final ApplicationEventPublisher eventPublisher;
+    private final PolicyDocumentService policyDocumentService;
 
     @Value("${app.policy.sync.zone-id:Asia/Seoul}")
     private String zoneId;
@@ -62,6 +67,8 @@ public class PolicyUpsertService {
                 .orElse(null);
 
         boolean newPolicy = existing == null;
+        String previousSummarySourceHash =
+                newPolicy ? null : summarySourceHash(existing);
 
         RawCollectedItem rawItem = saveRawIfChanged(source, item, externalId);
 
@@ -153,6 +160,22 @@ public class PolicyUpsertService {
         policy.attachDetail(detail);
 
         policyRepository.save(policy);
+        policyDocumentService.sync(
+                policy,
+                detail.getRequiredDocumentsText(),
+                item.getDocumentCandidates(),
+                policy.getOfficialUrl()
+        );
+
+        if (newPolicy) {
+            eventPublisher.publishEvent(
+                    new AiSummaryAutomationService.PolicyCreated(policy.getPolicyId())
+            );
+        } else if (!previousSummarySourceHash.equals(summarySourceHash(policy))) {
+            eventPublisher.publishEvent(
+                    new AiSummaryAutomationService.PolicyUpdated(policy.getPolicyId())
+            );
+        }
 
         log.info(
                 "{} 정책 처리 완료: source={}, externalId={}, title={}",
@@ -283,6 +306,33 @@ public class PolicyUpsertService {
             return agency + " | " + contact;
         }
         return firstNonBlank(agency, contact);
+    }
+
+    private String summarySourceHash(Policy policy) {
+        PolicyDetail detail = policy.getDetail();
+        String sourceName = policy.getSource() == null
+                ? null
+                : policy.getSource().getSourceName();
+
+        return sha256(String.join(
+                "|",
+                valueOr(policy.getTitle(), ""),
+                valueOr(sourceName, ""),
+                valueOr(String.valueOf(policy.getCategory()), ""),
+                valueOr(policy.getTarget(), ""),
+                valueOr(policy.getRegion(), ""),
+                valueOr(policy.getDistrict(), ""),
+                valueOr(String.valueOf(policy.getStartDate()), ""),
+                valueOr(String.valueOf(policy.getEndDate()), ""),
+                valueOr(String.valueOf(policy.getApplyStatus()), ""),
+                valueOr(policy.getApplyMethod(), ""),
+                valueOr(policy.getContact(), ""),
+                valueOr(policy.getOfficialUrl(), ""),
+                valueOr(detail == null ? null : detail.getBenefit(), ""),
+                valueOr(detail == null ? null : detail.getSelectionCriteria(), ""),
+                valueOr(detail == null ? null : detail.getRequiredDocumentsText(), ""),
+                valueOr(detail == null ? null : detail.getContentText(), "")
+        ));
     }
 
     private String generatedExternalId(ExternalPolicyItem item) {

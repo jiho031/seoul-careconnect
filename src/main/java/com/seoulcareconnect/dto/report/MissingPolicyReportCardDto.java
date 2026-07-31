@@ -23,6 +23,10 @@ public class MissingPolicyReportCardDto {
     private String status;
     private String statusLabel;
     private String policyTitle; // 연결된 정책이 있으면 정책명, 없으면 null
+    private String content;
+    private String sourceUrl;
+    private String adminMemo;
     private LocalDateTime createdAt;
+    private LocalDateTime processedAt;
     private List<String> photoUrls; // 신고 접수 시 첨부한 사진 (없으면 빈 리스트)
 }

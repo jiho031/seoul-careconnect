@@ -383,13 +383,22 @@ public class AiPolicyAssistantService {
                 valueOr(policy.getTitle(), "제목 없음"),
                 agency,
                 category,
-                valueOr(policy.getTarget(), "공식 공고 확인"),
+                valueOr(
+                        explanation == null ? null : explanation.getEligibilitySummary(),
+                        valueOr(policy.getTarget(), "공식 공고 확인")
+                ),
                 region,
                 applicationPeriod(policy),
                 sourceUpdatedDate(policy),
-                valueOr(policy.getApplyMethod(), "공식 공고 확인"),
+                valueOr(
+                        explanation == null ? null : explanation.getApplicationSummary(),
+                        valueOr(policy.getApplyMethod(), "공식 공고 확인")
+                ),
                 valueOr(policy.getContact(), "공식 공고 확인"),
-                detail == null ? null : detail.getBenefit(),
+                valueOr(
+                        explanation == null ? null : explanation.getBenefitSummary(),
+                        detail == null ? null : detail.getBenefit()
+                ),
                 detail == null ? null : detail.getSelectionCriteria(),
                 detail == null ? null : detail.getRequiredDocumentsText(),
                 detail == null ? null : detail.getContentText(),

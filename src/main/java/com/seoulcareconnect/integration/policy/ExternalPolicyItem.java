@@ -7,9 +7,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExternalPolicyItem {
@@ -39,4 +41,7 @@ public class ExternalPolicyItem {
 
     @Builder.Default
     private boolean applicationInfoAvailable = true;
+
+    @Builder.Default
+    private List<ExternalPolicyDocument> documentCandidates = new ArrayList<>();
 }

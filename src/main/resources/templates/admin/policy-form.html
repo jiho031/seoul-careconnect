@@ -15,6 +15,7 @@
     <link rel="stylesheet"
           th:href="@{/css/admin.css}"
           href="/css/admin.css">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" href="/css/responsive.css">
 </head>
 
 <body>
@@ -41,7 +42,7 @@
                 </a>
 
                 <a th:href="@{/admin/ai-review}">
-                    🤖 AI 정책 설명 검수
+                    🤖 AI 정책 요약 관리
                 </a>
 
                 <a th:href="@{/admin/reports}">
@@ -248,21 +249,71 @@
 
                         <div class="form-grid">
 
-                            <label class="form-field">
+                            <div class="form-field">
                                 <span>신청 시작일</span>
 
-                                <input class="admin-input"
-                                       type="date"
-                                       th:field="*{startDate}">
-                            </label>
+                                <span class="admin-date-fields"
+                                      data-admin-date>
+                                    <input type="hidden"
+                                           th:field="*{startDate}">
+                                    <input class="admin-date-part year"
+                                           type="text"
+                                           inputmode="numeric"
+                                           maxlength="4"
+                                           placeholder="연도"
+                                           aria-label="신청 시작 연도"
+                                           data-date-part="year">
+                                    <span>.</span>
+                                    <input class="admin-date-part"
+                                           type="text"
+                                           inputmode="numeric"
+                                           maxlength="2"
+                                           placeholder="월"
+                                           aria-label="신청 시작 월"
+                                           data-date-part="month">
+                                    <span>.</span>
+                                    <input class="admin-date-part"
+                                           type="text"
+                                           inputmode="numeric"
+                                           maxlength="2"
+                                           placeholder="일"
+                                           aria-label="신청 시작 일"
+                                           data-date-part="day">
+                                </span>
+                            </div>
 
-                            <label class="form-field">
+                            <div class="form-field">
                                 <span>신청 마감일</span>
 
-                                <input class="admin-input"
-                                       type="date"
-                                       th:field="*{endDate}">
-                            </label>
+                                <span class="admin-date-fields"
+                                      data-admin-date>
+                                    <input type="hidden"
+                                           th:field="*{endDate}">
+                                    <input class="admin-date-part year"
+                                           type="text"
+                                           inputmode="numeric"
+                                           maxlength="4"
+                                           placeholder="연도"
+                                           aria-label="신청 마감 연도"
+                                           data-date-part="year">
+                                    <span>.</span>
+                                    <input class="admin-date-part"
+                                           type="text"
+                                           inputmode="numeric"
+                                           maxlength="2"
+                                           placeholder="월"
+                                           aria-label="신청 마감 월"
+                                           data-date-part="month">
+                                    <span>.</span>
+                                    <input class="admin-date-part"
+                                           type="text"
+                                           inputmode="numeric"
+                                           maxlength="2"
+                                           placeholder="일"
+                                           aria-label="신청 마감 일"
+                                           data-date-part="day">
+                                </span>
+                            </div>
 
                             <label class="form-field">
                                 <span>신청 상태</span>
@@ -571,6 +622,128 @@
                 selectElement.selectedIndex
                 ].text;
         }
+
+        function initializeDateField(container) {
+            const hiddenInput =
+                container.querySelector("input[type='hidden']");
+
+            const parts = [
+                container.querySelector("[data-date-part='year']"),
+                container.querySelector("[data-date-part='month']"),
+                container.querySelector("[data-date-part='day']")
+            ];
+
+            const initialParts =
+                hiddenInput.value
+                    ? hiddenInput.value.split("-")
+                    : [];
+
+            parts.forEach(function (input, index) {
+                input.value = initialParts[index] || "";
+            });
+
+            function updateDateValue() {
+                parts[0].setCustomValidity("");
+
+                const year = parts[0].value;
+                const month = parts[1].value.padStart(2, "0");
+                const day = parts[2].value.padStart(2, "0");
+                const complete =
+                    year.length === 4
+                    && parts[1].value.length > 0
+                    && parts[2].value.length > 0;
+
+                let valid = false;
+
+                if (complete) {
+                    const date = new Date(
+                        `${year}-${month}-${day}T00:00:00Z`
+                    );
+
+                    valid =
+                        Number(year) >= 1000
+                        && Number(year) <= 9999
+                        && date.getUTCFullYear() === Number(year)
+                        && date.getUTCMonth() + 1 === Number(month)
+                        && date.getUTCDate() === Number(day);
+                }
+
+                hiddenInput.value = valid
+                    ? `${year}-${month}-${day}`
+                    : "";
+
+                hiddenInput.dispatchEvent(
+                    new Event("input", { bubbles: true })
+                );
+            }
+
+            parts.forEach(function (input, index) {
+                const maxLength = index === 0 ? 4 : 2;
+
+                input.addEventListener("input", function () {
+                    input.setCustomValidity("");
+                    input.value = input.value
+                        .replace(/\D/g, "")
+                        .slice(0, maxLength);
+
+                    if (
+                        input.value.length === maxLength
+                        && parts[index + 1]
+                    ) {
+                        parts[index + 1].focus();
+                        parts[index + 1].select();
+                    }
+
+                    updateDateValue();
+                });
+
+                input.addEventListener("blur", function () {
+                    if (
+                        index > 0
+                        && input.value.length === 1
+                    ) {
+                        input.value =
+                            input.value.padStart(2, "0");
+                    }
+
+                    updateDateValue();
+                });
+            });
+        }
+
+        const dateFieldContainers =
+            Array.from(
+                document.querySelectorAll("[data-admin-date]")
+            );
+
+        dateFieldContainers.forEach(initializeDateField);
+
+        document
+            .getElementById("policyForm")
+            .addEventListener("submit", function (event) {
+                for (const container of dateFieldContainers) {
+                    const hiddenInput =
+                        container.querySelector("input[type='hidden']");
+
+                    const parts =
+                        Array.from(
+                            container.querySelectorAll("[data-date-part]")
+                        );
+
+                    const hasInput =
+                        parts.some(input => input.value.length > 0);
+
+                    if (hasInput && !hiddenInput.value) {
+                        event.preventDefault();
+                        parts[0].setCustomValidity(
+                            "날짜를 올바르게 입력해 주세요."
+                        );
+                        parts[0].reportValidity();
+                        parts[0].focus();
+                        return;
+                    }
+                }
+            });
 
         function updatePreview() {
             previewTitle.textContent =

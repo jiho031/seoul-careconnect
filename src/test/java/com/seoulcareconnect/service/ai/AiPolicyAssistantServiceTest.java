@@ -87,4 +87,5 @@ class AiPolicyAssistantServiceTest {
 
         assertThat(openAi.matches(ollama)).isFalse();
     }
+
 }

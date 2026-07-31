@@ -417,6 +417,17 @@ input {
     cursor: pointer;
 }
 
+.bookmark-btn.is-saved {
+    border-color: #91d4cf;
+    color: #08716f;
+    background: #e6f7f5;
+}
+
+.bookmark-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
 .policy-result-card h3 {
     min-width: 0;
     margin: 0;
@@ -559,6 +570,8 @@ input {
 
 .pagination {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
     gap: 8px;
     margin-top: 30px;
