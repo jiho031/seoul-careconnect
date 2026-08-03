@@ -86,10 +86,17 @@
                 </div>
 
                 <div class="admin-actions">
-                    <button class="admin-btn"
-                            type="button">
+                    <a class="admin-btn"
+                       th:href="@{/admin/policies/download(
+                           keyword=${keyword},
+                           category=${selectedCategory},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId},
+                           district=${selectedDistrict}
+                       )}"
+                       href="/admin/policies/download">
                         정책 내역 다운로드
-                    </button>
+                    </a>
 
                     <a class="admin-btn primary"
                        th:href="@{/admin/policies/new}"

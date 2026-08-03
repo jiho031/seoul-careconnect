@@ -9,6 +9,7 @@ import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
 import com.seoulcareconnect.repository.policy.SyncLogRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +30,6 @@ public class AdminCollectionService {
     private final PolicySourceRepository policySourceRepository;
     private final SyncLogRepository syncLogRepository;
 
-    /**
-     * API 수집 현황 페이지 상단 통계
-     */
     public AdminCollectionSummaryDTO getSummary() {
         LocalDateTime todayStart =
                 LocalDate.now().atStartOfDay();
@@ -122,9 +120,6 @@ public class AdminCollectionService {
                 .build();
     }
 
-    /**
-     * API 수집처별 연동 상태
-     */
     public List<AdminSourceStatusDTO>
     getSourceStatuses() {
 
@@ -180,14 +175,26 @@ public class AdminCollectionService {
                 .toList();
     }
 
-    /**
-     * 최근 수집 로그 20건
-     */
     public List<AdminSyncLogDTO>
     getRecentSyncLogs() {
 
         return syncLogRepository
                 .findTop13ByOrderByStartedAtDesc()
+                .stream()
+                .map(this::toSyncLogDTO)
+                .toList();
+    }
+
+    public List<AdminSyncLogDTO>
+    getDownloadSyncLogs() {
+
+        return syncLogRepository
+                .findAll(
+                        Sort.by(
+                                Sort.Direction.DESC,
+                                "startedAt"
+                        )
+                )
                 .stream()
                 .map(this::toSyncLogDTO)
                 .toList();

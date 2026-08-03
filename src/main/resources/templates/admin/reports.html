@@ -89,10 +89,17 @@
                 </div>
 
                 <div class="admin-actions">
-                    <button class="admin-btn"
-                            type="button">
+
+                    <a class="admin-btn"
+                       th:href="@{/admin/reports/download(
+                           keyword=${keyword},
+                           reportType=${selectedReportType},
+                           status=${selectedStatus}
+                       )}"
+                       href="/admin/reports/download">
                         신고 내역 다운로드
-                    </button>
+                    </a>
+
                 </div>
             </div>
 
@@ -320,6 +327,7 @@
                                 신고 내용
                             </p>
 
+
                             <div class="report-photo-thumbs"
                                  th:if="${!#lists.isEmpty(report.photoUrlList)}">
                                 <a th:each="photoUrl : ${report.photoUrlList}"
@@ -344,6 +352,16 @@
                                 or report.reportType == 'LINK_ERROR'}">
                                 정책 오류 관리
                             </span>
+
+                            <!-- 알 수 없는 신고 유형 -->
+                            <span th:if="${report.reportType != 'MISSING'
+                                and report.reportType != 'MISSING_POLICY'
+                                and report.reportType != 'INFO_ERROR'
+                                and report.reportType != 'DEADLINE_ERROR'
+                                and report.reportType != 'LINK_ERROR'}">
+                                미분류
+                            </span>
+
                         </td>
 
                         <!-- 상태 -->
@@ -367,8 +385,8 @@
                                 <!-- 누락 정책 신고 -->
                                 <a th:if="${report.reportType == 'MISSING'}"
                                    th:href="@{/admin/policies/new(
-                                    reportId=${report.reportId}
-                                    )}">
+                                           reportId=${report.reportId}
+                                       )}">
                                     이동
                                 </a>
 
@@ -386,6 +404,7 @@
                                         th:data-report-id="${report.reportId}"
                                         th:data-report-title="${report.title}"
                                         th:data-policy-title="${report.policyTitle}"
+                                        th:data-report-type="${report.reportType}"
                                         th:data-status="${report.status}"
                                         th:data-admin-memo="${report.adminMemo}"
                                         onclick="openReportModal(this)">
@@ -428,7 +447,10 @@
 
                     <!-- 페이지 번호 -->
                     <a th:each="pageNumber :
-                            ${#numbers.sequence(0, reportPage.totalPages - 1)}"
+                            ${#numbers.sequence(
+                                0,
+                                reportPage.totalPages - 1
+                            )}"
                        th:text="${pageNumber + 1}"
                        th:classappend="${pageNumber == reportPage.number
                             ? 'active'
@@ -566,17 +588,29 @@
 
 <!-- 사용자 신고 처리 모달 -->
 <div id="reportModal"
-     class="notice-modal">
+     class="notice-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="reportModalTitle">
 
     <div class="notice-modal-content report-modal-content">
 
         <div class="notice-modal-head">
             <div>
-                <h3>사용자 신고 처리</h3>
+
+                <h3 id="reportModalTitle">
+                    사용자 신고 처리
+                </h3>
 
                 <p id="modalReportTitle">
                     신고 제목
                 </p>
+
+                <span id="modalReportType"
+                      class="report-modal-type">
+                    신고 유형
+                </span>
+
             </div>
 
             <button type="button"
@@ -667,6 +701,9 @@
         const reportTitle =
             document.getElementById("modalReportTitle");
 
+        const reportTypeElement =
+            document.getElementById("modalReportType");
+
         const statusSelect =
             document.getElementById("modalReportStatus");
 
@@ -690,6 +727,9 @@
         const policyTitle =
             button.dataset.policyTitle;
 
+        const reportType =
+            button.dataset.reportType;
+
         const status =
             button.dataset.status;
 
@@ -702,15 +742,23 @@
         reportTitle.textContent =
             title || policyTitle || "신고 제목 없음";
 
+        reportTypeElement.textContent =
+            getReportTypeLabel(reportType);
+
         statusSelect.value =
             status || "RECEIVED";
 
         memoTextarea.value =
-            adminMemo && adminMemo !== "null"
+            adminMemo
+            && adminMemo !== "null"
+            && adminMemo !== "undefined"
                 ? adminMemo
                 : "";
 
         modal.classList.add("open");
+
+        document.body.style.overflow =
+            "hidden";
     }
 
     function closeReportModal() {
@@ -719,6 +767,29 @@
 
         if (modal) {
             modal.classList.remove("open");
+        }
+
+        document.body.style.overflow =
+            "";
+    }
+
+    function getReportTypeLabel(reportType) {
+        switch (reportType) {
+            case "MISSING":
+            case "MISSING_POLICY":
+                return "누락 정책 신고";
+
+            case "INFO_ERROR":
+                return "정책 정보 오류";
+
+            case "DEADLINE_ERROR":
+                return "기간 오류";
+
+            case "LINK_ERROR":
+                return "링크 오류";
+
+            default:
+                return "미분류 신고";
         }
     }
 

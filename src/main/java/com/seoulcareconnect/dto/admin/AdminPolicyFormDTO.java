@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class AdminPolicyFormDTO {
 
     private Long policyId;
+    private Long reportId;
 
     // 기본 정보
     private String title;

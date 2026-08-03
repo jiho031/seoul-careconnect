@@ -96,9 +96,34 @@ public class AdminPolicyService {
                 .map(AdminPolicyDTO::from);
     }
 
-    /*
-     * 정책 승인
-     */
+    public List<AdminPolicyDTO> getDownloadPolicies(
+            String keyword,
+            PolicyCategory category,
+            PolicyStatus status,
+            Long sourceId,
+            String district
+    ) {
+        Specification<Policy> specification =
+                Specification.<Policy>unrestricted()
+                        .and(fetchAssociations())
+                        .and(keywordContains(keyword))
+                        .and(categoryEquals(category))
+                        .and(statusEquals(status))
+                        .and(sourceIdEquals(sourceId))
+                        .and(districtEquals(district));
+
+        return policyRepository
+                .findAll(
+                        specification,
+                        Sort.by(
+                                Sort.Order.desc("createdAt"),
+                                Sort.Order.desc("policyId")
+                        )
+                )
+                .stream()
+                .map(AdminPolicyDTO::from)
+                .toList();
+    }
 
     @Transactional
     public void approvePolicy(Long policyId) {
@@ -113,19 +138,12 @@ public class AdminPolicyService {
         policy.setStatus(PolicyStatus.APPROVED);
     }
 
-    /*
-     * 정책 숨김
-     */
-
     @Transactional
     public void hidePolicy(Long policyId) {
         Policy policy = findPolicy(policyId);
         policy.setStatus(PolicyStatus.HIDDEN);
     }
 
-    /*
-     * 숨김 해제
-     */
 
     @Transactional
     public void unhidePolicy(Long policyId) {
@@ -140,9 +158,6 @@ public class AdminPolicyService {
         policy.setStatus(PolicyStatus.PENDING_REVIEW);
     }
 
-    /*
-     * 수정 필요 상태
-     */
 
     @Transactional
     public void markNeedsUpdate(Long policyId) {
@@ -158,9 +173,6 @@ public class AdminPolicyService {
         policy.setStatus(PolicyStatus.NEEDS_UPDATE);
     }
 
-    /*
-     * 반려
-     */
 
     @Transactional
     public void rejectPolicy(Long policyId) {
@@ -168,9 +180,6 @@ public class AdminPolicyService {
         policy.setStatus(PolicyStatus.REJECTED);
     }
 
-    /*
-     * 정책 조회
-     */
 
     private Policy findPolicy(Long policyId) {
         return policyRepository.findById(policyId)
@@ -181,9 +190,6 @@ public class AdminPolicyService {
                 );
     }
 
-    /*
-     * 연관 엔티티 fetch
-     */
 
     private Specification<Policy> fetchAssociations() {
         return (root, query, criteriaBuilder) -> {
@@ -201,9 +207,6 @@ public class AdminPolicyService {
         };
     }
 
-    /*
-     * 정책명·기관명·대상·외부 정책 ID 검색
-     */
 
     private Specification<Policy> keywordContains(
             String keyword
@@ -249,9 +252,6 @@ public class AdminPolicyService {
         };
     }
 
-    /*
-     * 분야 필터
-     */
 
     private Specification<Policy> categoryEquals(
             PolicyCategory category
@@ -268,9 +268,6 @@ public class AdminPolicyService {
         };
     }
 
-    /*
-     * 정책 상태 필터
-     */
 
     private Specification<Policy> statusEquals(
             PolicyStatus status
@@ -287,9 +284,6 @@ public class AdminPolicyService {
         };
     }
 
-    /*
-     * API 출처 필터
-     */
 
     private Specification<Policy> sourceIdEquals(
             Long sourceId
@@ -310,9 +304,6 @@ public class AdminPolicyService {
         };
     }
 
-    /*
-     * 지역 필터
-     */
 
     private Specification<Policy> districtEquals(
             String district

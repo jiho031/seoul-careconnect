@@ -92,10 +92,11 @@
                 </div>
 
                 <div class="admin-actions">
-                    <button class="admin-btn"
-                            type="button">
+                    <a class="admin-btn"
+                       th:href="@{/admin/collection/download}"
+                       href="/admin/collection/download">
                         수집 로그 다운로드
-                    </button>
+                    </a>
 
                     <form th:action="@{/admin/collection/run}"
                           method="post"

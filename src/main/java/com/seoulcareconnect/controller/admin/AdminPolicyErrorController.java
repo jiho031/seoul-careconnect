@@ -6,9 +6,12 @@ import com.seoulcareconnect.entity.policy.enums.PolicyErrorStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyErrorType;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
 import com.seoulcareconnect.service.admin.AdminPolicyErrorService;
+import com.seoulcareconnect.util.AdminCsvUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +20,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 
 @Controller
 @RequiredArgsConstructor
@@ -139,9 +148,160 @@ public class AdminPolicyErrorController {
         return "admin/policy-errors";
     }
 
-    /**
-     * 오류 상태만 변경
-     */
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> downloadPolicyErrors(
+            @RequestParam(required = false)
+            String keyword,
+
+            @RequestParam(required = false)
+            PolicyErrorType errorType,
+
+            @RequestParam(required = false)
+            PolicyErrorStatus status,
+
+            @RequestParam(required = false)
+            Long sourceId
+    ) {
+        List<AdminPolicyErrorDTO> errors =
+                adminPolicyErrorService
+                        .getDownloadPolicyErrors(
+                                keyword,
+                                errorType,
+                                status,
+                                sourceId
+                        );
+
+        List<String> csvHeaders =
+                List.of(
+                        "오류 ID",
+                        "정책 DB ID",
+                        "외부 정책 ID",
+                        "정책명",
+                        "API 출처",
+                        "오류 유형",
+                        "오류 내용",
+                        "처리 상태",
+                        "관리자 메모",
+                        "접수 시간",
+                        "처리 시간",
+                        "지원 대상",
+                        "지역",
+                        "자치구",
+                        "신청 시작일",
+                        "신청 종료일",
+                        "공식 URL"
+                );
+
+        List<List<String>> rows =
+                errors.stream()
+                        .map(error ->
+                                List.of(
+                                        AdminCsvUtil.safe(
+                                                error.getErrorId()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getPolicyId()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getExternalId()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getPolicyTitle()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getSourceName()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getErrorTypeLabel()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getErrorMessage()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getStatusLabel()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getAdminMemo()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getCreatedAtText()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getProcessedAtText()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getTarget()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getRegion()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getDistrict()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getStartDateText()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getEndDateText()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                error.getOfficialUrl()
+                                        )
+                                )
+                        )
+                        .toList();
+
+        byte[] csvFile =
+                AdminCsvUtil.createCsv(
+                        csvHeaders,
+                        rows
+                );
+
+        String today =
+                LocalDate.now()
+                        .format(
+                                DateTimeFormatter.BASIC_ISO_DATE
+                        );
+
+        String fileName =
+                "policy_error_logs_"
+                        + today
+                        + ".csv";
+
+        ContentDisposition disposition =
+                ContentDisposition
+                        .attachment()
+                        .filename(
+                                fileName,
+                                StandardCharsets.UTF_8
+                        )
+                        .build();
+
+        HttpHeaders responseHeaders =
+                new HttpHeaders();
+
+        responseHeaders.setContentType(
+                new MediaType(
+                        "text",
+                        "csv",
+                        StandardCharsets.UTF_8
+                )
+        );
+
+        responseHeaders.setContentDisposition(
+                disposition
+        );
+
+        responseHeaders.setContentLength(
+                csvFile.length
+        );
+
+        return ResponseEntity
+                .ok()
+                .headers(responseHeaders)
+                .body(csvFile);
+    }
+
     @PostMapping("/status")
     public String changeStatus(
             @RequestParam
