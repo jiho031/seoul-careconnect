@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -124,9 +126,29 @@ public class PolicyController {
             @PathVariable Long policyId,
             Authentication authentication,
             HttpServletRequest request,
-            Model model
+            Model model,
+            RedirectAttributes redirectAttributes
     ) {
-        PolicyDetailDTO policy = policyDetailService.get(policyId);
+        PolicyDetailDTO policy;
+
+        try {
+            policy = policyDetailService.get(policyId);
+        } catch (ResponseStatusException exception) {
+
+            if (exception.getStatusCode().value()
+                    == HttpStatus.NOT_FOUND.value()) {
+
+                redirectAttributes.addFlashAttribute(
+                        "policyAlertMessage",
+                        "존재하지 않거나 현재 조회할 수 없는 정책입니다."
+                );
+
+                return "redirect:/policies";
+            }
+
+            throw exception;
+        }
+
         User currentUser = resolveCurrentUser(authentication);
 
         policyViewLogService.record(
@@ -137,6 +159,7 @@ public class PolicyController {
 
         model.addAttribute("policy", policy);
         model.addAttribute("user", currentUser);
+
         model.addAttribute(
                 "favoriteSaved",
                 favoriteService.isFavorite(
@@ -144,16 +167,28 @@ public class PolicyController {
                         policyId
                 )
         );
+
         model.addAttribute("aiAssistantPolicyId", policyId);
-        model.addAttribute("aiAssistantPolicyTitle", policy.getTitle());
+        model.addAttribute(
+                "aiAssistantPolicyTitle",
+                policy.getTitle()
+        );
+
         model.addAttribute(
                 "aiExplanation",
-                aiPolicyExplanationService.findGenerated(policyId).orElse(null)
+                aiPolicyExplanationService
+                        .findGenerated(policyId)
+                        .orElse(null)
         );
+
         model.addAttribute(
                 "completedDocumentKeys",
-                documentProgressService.completedKeys(currentUser.getUserId(), policyId)
+                documentProgressService.completedKeys(
+                        currentUser.getUserId(),
+                        policyId
+                )
         );
+
         return "policy/detail";
     }
 
@@ -188,6 +223,19 @@ public class PolicyController {
                 policyDocumentId,
                 request.completed()
         );
+    }
+
+    @GetMapping("/policies/{invalidPolicyId:[^0-9]+}")
+    public String invalidPolicyId(
+            @PathVariable String invalidPolicyId,
+            RedirectAttributes redirectAttributes
+    ) {
+        redirectAttributes.addFlashAttribute(
+                "policyAlertMessage",
+                "올바르지 않은 정책 주소입니다."
+        );
+
+        return "redirect:/policies";
     }
 
     private List<Integer> pageNumbers(Page<?> page) {
