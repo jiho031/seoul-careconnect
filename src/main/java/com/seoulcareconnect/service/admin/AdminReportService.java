@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -79,6 +80,32 @@ public class AdminReportService {
         return missingPolicyReportRepository
                 .findAll(specification, pageable)
                 .map(AdminReportDTO::from);
+    }
+
+    public List<AdminReportDTO> getDownloadReports(
+            String keyword,
+            String reportType,
+            String status
+    ) {
+        Specification<MissingPolicyReport> specification =
+                Specification
+                        .<MissingPolicyReport>unrestricted()
+                        .and(fetchAssociations())
+                        .and(keywordContains(keyword))
+                        .and(reportTypeEquals(reportType))
+                        .and(statusEquals(status));
+
+        return missingPolicyReportRepository
+                .findAll(
+                        specification,
+                        Sort.by(
+                                Sort.Direction.DESC,
+                                "createdAt"
+                        )
+                )
+                .stream()
+                .map(AdminReportDTO::from)
+                .toList();
     }
 
     @Transactional

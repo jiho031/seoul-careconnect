@@ -60,6 +60,33 @@ public class AdminUserService {
                 .map(AdminUserDTO::from);
     }
 
+    public List<AdminUserDTO> getDownloadUsers(
+            String keyword,
+            String role,
+            Boolean active,
+            String ageGroup
+    ) {
+        Specification<User> specification =
+                buildSpecification(
+                        keyword,
+                        role,
+                        active,
+                        ageGroup
+                );
+
+        return userRepository
+                .findAll(
+                        specification,
+                        Sort.by(
+                                Sort.Order.desc("createdAt"),
+                                Sort.Order.desc("userId")
+                        )
+                )
+                .stream()
+                .map(AdminUserDTO::from)
+                .toList();
+    }
+
     public long getTotalUserCount() {
         return userRepository.count();
     }

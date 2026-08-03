@@ -12,6 +12,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.seoulcareconnect.util.AdminCsvUtil;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/users")
@@ -19,9 +30,6 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
-    /**
-     * 회원 관리 목록 화면
-     */
     @GetMapping
     public String users(
             @RequestParam(required = false)
@@ -53,7 +61,6 @@ public class AdminUserController {
                         pageSize
                 );
 
-        // 회원 목록
         model.addAttribute(
                 "userPage",
                 userPage
@@ -64,7 +71,6 @@ public class AdminUserController {
                 userPage.getContent()
         );
 
-        // 상단 통계
         model.addAttribute(
                 "totalUserCount",
                 adminUserService.getTotalUserCount()
@@ -85,7 +91,6 @@ public class AdminUserController {
                 adminUserService.getInactiveUserCount()
         );
 
-        // 검색 조건 유지
         model.addAttribute(
                 "keyword",
                 keyword
@@ -109,9 +114,153 @@ public class AdminUserController {
         return "admin/users";
     }
 
-    /**
-     * 회원 비활성화
-     */
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> downloadUsers(
+            @RequestParam(required = false)
+            String keyword,
+
+            @RequestParam(required = false)
+            String role,
+
+            @RequestParam(required = false)
+            Boolean active,
+
+            @RequestParam(required = false)
+            String ageGroup
+    ) {
+        List<AdminUserDTO> users =
+                adminUserService.getDownloadUsers(
+                        keyword,
+                        role,
+                        active,
+                        ageGroup
+                );
+
+        List<String> csvHeaders =
+                List.of(
+                        "회원 ID",
+                        "이름",
+                        "이메일",
+                        "전화번호",
+                        "가입 방식",
+                        "회원 권한",
+                        "연령대",
+                        "지역",
+                        "자치구",
+                        "회원 상태",
+                        "가입일"
+                );
+
+        List<List<String>> rows =
+                users.stream()
+                        .map(user ->
+                                List.of(
+                                        AdminCsvUtil.safe(
+                                                user.getUserId()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getName()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getEmail()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getPhone()
+                                        ),
+                                        resolveProviderLabel(
+                                                user.getProvider()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getRoleLabel()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getAgeGroupLabel()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getRegion()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getDistrict()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getStatusLabel()
+                                        ),
+                                        AdminCsvUtil.safe(
+                                                user.getCreatedAtText()
+                                        )
+                                )
+                        )
+                        .toList();
+
+        byte[] csvFile =
+                AdminCsvUtil.createCsv(
+                        csvHeaders,
+                        rows
+                );
+
+        String today =
+                LocalDate.now()
+                        .format(
+                                DateTimeFormatter.BASIC_ISO_DATE
+                        );
+
+        String fileName =
+                "user_list_"
+                        + today
+                        + ".csv";
+
+        ContentDisposition disposition =
+                ContentDisposition
+                        .attachment()
+                        .filename(
+                                fileName,
+                                StandardCharsets.UTF_8
+                        )
+                        .build();
+
+        HttpHeaders responseHeaders =
+                new HttpHeaders();
+
+        responseHeaders.setContentType(
+                new MediaType(
+                        "text",
+                        "csv",
+                        StandardCharsets.UTF_8
+                )
+        );
+
+        responseHeaders.setContentDisposition(
+                disposition
+        );
+
+        responseHeaders.setContentLength(
+                csvFile.length
+        );
+
+        return ResponseEntity
+                .ok()
+                .headers(responseHeaders)
+                .body(csvFile);
+    }
+
+    private String resolveProviderLabel(
+            String provider
+    ) {
+        if (provider == null
+                || provider.isBlank()
+                || "LOCAL".equalsIgnoreCase(provider)) {
+
+            return "일반 가입";
+        }
+
+        return switch (provider.toUpperCase()) {
+            case "GOOGLE" -> "Google";
+            case "KAKAO" -> "Kakao";
+            case "NAVER" -> "Naver";
+            default -> provider;
+        };
+    }
+
     @PostMapping("/deactivate")
     public String deactivateUser(
             @RequestParam Long userId,
@@ -137,9 +286,6 @@ public class AdminUserController {
         return "redirect:/admin/users";
     }
 
-    /**
-     * 회원 활성화
-     */
     @PostMapping("/activate")
     public String activateUser(
             @RequestParam Long userId,

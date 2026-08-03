@@ -91,10 +91,16 @@
                 </div>
 
                 <div class="admin-actions">
-                    <button class="admin-btn"
-                            type="button">
+                    <a class="admin-btn"
+                       th:href="@{/admin/users/download(
+                           keyword=${keyword},
+                           role=${selectedRole},
+                           active=${selectedActive},
+                           ageGroup=${selectedAgeGroup}
+                       )}"
+                       href="/admin/users/download">
                         회원 목록 다운로드
-                    </button>
+                    </a>
                 </div>
             </div>
 

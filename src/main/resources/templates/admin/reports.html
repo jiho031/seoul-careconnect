@@ -93,10 +93,15 @@
 
                 <div class="admin-actions">
 
-                    <button class="admin-btn"
-                            type="button">
+                    <a class="admin-btn"
+                       th:href="@{/admin/reports/download(
+                           keyword=${keyword},
+                           reportType=${selectedReportType},
+                           status=${selectedStatus}
+                       )}"
+                       href="/admin/reports/download">
                         신고 내역 다운로드
-                    </button>
+                    </a>
 
                 </div>
             </div>
@@ -200,9 +205,8 @@
                         </option>
 
                         <!-- 현재 신규 신고 값 -->
-                        <option value="MISSING"
-                                th:selected="${selectedReportType == 'MISSING'
-                                    or selectedReportType == 'MISSING_POLICY'}">
+                        <option value="MISSING_POLICY"
+                                th:selected="${selectedReportType == 'MISSING_POLICY'}">
                             누락 정책 신고
                         </option>
 
@@ -356,11 +360,9 @@
                         <td>
 
                             <!-- 누락 정책 신고 -->
-                            <span th:if="${report.reportType == 'MISSING'
-                                or report.reportType == 'MISSING_POLICY'}">
+                            <span th:if="${report.reportType == 'MISSING_POLICY'}">
                                 수동 등록/수정
                             </span>
-
                             <!-- 기존 정책 오류 신고 -->
                             <span th:if="${report.reportType == 'INFO_ERROR'
                                 or report.reportType == 'DEADLINE_ERROR'
@@ -405,11 +407,10 @@
                                     신고 ID를 전달하여 수동 등록 화면에서
                                     신고 정보가 자동 입력되도록 한다.
                                 -->
-                                <a th:if="${report.reportType == 'MISSING'
-                                    or report.reportType == 'MISSING_POLICY'}"
+                                <a th:if="${report.reportType == 'MISSING_POLICY'}"
                                    th:href="@{/admin/policies/new(
-                                       reportId=${report.reportId}
-                                   )}">
+                                           reportId=${report.reportId}
+                                       )}">
                                     이동
                                 </a>
 

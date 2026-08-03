@@ -96,15 +96,16 @@
 
                 <div class="admin-actions">
 
-                    <button class="admin-btn"
-                            type="button">
+                    <a class="admin-btn"
+                       th:href="@{/admin/policy-errors/download(
+                            keyword=${keyword},
+                            errorType=${selectedErrorType},
+                            status=${selectedStatus},
+                            sourceId=${selectedSourceId}
+                        )}"
+                       href="/admin/policy-errors/download">
                         오류 로그 다운로드
-                    </button>
-
-                    <button class="admin-btn primary"
-                            type="button">
-                        선택 항목 재수집
-                    </button>
+                    </a>
 
                 </div>
             </div>

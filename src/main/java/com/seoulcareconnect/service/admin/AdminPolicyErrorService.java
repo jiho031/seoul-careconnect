@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -95,6 +96,34 @@ public class AdminPolicyErrorService {
                 .map(AdminPolicyErrorDTO::from);
     }
 
+    public List<AdminPolicyErrorDTO> getDownloadPolicyErrors(
+            String keyword,
+            PolicyErrorType errorType,
+            PolicyErrorStatus status,
+            Long sourceId
+    ) {
+        Specification<PolicyCollectionError> specification =
+                Specification
+                        .<PolicyCollectionError>unrestricted()
+                        .and(fetchAssociations())
+                        .and(keywordContains(keyword))
+                        .and(errorTypeEquals(errorType))
+                        .and(statusEquals(status))
+                        .and(sourceIdEquals(sourceId));
+
+        return policyCollectionErrorRepository
+                .findAll(
+                        specification,
+                        Sort.by(
+                                Sort.Direction.DESC,
+                                "createdAt"
+                        )
+                )
+                .stream()
+                .map(AdminPolicyErrorDTO::from)
+                .toList();
+    }
+
     @Transactional
     public void changeStatus(
             Long errorId,
@@ -148,9 +177,6 @@ public class AdminPolicyErrorService {
         }
     }
 
-    /**
-     * 정책 오류 모달에서 정책 직접 수정
-     */
     @Transactional
     public void quickEdit(
             Long errorId,
