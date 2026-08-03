@@ -430,7 +430,7 @@
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
     const favoriteModal = document.getElementById("favoriteModal");
     const favoriteModalIcon = document.getElementById("favoriteModalIcon");
     const favoriteModalTitle = document.getElementById("favoriteModalTitle");
@@ -511,6 +511,17 @@
             .finally(() => {
                 btn.disabled = false;
             });
+    }
+
+    const policyAlertMessage =
+        /*[[${policyAlertMessage}]]*/ null;
+
+    if (policyAlertMessage) {
+        showFavoriteModal(
+            "notice",
+            "정책을 확인할 수 없습니다",
+            policyAlertMessage
+        );
     }
 </script>
 <script th:src="@{/js/common.js}" src="/js/common.js"></script>
