@@ -18,6 +18,7 @@
     <link rel="stylesheet"
           th:href="@{/css/admin_users.css}"
           href="/css/admin_users.css">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" href="/css/responsive.css">
 </head>
 
 <body>
@@ -49,7 +50,7 @@
 
                 <a th:href="@{/admin/ai-review}"
                    href="/admin/ai-review">
-                    🤖 AI 정책 설명 검수
+                    🤖 AI 정책 요약 관리
                 </a>
 
                 <a th:href="@{/admin/reports}"
@@ -169,10 +170,11 @@
                 <div class="admin-card-head">
                     <h2>회원 검색</h2>
 
-                    <a class="admin-link"
-                       th:href="@{/admin/users}">
+                    <button class="admin-link"
+                            type="button"
+                            data-reset-form>
                         필터 초기화
-                    </a>
+                    </button>
                 </div>
 
                 <form class="user-filter"
@@ -239,29 +241,29 @@
                             연령대 전체
                         </option>
 
-                        <option value="UNDER_40"
-                                th:selected="${selectedAgeGroup == 'UNDER_40'}">
-                            30대 이하
+                        <option value="20대 이하"
+                                th:selected="${selectedAgeGroup == '20대 이하'}">
+                            20대 이하
                         </option>
 
-                        <option value="FORTIES"
-                                th:selected="${selectedAgeGroup == 'FORTIES'}">
+                        <option value="30대"
+                                th:selected="${selectedAgeGroup == '30대'}">
+                            30대
+                        </option>
+
+                        <option value="40대"
+                                th:selected="${selectedAgeGroup == '40대'}">
                             40대
                         </option>
 
-                        <option value="FIFTIES"
-                                th:selected="${selectedAgeGroup == 'FIFTIES'}">
+                        <option value="50대"
+                                th:selected="${selectedAgeGroup == '50대'}">
                             50대
                         </option>
 
-                        <option value="SIXTIES_PLUS"
-                                th:selected="${selectedAgeGroup == 'SIXTIES_PLUS'}">
+                        <option value="60대 이상"
+                                th:selected="${selectedAgeGroup == '60대 이상'}">
                             60대 이상
-                        </option>
-
-                        <option value="ALL"
-                                th:selected="${selectedAgeGroup == 'ALL'}">
-                            전 연령
                         </option>
                     </select>
 
@@ -273,7 +275,8 @@
             </section>
 
             <!-- 회원 목록 -->
-            <section class="admin-card user-list-card">
+            <section class="admin-card user-list-card"
+                     data-pagination-container="admin-users">
 
                 <div class="admin-card-head">
                     <h2>회원 목록</h2>
@@ -442,7 +445,26 @@
 
                 <!-- 페이지네이션 -->
                 <div class="admin-pagination"
-                     th:if="${userPage.totalPages > 0}">
+                     th:if="${userPage.totalPages > 0}"
+                     data-async-pagination
+                     aria-label="회원 목록 페이지 이동">
+
+                    <a th:if="${!userPage.first}"
+                       th:href="@{/admin/users(
+                           page=0,
+                           keyword=${keyword},
+                           role=${selectedRole},
+                           active=${selectedActive},
+                           ageGroup=${selectedAgeGroup}
+                       )}">
+                        맨앞
+                    </a>
+
+                    <span th:if="${userPage.first}"
+                          class="disabled"
+                          aria-disabled="true">
+                        맨앞
+                    </span>
 
                     <!-- 이전 페이지 -->
                     <a th:if="${!userPage.first}"
@@ -457,7 +479,8 @@
                     </a>
 
                     <span th:if="${userPage.first}"
-                          class="disabled">
+                          class="disabled"
+                          aria-disabled="true">
                         ‹
                     </span>
 
@@ -468,6 +491,9 @@
                        th:classappend="${pageNumber == userPage.number}
                            ? 'active'
                            : ''"
+                       th:attr="aria-current=${pageNumber == userPage.number
+                            ? 'page'
+                            : null}"
                        th:href="@{/admin/users(
                            page=${pageNumber},
                            keyword=${keyword},
@@ -491,8 +517,26 @@
                     </a>
 
                     <span th:if="${userPage.last}"
-                          class="disabled">
+                          class="disabled"
+                          aria-disabled="true">
                         ›
+                    </span>
+
+                    <a th:if="${!userPage.last}"
+                       th:href="@{/admin/users(
+                           page=${userPage.totalPages - 1},
+                           keyword=${keyword},
+                           role=${selectedRole},
+                           active=${selectedActive},
+                           ageGroup=${selectedAgeGroup}
+                       )}">
+                        맨뒤
+                    </a>
+
+                    <span th:if="${userPage.last}"
+                          class="disabled"
+                          aria-disabled="true">
+                        맨뒤
                     </span>
                 </div>
             </section>
@@ -573,7 +617,7 @@
                             </span>
 
                             <p>
-                                정책 오류, AI 정책 설명 검수,
+                                정책 오류, AI 정책 요약 관리,
                                 사용자 신고 항목을 처리합니다.
                             </p>
                         </article>

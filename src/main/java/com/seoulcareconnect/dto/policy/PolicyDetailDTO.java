@@ -47,4 +47,7 @@ public class PolicyDetailDTO {
 
     @Builder.Default
     private List<String> contentLines = new ArrayList<>();
+
+    @Builder.Default
+    private List<PolicyDocumentItemDTO> documents = new ArrayList<>();
 }

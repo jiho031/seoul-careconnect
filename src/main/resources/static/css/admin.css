@@ -208,9 +208,9 @@
 
 .admin-link {
     color: #248c8f;
-    text-decoration: none;
     font-size: 12px;
     font-weight: 900;
+    text-decoration: none;
 }
 
 
@@ -608,6 +608,7 @@
 .admin-pagination {
     width: 100%;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 6px;
@@ -673,9 +674,53 @@
     min-height: 34px;
 }
 
+.admin-select {
+    min-width: 0;
+    height: 40px;
+    padding: 0 34px 0 12px;
+    border: 1px solid #d8e4ef;
+    border-radius: 10px;
+    box-sizing: border-box;
+    color: #102044;
+    background-color: #fff;
+    line-height: 1.2;
+}
+
 .admin-textarea {
     resize: vertical;
     min-height: 60px;
+}
+
+.admin-date-fields {
+    display: grid;
+    grid-template-columns: minmax(88px, 1.4fr) auto minmax(54px, 0.8fr) auto minmax(54px, 0.8fr);
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-date-fields > span {
+    color: #66758f;
+    text-align: center;
+}
+
+.admin-date-part {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #d8e4ef;
+    border-radius: 10px;
+    box-sizing: border-box;
+    color: #102044;
+    background: #fff;
+    font: inherit;
+    text-align: center;
+}
+
+.admin-date-part:focus {
+    outline: none;
+    border-color: #248c8f;
+    box-shadow: 0 0 0 3px rgba(36, 140, 143, 0.12);
 }
 
 .detail-form-grid {
@@ -1428,7 +1473,7 @@ button.admin-link {
 .policy-table td {
     white-space: normal;
     word-break: keep-all;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 /* 정책명 */
@@ -1620,4 +1665,152 @@ button.admin-link {
 
 .recent-review-list::-webkit-scrollbar-thumb:hover {
     background: #91aab8;
+}
+
+.admin-content .admin-card,
+.admin-content .admin-stat-card {
+    border-color: #dce8f1;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #fcfeff 100%);
+    box-shadow: 0 10px 28px rgba(13, 45, 82, .065);
+}
+
+.admin-content .admin-stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-content .admin-stat-card::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, #3ea5d8, #26aaa4);
+    content: "";
+}
+
+.admin-content :is(.policy-filter, .user-filter, .error-filter, .report-filter) {
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #e0ebf2;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f6fbfd, #f9fcff);
+}
+
+.admin-content .admin-input,
+.admin-content .admin-select,
+.admin-content .admin-date-part,
+.notice-modal .admin-input,
+.notice-modal .admin-select,
+.collection-log-modal .admin-input,
+.collection-log-modal .admin-select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #cfdee9;
+    border-radius: 12px;
+    outline: none;
+    box-sizing: border-box;
+    background-color: #fff;
+    color: #102044;
+    font: inherit;
+    font-size: 13px;
+    box-shadow: 0 3px 10px rgba(11, 33, 70, .035);
+    transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.admin-content .admin-select,
+.notice-modal .admin-select,
+.collection-log-modal .admin-select {
+    height: 44px;
+    padding-right: 42px;
+    overflow: hidden;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23167b7e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-content :is(.policy-filter, .user-filter, .error-filter, .report-filter) > .admin-input {
+    padding-left: 42px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2366758f' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    background-size: 18px;
+}
+
+.admin-content .admin-input:hover,
+.admin-content .admin-select:hover,
+.admin-content .admin-date-part:hover,
+.notice-modal .admin-input:hover,
+.notice-modal .admin-select:hover,
+.collection-log-modal .admin-input:hover,
+.collection-log-modal .admin-select:hover {
+    border-color: #a9c7d7;
+    background-color: #fdffff;
+}
+
+.admin-content .admin-input:focus,
+.admin-content .admin-select:focus,
+.admin-content .admin-date-part:focus,
+.notice-modal .admin-input:focus,
+.notice-modal .admin-select:focus,
+.collection-log-modal .admin-input:focus,
+.collection-log-modal .admin-select:focus {
+    border-color: #248c8f;
+    box-shadow: 0 0 0 4px rgba(36, 140, 143, .13);
+}
+
+.admin-content .admin-btn,
+.notice-modal .admin-btn,
+.collection-log-modal .admin-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 11px rgba(11, 33, 70, .045);
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.admin-content .admin-btn:hover,
+.notice-modal .admin-btn:hover,
+.collection-log-modal .admin-btn:hover {
+    border-color: #aacbd8;
+    box-shadow: 0 7px 16px rgba(11, 33, 70, .09);
+    transform: translateY(-1px);
+}
+
+.admin-content .admin-btn.primary {
+    border-color: #137e85;
+    background: linear-gradient(135deg, #229a99, #117983);
+}
+
+.admin-content .admin-btn:disabled,
+.notice-modal .admin-btn:disabled,
+.collection-log-modal .admin-btn:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+    box-shadow: none;
+    transform: none;
+}
+
+.admin-content :is(
+    .admin-queue-item,
+    .notice-item,
+    .activity-item,
+    .api-source-item,
+    .collection-rule-item,
+    .collection-issue-item,
+    .schedule-item,
+    .recent-review-item
+) {
+    border-color: #e0eaf1;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fbfeff, #f7fbfd);
+    box-shadow: 0 4px 13px rgba(11, 33, 70, .035);
 }

@@ -18,6 +18,7 @@
     <link rel="stylesheet"
           th:href="@{/css/admin_policy_errors.css}"
           href="/css/admin_policy_errors.css">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" href="/css/responsive.css">
 </head>
 
 <body>
@@ -53,7 +54,7 @@
 
                 <a th:href="@{/admin/ai-review}"
                    href="/admin/ai-review">
-                    🤖 AI 정책 설명 검수
+                    🤖 AI 정책 요약 관리
                 </a>
 
                 <a th:href="@{/admin/reports}"
@@ -250,16 +251,18 @@
                         검색
                     </button>
 
-                    <a class="admin-btn"
-                       th:href="@{/admin/policy-errors}">
+                    <button class="admin-btn"
+                            type="button"
+                            data-reset-form>
                         초기화
-                    </a>
+                    </button>
 
                 </form>
             </section>
 
             <!-- 오류 정책 목록 -->
-            <section class="admin-card error-list-card">
+            <section class="admin-card error-list-card"
+                     data-pagination-container="admin-policy-errors">
 
                 <div class="admin-card-head">
 
@@ -407,7 +410,26 @@
 
                 <!-- 페이지네이션 -->
                 <div class="admin-pagination"
-                     th:if="${errorPage.totalPages > 0}">
+                     th:if="${errorPage.totalPages > 0}"
+                     data-async-pagination
+                     aria-label="정책 오류 페이지 이동">
+
+                    <a th:if="${!errorPage.first}"
+                       th:href="@{/admin/policy-errors(
+                           page=0,
+                           keyword=${keyword},
+                           errorType=${selectedErrorType},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId}
+                       )}">
+                        맨앞
+                    </a>
+
+                    <span th:if="${errorPage.first}"
+                          class="disabled"
+                          aria-disabled="true">
+                        맨앞
+                    </span>
 
                     <!-- 이전 페이지 이동 가능 -->
                     <a th:if="${!errorPage.first}"
@@ -423,7 +445,8 @@
 
                     <!-- 이전 페이지 이동 불가 -->
                     <span th:if="${errorPage.first}"
-                          class="disabled">
+                          class="disabled"
+                          aria-disabled="true">
                         ‹
                     </span>
 
@@ -434,6 +457,9 @@
                        th:classappend="${pageNumber == errorPage.number
                             ? 'active'
                             : ''}"
+                       th:attr="aria-current=${pageNumber == errorPage.number
+                            ? 'page'
+                            : null}"
                        th:href="@{/admin/policy-errors(
                            page=${pageNumber},
                            keyword=${keyword},
@@ -458,8 +484,26 @@
 
                     <!-- 다음 페이지 이동 불가 -->
                     <span th:if="${errorPage.last}"
-                          class="disabled">
+                          class="disabled"
+                          aria-disabled="true">
                         ›
+                    </span>
+
+                    <a th:if="${!errorPage.last}"
+                       th:href="@{/admin/policy-errors(
+                           page=${errorPage.totalPages - 1},
+                           keyword=${keyword},
+                           errorType=${selectedErrorType},
+                           status=${selectedStatus},
+                           sourceId=${selectedSourceId}
+                       )}">
+                        맨뒤
+                    </a>
+
+                    <span th:if="${errorPage.last}"
+                          class="disabled"
+                          aria-disabled="true">
+                        맨뒤
                     </span>
 
                 </div>

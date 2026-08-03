@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AiModelGatewayTest {
 
@@ -73,6 +74,7 @@ class AiModelGatewayTest {
     void sendsJsonEmbeddingRequestToOllama() {
         AiProperties properties = new AiProperties();
         properties.setEnabled(true);
+        properties.setBaseUrl("");
         properties.setOllamaBaseUrl("http://localhost:" + server.getAddress().getPort());
 
         AiModelGateway gateway = new AiModelGateway(new ObjectMapper(), properties);
@@ -83,6 +85,35 @@ class AiModelGatewayTest {
         assertThat(ollamaEmbedRequestBody.get())
                 .contains("\"model\":\"embeddinggemma\"")
                 .contains("\"input\":[\"서울시 중장년 일자리 정책\"]");
+    }
+
+    @Test
+    void openAiOnlyGenerationDoesNotFallBackToOllama() {
+        AiProperties properties = new AiProperties();
+        properties.setEnabled(true);
+        properties.setApiKey("test-key");
+        properties.setBaseUrl("http://localhost:" + server.getAddress().getPort() + "/v1");
+        properties.setOllamaBaseUrl("http://localhost:" + server.getAddress().getPort());
+
+        AiModelGateway gateway = new AiModelGateway(new ObjectMapper(), properties);
+
+        assertThatThrownBy(() -> gateway.generateJsonOpenAiOnly(
+                "policy_summary",
+                "정책 원문만 사용하세요.",
+                List.of(new AiModelGateway.Message("user", "정책 원문")),
+                Map.of(
+                        "type", "object",
+                        "properties", Map.of("answer", Map.of("type", "string")),
+                        "required", List.of("answer")
+                ),
+                100,
+                List.of("answer")
+        ))
+                .isInstanceOf(AiModelGateway.UnavailableException.class)
+                .hasMessageContaining("OpenAI 정책 요약");
+
+        assertThat(openAiCalls.get()).isEqualTo(1);
+        assertThat(ollamaCalls.get()).isZero();
     }
 
     private void openAiFailure(HttpExchange exchange) throws IOException {
