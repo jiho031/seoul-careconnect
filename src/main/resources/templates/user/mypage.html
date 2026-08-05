@@ -143,6 +143,48 @@
             font-weight: 600;
         }
 
+        .report-detail {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5eef5;
+        }
+
+        .report-detail summary {
+            width: fit-content;
+            color: #087e7a;
+            font-size: 13px;
+            font-weight: 850;
+            cursor: pointer;
+        }
+
+        .report-detail-list {
+            display: grid;
+            gap: 10px;
+            margin: 14px 0 0;
+        }
+
+        .report-detail-list div {
+            display: grid;
+            gap: 4px;
+        }
+
+        .report-detail-list dt {
+            color: #7a8ba3;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .report-detail-list dd {
+            margin: 0;
+            color: #253b62;
+            font-size: 13px;
+            font-weight: 650;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+        }
+
         .report-card-photos {
             display: flex;
             flex-wrap: wrap;
@@ -159,6 +201,7 @@
             cursor: pointer;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" href="/css/responsive.css">
 </head>
 
 <body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
@@ -262,13 +305,8 @@
                 </a>
 
                 <a href="#reports">
-                    신고 내역
+                    오류·누락 신고 내역
                 </a>
-
-                <a href="#accessibility-setting">
-                    화면 설정
-                </a>
-
                 <a href="#account-security">
                     계정 보안
                 </a>
@@ -530,12 +568,12 @@
                         </div>
                     </section>
 
-                    <!-- 화면 표시 방식 -->
+                    <!-- 화면 모드 -->
                     <fieldset class="ui-mode-section"
                               id="accessibility-setting">
 
                         <legend>
-                            화면 표시 방식 <em>*</em>
+                            화면 모드 <em>*</em>
                         </legend>
 
                         <p>
@@ -1339,6 +1377,16 @@
         let html = "";
 
 
+        html += `
+        <button
+            type="button"
+            ${currentFavoritePage === 1 ? "disabled" : ""}
+            onclick="changeFavoritePage(1)">
+            맨앞
+        </button>
+    `;
+
+
         // 이전
         html += `
         <button
@@ -1378,6 +1426,16 @@
             ${currentFavoritePage === totalPages ? "disabled" : ""}
             onclick="changeFavoritePage(${currentFavoritePage + 1})">
             다음
+        </button>
+    `;
+
+
+        html += `
+        <button
+            type="button"
+            ${currentFavoritePage === totalPages ? "disabled" : ""}
+            onclick="changeFavoritePage(${totalPages})">
+            맨뒤
         </button>
     `;
 
@@ -1813,27 +1871,29 @@
     <div class="policy-card-body">
 
         <span class="policy-card-category">
-            ${item.reportTypeLabel}
+            ${escapeReportText(item.reportTypeLabel)}
         </span>
 
         <h4 class="policy-card-title">
-            ${item.title}
+            ${escapeReportText(item.title)}
         </h4>
 
         <p class="report-card-meta" ${item.policyTitle ? "" : "style=\"display:none;\""}>
-            관련 정책: ${item.policyTitle ? item.policyTitle : ""}
+            관련 정책: ${escapeReportText(item.policyTitle)}
         </p>
 
         <p class="report-card-meta">
             접수일 ${formatReportDate(item.createdAt)}
         </p>
 
+        ${renderReportDetails(item)}
+
         ${renderReportPhotos(item.photoUrls)}
 
     </div>
 
     <span class="policy-card-status ${reportStatusCssClass(item.status)}">
-        ${item.statusLabel}
+        ${escapeReportText(item.statusLabel)}
     </span>
 
 </div>
@@ -1854,6 +1914,59 @@
         return "received";
     }
 
+    function renderReportDetails(item) {
+        const sourceUrl = item.sourceUrl
+            ? `
+                <div>
+                    <dt>참고 주소</dt>
+                    <dd>${escapeReportText(item.sourceUrl)}</dd>
+                </div>
+            `
+            : "";
+
+        const adminMemo = item.adminMemo
+            ? `
+                <div>
+                    <dt>처리 내용</dt>
+                    <dd>${escapeReportText(item.adminMemo)}</dd>
+                </div>
+            `
+            : "";
+
+        const processedAt = item.processedAt
+            ? `
+                <div>
+                    <dt>처리일</dt>
+                    <dd>${formatReportDateTime(item.processedAt)}</dd>
+                </div>
+            `
+            : "";
+
+        return `
+            <details class="report-detail">
+                <summary>상세보기</summary>
+                <dl class="report-detail-list">
+                    <div>
+                        <dt>신고 내용</dt>
+                        <dd>${escapeReportText(item.content || "등록된 상세 내용이 없습니다.")}</dd>
+                    </div>
+                    ${sourceUrl}
+                    ${adminMemo}
+                    ${processedAt}
+                </dl>
+            </details>
+        `;
+    }
+
+    function escapeReportText(value) {
+        return String(value || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
     function renderReportPhotos(photoUrls) {
         if (!photoUrls || photoUrls.length === 0) return "";
 
@@ -1868,6 +1981,11 @@
         if (!createdAt) return "";
         // "2026-07-23T13:38:50" 형태의 문자열에서 날짜 부분만 사용
         return String(createdAt).slice(0, 10);
+    }
+
+    function formatReportDateTime(dateTime) {
+        if (!dateTime) return "";
+        return String(dateTime).replace("T", " ").slice(0, 16);
     }
 
 </script>

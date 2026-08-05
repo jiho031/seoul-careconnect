@@ -104,6 +104,27 @@ public class AiPolicyExplanation {
         return explanation;
     }
 
+    public static AiPolicyExplanation generated(
+            Policy policy,
+            Content content,
+            String modelName,
+            String promptVersion
+    ) {
+        AiPolicyExplanation explanation = draft(policy, content, modelName, promptVersion);
+        explanation.reviewStatus = ReviewStatus.APPROVED;
+        return explanation;
+    }
+
+    public void updateContent(Content content, String editor) {
+        easySummary = content.easySummary();
+        eligibilitySummary = content.eligibilitySummary();
+        benefitSummary = content.benefitSummary();
+        applicationSummary = content.applicationSummary();
+        cautionSummary = content.cautionSummary();
+        reviewedBy = normalize(editor);
+        reviewedAt = LocalDateTime.now();
+    }
+
     public void approve(String reviewer, String comment) {
         reviewStatus = ReviewStatus.APPROVED;
         reviewedBy = reviewer;
@@ -142,7 +163,7 @@ public class AiPolicyExplanation {
     @RequiredArgsConstructor
     public enum ReviewStatus {
         DRAFT("검수 대기"),
-        APPROVED("승인"),
+        APPROVED("생성 완료"),
         REJECTED("반려"),
         SUPERSEDED("이전 버전");
 

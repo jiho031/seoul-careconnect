@@ -39,10 +39,15 @@
             <div class="ai-assistant-messages"
                  data-ai-assistant-messages
                  aria-live="polite">
-                <article class="ai-assistant-message is-assistant">
+                <article class="ai-assistant-message is-assistant"
+                         data-ai-initial-message>
                     <span class="ai-assistant-avatar" aria-hidden="true">AI</span>
                     <div>
-                        <p>궁금한 정책이나 신청 준비 사항을 물어보세요. 공개 중인 서울 정책을 찾아 근거와 함께 쉽게 설명해 드릴게요.</p>
+                        <p th:text="${aiAssistantPolicyId != null
+                                ? '이 정책의 지원 대상, 신청 방법, 필요 서류처럼 궁금한 내용을 질문해 주세요.'
+                                : '궁금한 정책이나 신청 준비 사항을 물어보세요. 공개 중인 서울 정책을 찾아 근거와 함께 쉽게 설명해 드릴게요.'}">
+                            궁금한 정책이나 신청 준비 사항을 물어보세요.
+                        </p>
                     </div>
                 </article>
             </div>

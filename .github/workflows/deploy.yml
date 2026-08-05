@@ -1,0 +1,36 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seoul-careconnect-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64, seoul-careconnect]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Build JAR
+        run: bash ./gradlew clean bootJar --no-daemon
+
+      - name: Deploy to server
+        run: sudo /usr/local/sbin/deploy-seoul-careconnect build/libs/seoul-careconnect-0.0.1-SNAPSHOT.jar

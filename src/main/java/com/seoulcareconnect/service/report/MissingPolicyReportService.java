@@ -333,8 +333,12 @@ public class MissingPolicyReportService {
                                 ? report.getPolicy().getTitle()
                                 : null
                 )
+                .content(report.getContent())
+                .sourceUrl(report.getSourceUrl())
+                .adminMemo(report.getAdminMemo())
                 .createdAt(report.getCreatedAt())
                 .photoUrls(report.getPhotoUrlList())
+                .processedAt(report.getProcessedAt())
                 .build();
     }
 

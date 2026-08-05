@@ -9,6 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/common.css}" href="/css/common.css">
     <link rel="stylesheet" th:href="@{/css/policy-detail.css}" href="/css/policy-detail.css">
     <link rel="stylesheet" th:href="@{/css/senior-mode.css}" href="/css/senior-mode.css">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" href="/css/responsive.css">
 </head>
 <body th:classappend="${#strings.equalsIgnoreCase(currentUiMode, 'LARGE_TEXT')
         ? 'large-text-mode'
@@ -58,7 +59,14 @@
                 <div class="detail-action-box" aria-label="정책 바로가기 버튼">
                     <button type="button"
                             class="primary-action policy-save-btn"
-                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            th:classappend="${favoriteSaved} ? ' is-saved' : ''"
+                            th:attr="data-user-id=${user != null ? user.userId : ''},
+                                data-policy-id=${policy.policyId},
+                                data-favorited=${favoriteSaved},
+                                aria-pressed=${favoriteSaved}"
+                            th:text="${favoriteSaved}
+                                ? '찜 완료'
+                                : '관심 정책 저장'"
                             onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
@@ -72,9 +80,8 @@
                     </a>
                     <button type="button"
                             class="outline-action detail-ai-action"
-                            data-ai-assistant-open
-                            data-ai-assistant-prompt="이 정책의 지원 대상과 신청할 때 주의할 점을 쉽게 설명해 주세요.">
-                        이 정책에 대해 AI에게 질문
+                            data-ai-assistant-open>
+                        AI 정책 도우미 열기
                     </button>
                     <span th:unless="${policy.officialUrl != null}"
                           class="outline-action"
@@ -99,7 +106,7 @@
                         <span class="section-icon ai-icon" aria-hidden="true">요약</span>
                         <div>
                             <h2>정책 쉬운 요약</h2>
-                            <p>공식 정책 내용을 바탕으로 핵심 내용을 정리했습니다.</p>
+                            <p>공식 정책 내용을 AI가 이해하기 쉬운 말로 정리해 드립니다.</p>
                         </div>
                     </div>
 
@@ -125,24 +132,59 @@
                             </div>
                         </dl>
 
-                        <span class="ai-approved-badge">관리자 검수 완료</span>
+                        <span class="ai-approved-badge">AI 요약 저장됨</span>
                     </div>
 
-                    <div th:unless="${aiExplanation != null}" class="easy-summary-box">
-                        <p th:text="${policy.summary}">정책 요약</p>
+                    <div th:unless="${aiExplanation != null}"
+                         class="easy-summary-box ai-summary-empty"
+                         id="aiSummaryGenerator"
+                         data-ai-summary-generator
+                         th:attr="data-policy-id=${policy.policyId}">
+                        <div class="ai-summary-empty-copy">
+                            <strong>아직 생성된 쉬운 요약이 없습니다.</strong>
+                            <p>버튼을 누르면 이 정책의 공식 정보를 바탕으로 요약을 생성합니다.</p>
+                        </div>
+
+                        <button type="button"
+                                class="ai-summary-generate-button"
+                                data-ai-summary-start>
+                            AI 요약 생성
+                        </button>
+
+                        <div class="ai-summary-progress"
+                             data-ai-summary-progress
+                             aria-live="polite"
+                             hidden>
+                            <div class="ai-summary-progress-heading">
+                                <strong data-ai-summary-stage>생성 준비</strong>
+                                <span data-ai-summary-step>0/4단계</span>
+                            </div>
+                            <progress max="4"
+                                      value="0"
+                                      data-ai-summary-bar
+                                      aria-label="AI 요약 생성 진행 단계">
+                                0/4단계
+                            </progress>
+                            <p data-ai-summary-message>
+                                AI 요약 생성을 준비하고 있습니다.
+                            </p>
+                            <small>진행 막대는 실제 서버 처리 단계를 표시합니다.</small>
+                        </div>
                     </div>
 
                     <p class="ai-notice" th:if="${aiExplanation != null}">
-                        AI가 공식 정책 내용을 쉽게 정리하고 관리자가 검수한 설명입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.
+                        AI가 공식 정책 내용을 쉽게 정리한 저장 요약입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.
                     </p>
                     <p class="ai-notice" th:unless="${aiExplanation != null}">
-                        관리자 검수가 완료되기 전에는 기존 정책 요약을 제공합니다. 실제 신청 조건은 반드시 공식 안내에서 확인해 주세요.
+                        생성된 내용은 참고용입니다. 실제 신청 가능 여부와 세부 조건은 반드시 공식 안내에서 확인해 주세요.
                     </p>
                 </article>
 
                 <article class="info-card">
                     <h2>지원 대상</h2>
-                    <p th:text="${policy.target}">지원 대상은 공식 공고에서 확인해 주세요.</p>
+                    <p th:text="${aiExplanation != null
+                            ? aiExplanation.eligibilitySummary
+                            : policy.target}">지원 대상은 공식 공고에서 확인해 주세요.</p>
 
                     <div th:if="${policy.selectionCriteria != null and !#strings.isEmpty(policy.selectionCriteria)}">
                         <h3 style="margin: 24px 0 10px;">선정 기준</h3>
@@ -156,14 +198,20 @@
                 <article class="info-card">
                     <h2>지원 내용</h2>
 
-                    <ul class="dot-list" th:if="${!#lists.isEmpty(policy.benefitLines)}">
+                    <p th:if="${aiExplanation != null}"
+                       th:text="${aiExplanation.benefitSummary}">
+                        정리된 지원 내용
+                    </p>
+
+                    <ul class="dot-list"
+                        th:if="${aiExplanation == null and !#lists.isEmpty(policy.benefitLines)}">
                         <li th:each="line : ${policy.benefitLines}"
                             th:text="${line}">
                             지원 내용
                         </li>
                     </ul>
 
-                    <p th:if="${#lists.isEmpty(policy.benefitLines)}"
+                    <p th:if="${aiExplanation == null and #lists.isEmpty(policy.benefitLines)}"
                        th:text="${policy.benefit}">
                         지원 내용은 공식 공고에서 확인해 주세요.
                     </p>
@@ -172,7 +220,18 @@
                 <article class="info-card">
                     <h2>신청 방법</h2>
 
-                    <ol class="step-list" th:if="${!#lists.isEmpty(policy.applicationLines)}">
+                    <ol class="step-list" th:if="${aiExplanation != null}">
+                        <li>
+                            <span>1</span>
+                            <div>
+                                <strong>정리된 신청 안내</strong>
+                                <p th:text="${aiExplanation.applicationSummary}">정리된 신청 방법</p>
+                            </div>
+                        </li>
+                    </ol>
+
+                    <ol class="step-list"
+                        th:if="${aiExplanation == null and !#lists.isEmpty(policy.applicationLines)}">
                         <li th:each="line, iter : ${policy.applicationLines}">
                             <span th:text="${iter.index + 1}">1</span>
                             <div>
@@ -182,7 +241,8 @@
                         </li>
                     </ol>
 
-                    <ol class="step-list" th:if="${#lists.isEmpty(policy.applicationLines)}">
+                    <ol class="step-list"
+                        th:if="${aiExplanation == null and #lists.isEmpty(policy.applicationLines)}">
                         <li>
                             <span>1</span>
                             <div>
@@ -193,24 +253,70 @@
                     </ol>
                 </article>
 
-                <article class="info-card">
+                <article class="info-card" id="document-checklist">
                     <div class="section-title-row">
                         <h2>필요 서류 체크리스트</h2>
-                        <span>공식 공고 기준</span>
+                        <span>체크 상태 자동 저장</span>
                     </div>
 
-                    <div class="checklist" th:if="${!#lists.isEmpty(policy.documentLines)}">
-                        <label th:each="document : ${policy.documentLines}">
-                            <input type="checkbox" disabled>
-                            <span th:text="${document}">필요 서류</span>
-                        </label>
+                    <div class="document-checklist"
+                         th:if="${!#lists.isEmpty(policy.documents)}">
+                        <div class="document-checklist-item"
+                             th:each="document : ${policy.documents}"
+                             th:classappend="${completedDocumentKeys.contains(document.checklistKey)}
+                                ? ' is-complete'
+                                : ''">
+                            <label class="document-check-label">
+                                <input class="document-progress-checkbox"
+                                       type="checkbox"
+                                       th:checked="${completedDocumentKeys.contains(document.checklistKey)}"
+                                       th:attr="data-policy-id=${policy.policyId},
+                                           data-policy-document-id=${document.policyDocumentId}">
+                                <span class="document-check-copy">
+                                    <span class="document-check-meta">
+                                        <span class="document-requirement-badge"
+                                              th:classappend="| is-${#strings.toLowerCase(document.requirementType.name())}|"
+                                              th:text="${document.requirementLabel}">
+                                            필수
+                                        </span>
+                                        <span th:text="${document.categoryLabel}">주민·가족관계</span>
+                                    </span>
+                                    <strong th:text="${document.displayName}">필요 서류</strong>
+                                    <small th:if="${document.conditionText}"
+                                           th:text="|제출 조건: ${document.conditionText}|">
+                                        제출 조건
+                                    </small>
+                                </span>
+                            </label>
+
+                            <div class="document-check-actions">
+                                <button type="button"
+                                        class="document-guide-button"
+                                        th:attr="data-document-guide-open=|documentGuide-${document.policyDocumentId}|,
+                                            aria-controls=|documentGuide-${document.policyDocumentId}|">
+                                    발급·준비 안내
+                                </button>
+                                <a th:if="${document.downloadUrl}"
+                                   class="document-download-link"
+                                   th:href="${document.downloadUrl}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    공식 양식 받기
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="checklist" th:if="${#lists.isEmpty(policy.documentLines)}">
-                        <label>
-                            <input type="checkbox" disabled>
-                            공식 공고에서 제출 서류를 확인해 주세요.
-                        </label>
+                    <p class="document-progress-status"
+                       th:if="${!#lists.isEmpty(policy.documents)}"
+                       data-document-progress-status
+                       aria-live="polite">
+                        준비한 서류를 체크하면 로그인 계정에 저장됩니다.
+                    </p>
+
+                    <div class="document-checklist-empty"
+                         th:if="${#lists.isEmpty(policy.documents)}">
+                        공식 원문에 별도 제출 서류가 확인되지 않았습니다.
                     </div>
                 </article>
 
@@ -247,13 +353,18 @@
                         <div>
                             <dt>신청 방법</dt>
                             <dd>
-                                <ol class="side-step-list" th:if="${!#lists.isEmpty(policy.applicationLines)}">
+                                <span th:if="${aiExplanation != null}"
+                                      th:text="${aiExplanation.applicationSummary}">
+                                    정리된 신청 방법
+                                </span>
+                                <ol class="side-step-list"
+                                    th:if="${aiExplanation == null and !#lists.isEmpty(policy.applicationLines)}">
                                 <li th:each="line, iter : ${policy.applicationLines}">
                                 <span th:text="|${iter.index + 1}. |">1. </span>
                                 <span th:text="${line}">신청 방법</span>
                                 </li>
                                 </ol>
-                           <span th:if="${#lists.isEmpty(policy.applicationLines)}"
+                           <span th:if="${aiExplanation == null and #lists.isEmpty(policy.applicationLines)}"
                            th:text="${policy.applyMethod}">
                                  공식 공고 확인
                            </span>
@@ -288,7 +399,14 @@
 
                     <button type="button"
                             class="side-save-button policy-save-btn"
-                            th:attr="data-user-id=${user != null ? user.userId : ''}, data-policy-id=${policy.policyId}"
+                            th:classappend="${favoriteSaved} ? ' is-saved' : ''"
+                            th:attr="data-user-id=${user != null ? user.userId : ''},
+                                data-policy-id=${policy.policyId},
+                                data-favorited=${favoriteSaved},
+                                aria-pressed=${favoriteSaved}"
+                            th:text="${favoriteSaved}
+                                ? '찜 완료'
+                                : '관심 정책 저장'"
                             onclick="handleFavoriteClick(this)">
                         관심 정책 저장
                     </button>
@@ -305,46 +423,213 @@
         </div>
     </section>
 </main>
+
+<th:block th:each="document : ${policy.documents}">
+    <dialog class="document-guide-modal"
+            th:id="|documentGuide-${document.policyDocumentId}|"
+            th:attr="aria-labelledby=|documentGuideTitle-${document.policyDocumentId}|">
+        <div class="document-guide-shell">
+            <header class="document-guide-header">
+                <div>
+                    <span class="document-guide-eyebrow"
+                          th:text="|${document.categoryLabel} · ${document.requirementLabel}|">
+                        서류 유형 · 필수
+                    </span>
+                    <h2 th:id="|documentGuideTitle-${document.policyDocumentId}|"
+                        th:text="${document.guideTitle}">
+                        주민등록표 등본
+                    </h2>
+                </div>
+                <button type="button"
+                        class="document-guide-close"
+                        data-document-guide-close
+                        aria-label="발급 안내 닫기">×</button>
+            </header>
+
+            <div class="document-guide-body">
+                <section class="document-policy-condition">
+                    <h3>이 정책의 제출 기준</h3>
+                    <p th:text="${document.originalText}">공고일 이후 발급분</p>
+                    <span th:if="${document.conditionText}"
+                          th:text="|조건: ${document.conditionText}|">
+                        조건
+                    </span>
+                    <span th:if="${document.alternativeGroup != null}">
+                        같은 묶음의 서류 중 하나를 제출하는 항목입니다.
+                    </span>
+                </section>
+
+                <th:block th:if="${document.guideAvailable}">
+                    <section class="document-guide-section">
+                        <h3>어디서 준비하나요?</h3>
+                        <p th:if="${document.issuer}">
+                            <strong th:text="${document.issuer}">정부24</strong>
+                        </p>
+                        <p th:text="${document.guideSummary}">
+                            공식 온라인 발급처에서 본인인증 후 발급할 수 있습니다.
+                        </p>
+                    </section>
+
+                    <section class="document-guide-section"
+                             th:if="${!#lists.isEmpty(document.steps)}">
+                        <h3>발급·준비 순서</h3>
+                        <ol>
+                            <li th:each="step : ${document.steps}"
+                                th:text="${step}">
+                                공식 발급처에 접속합니다.
+                            </li>
+                        </ol>
+                    </section>
+
+                    <section class="document-guide-section"
+                             th:if="${!#lists.isEmpty(document.preparationItems)}">
+                        <h3>미리 확인할 것</h3>
+                        <ul>
+                            <li th:each="item : ${document.preparationItems}"
+                                th:text="${item}">
+                                본인인증 수단
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="document-guide-caution"
+                             th:if="${document.caution}">
+                        <strong>확인해 주세요</strong>
+                        <p th:text="${document.caution}">공고의 세부 조건을 확인해 주세요.</p>
+                    </section>
+                </th:block>
+
+                <section class="document-guide-section"
+                         th:unless="${document.guideAvailable}">
+                    <h3>서류 정보</h3>
+                    <p>
+                        정책 원문에서 확인된 제출 항목입니다. 공통 발급처가 확정되지 않은
+                        정책 전용 서류이므로 아래 공식 양식이나 공고 원문을 이용해 주세요.
+                    </p>
+                </section>
+
+                <section class="document-attachment-box"
+                         th:if="${document.attachmentName}">
+                    <span>공식 첨부파일</span>
+                    <strong th:text="${document.attachmentName}">참가신청서.hwp</strong>
+                </section>
+            </div>
+
+            <footer class="document-guide-footer">
+                <div class="document-guide-links">
+                    <a th:if="${document.downloadUrl}"
+                       class="document-guide-primary-link"
+                       th:href="${document.downloadUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        공식 양식 받기
+                    </a>
+                    <a th:if="${document.officialGuideUrl}"
+                       class="document-guide-primary-link"
+                       th:href="${document.officialGuideUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        공식 발급처 열기
+                    </a>
+                    <a th:if="${document.helpUrl}"
+                       class="document-guide-secondary-link"
+                       th:href="${document.helpUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       th:text="${document.helpName != null
+                           ? document.helpName
+                           : '공식 도움받기'}">
+                        공식 도움받기
+                    </a>
+                    <a th:if="${document.helpUrl == null
+                               and document.officialPageUrl != null}"
+                       class="document-guide-secondary-link"
+                       th:href="${document.officialPageUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        공고 문의처 확인하기
+                    </a>
+                    <a th:if="${document.helpUrl != null
+                               and document.officialPageUrl != null}"
+                       class="document-guide-secondary-link"
+                       th:href="${document.officialPageUrl}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        공고 원문 보기
+                    </a>
+                </div>
+                <span th:if="${document.verifiedOn}"
+                      th:text="|공식 정보 확인일 ${document.verifiedOn}|">
+                    공식 정보 확인일
+                </span>
+            </footer>
+        </div>
+    </dialog>
+</th:block>
+
 <script>
     function handleFavoriteClick(btn) {
         const userId = btn.dataset.userId;
         const policyId = btn.dataset.policyId;
-        addFavorite(userId, policyId, policyId);
+        toggleFavorite(userId, policyId, btn);
     }
 
-    function addFavorite(userId, policyId) {
+    function setFavoriteState(policyId, favorited) {
+        document.querySelectorAll('.policy-save-btn').forEach(btn => {
+            if (btn.dataset.policyId === String(policyId)) {
+                btn.dataset.favorited = String(favorited);
+                btn.setAttribute("aria-pressed", String(favorited));
+                btn.classList.toggle("is-saved", favorited);
+                btn.textContent = favorited
+                    ? "찜 완료"
+                    : "관심 정책 저장";
+            }
+        });
+    }
+
+    function setFavoriteBusy(policyId, busy) {
+        document.querySelectorAll('.policy-save-btn').forEach(btn => {
+            if (btn.dataset.policyId === String(policyId)) {
+                btn.disabled = busy;
+            }
+        });
+    }
+
+    function toggleFavorite(userId, policyId, btn) {
         if (!userId) {
             alert("로그인 후 이용 가능합니다.");
             return;
         }
 
+        const favorited = btn.dataset.favorited === "true";
+        setFavoriteBusy(policyId, true);
+
         fetch(`/api/users/${userId}/favorites/${policyId}`, {
-            method: 'POST'
+            method: favorited ? "DELETE" : "POST"
         })
             .then(response => {
-                if (response.ok || response.status === 409) {
-                    markSaved(policyId);
-                    if (response.status === 409) {
-                        alert("이미 관심 정책으로 등록된 정책입니다.");
-                    } else {
-                        alert("관심 정책에 추가되었습니다!");
-                    }
+                if (response.ok) {
+                    setFavoriteState(policyId, !favorited);
+                    alert(
+                        favorited
+                            ? "관심 정책에서 해제되었습니다."
+                            : "관심 정책에 추가되었습니다!"
+                    );
+                } else if (response.status === 409) {
+                    setFavoriteState(policyId, true);
+                    alert("이미 관심 정책으로 등록된 정책입니다.");
                 } else {
                     alert("오류가 발생했습니다.");
                 }
             })
-            .catch(error => console.error('Error:', error));
-    }
-
-    function markSaved(policyId) {
-        document.querySelectorAll('.policy-save-btn').forEach(btn => {
-            if (btn.dataset.policyId === String(policyId)) {
-                btn.innerText = "찜 완료";
-                btn.disabled = true;
-            }
-        });
+            .catch(error => console.error('Error:', error))
+            .finally(() => setFavoriteBusy(policyId, false));
     }
 </script>
+<script th:src="@{/js/policy-document-guide.js}"
+        src="/js/policy-document-guide.js"></script>
+<script th:src="@{/js/policy-ai-summary.js}"
+        src="/js/policy-ai-summary.js"></script>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>

@@ -7,6 +7,7 @@ import com.seoulcareconnect.entity.policy.enums.PolicyStatus;
 import com.seoulcareconnect.mapper.policy.PolicyMapper;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.service.policy.PolicyDetailService;
+import com.seoulcareconnect.service.policy.PolicyDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class PolicyDetailServiceImpl implements PolicyDetailService {
 
     private final PolicyRepository policyRepository;
     private final PolicyMapper policyMapper;
+    private final PolicyDocumentService policyDocumentService;
 
     @Value("${app.policy.sync.zone-id:Asia/Seoul}")
     private String zoneId;
@@ -42,7 +44,10 @@ public class PolicyDetailServiceImpl implements PolicyDetailService {
                 && (policy.getEndDate() == null || !policy.getEndDate().isBefore(today));
 
         if (!publicPolicy || !active) throw notFound();
-        return policyMapper.toDetailDto(policy);
+
+        PolicyDetailDTO detail = policyMapper.toDetailDto(policy);
+        detail.setDocuments(policyDocumentService.findForPolicy(policyId));
+        return detail;
     }
 
     private ResponseStatusException notFound() {

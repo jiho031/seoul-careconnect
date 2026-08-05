@@ -1,5 +1,5 @@
 /* ===============================
-   AI 정책 설명 검수 페이지 전용 CSS
+   AI 정책 요약 관리 페이지 전용 CSS
    파일명: admin_ai_review.css
 ================================ */
 
@@ -57,7 +57,7 @@
 .ai-alert.warning { background: #fff8e8; border-color: #f4dca1; color: #856211; }
 .ai-alert code { font-weight: 900; }
 
-.ai-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ai-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .ai-generate-card { margin-bottom: 16px; }
 .ai-generate-card .admin-card-head p { margin: 6px 0 0; color: #66758f; font-size: 12px; }
@@ -75,6 +75,7 @@
 
 .ai-review-card { margin-top: 0; }
 .ai-list-head { align-items: flex-start; }
+.ai-list-head p { margin: 6px 0 0; color: #66758f; font-size: 12px; }
 .ai-status-filter { display: flex; flex-wrap: wrap; gap: 7px; }
 .ai-status-filter a {
     padding: 7px 10px;
@@ -128,6 +129,29 @@
 .ai-decision-form { display: flex; align-items: center; gap: 7px; }
 .ai-decision-form .admin-input { width: 190px; min-height: 40px; }
 
+.ai-edit-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ai-edit-form label {
+    display: grid;
+    gap: 7px;
+    padding: 14px;
+    border: 1px solid #d8e4ef;
+    border-radius: 13px;
+    background: #fff;
+}
+.ai-edit-form label:first-child { grid-column: 1 / -1; background: #f1fbfa; border-color: #bfe8e4; }
+.ai-edit-form label.caution { background: #fff9ec; border-color: #f0dba7; }
+.ai-edit-form label > span { color: #167b7e; font-size: 12px; font-weight: 900; }
+.ai-edit-form label.caution > span { color: #8a6815; }
+.ai-edit-form textarea {
+    width: 100%;
+    min-height: 108px;
+    resize: vertical;
+    line-height: 1.6;
+}
+.ai-edit-form .ai-review-meta,
+.ai-edit-form .ai-review-actions { grid-column: 1 / -1; }
+.ai-delete-form { display: flex; justify-content: flex-end; margin-top: 8px; }
+
 .ai-rule-card { margin-top: 16px; }
 .ai-rule-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .ai-rule-list article { padding: 14px; border: 1px solid #edf2f7; border-radius: 13px; background: #fbfdff; }
@@ -138,6 +162,10 @@
 @media (max-width: 980px) {
     .ai-stat-grid, .ai-rule-list { grid-template-columns: 1fr; }
     .ai-explanation-grid { grid-template-columns: 1fr; }
+    .ai-edit-form { grid-template-columns: 1fr; }
+    .ai-edit-form label:first-child,
+    .ai-edit-form .ai-review-meta,
+    .ai-edit-form .ai-review-actions { grid-column: auto; }
     .ai-explanation-box.main { grid-column: auto; }
     .ai-generate-form { grid-template-columns: 1fr; }
     .ai-review-top { flex-direction: column; }
@@ -147,4 +175,425 @@
 @media (max-width: 680px) {
     .ai-decision-form { width: 100%; flex-wrap: wrap; }
     .ai-decision-form .admin-input { width: 100%; }
+}
+
+/* ===============================
+   제목형 목록 / 모달 / 10건 페이징
+================================ */
+.ai-page-summary {
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: #eef8f7;
+    color: #167b7e;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.ai-title-list {
+    display: grid;
+    gap: 8px;
+}
+
+.ai-title-list-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 15px 17px;
+    border: 1px solid #d8e4ef;
+    border-radius: 13px;
+    background: #fff;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease, transform .15s ease;
+}
+
+.ai-title-list-item:hover,
+.ai-title-list-item:focus-visible {
+    border-color: #67b9b7;
+    background: #f5fbfb;
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.ai-title-list-main {
+    min-width: 0;
+    display: grid;
+    gap: 5px;
+}
+
+.ai-title-list-main strong {
+    overflow: hidden;
+    color: #041b4d;
+    font-size: 15px;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ai-title-list-main small {
+    color: #748197;
+    font-size: 11px;
+}
+
+.ai-title-list-side {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-title-list-arrow {
+    color: #248c8f;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.ai-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 20px;
+}
+
+.ai-page-link {
+    min-width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border: 1px solid #d8e4ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #52617a;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.ai-page-link:hover {
+    border-color: #67b9b7;
+    color: #167b7e;
+}
+
+.ai-page-link.active {
+    border-color: #248c8f;
+    background: #248c8f;
+    color: #fff;
+}
+
+.ai-page-link.disabled {
+    background: #f5f7fa;
+    color: #a4adba;
+    cursor: default;
+}
+
+.ai-summary-modal {
+    width: min(1180px, calc(100vw - 40px));
+    max-height: 90vh;
+    padding: 0;
+    border: 0;
+    border-radius: 18px;
+    background: transparent;
+    box-shadow: 0 24px 70px rgba(4, 27, 77, .24);
+}
+
+.ai-summary-modal::backdrop {
+    background: rgba(4, 20, 47, .56);
+    backdrop-filter: blur(2px);
+}
+
+.ai-summary-modal-shell {
+    overflow: hidden;
+    border: 1px solid #d8e4ef;
+    border-radius: 18px;
+    background: #f8fbfd;
+}
+
+.ai-summary-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #d8e4ef;
+    background: #fff;
+}
+
+.ai-summary-modal-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: #248c8f;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.ai-summary-modal-header h2 {
+    margin: 0;
+    color: #041b4d;
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+.ai-summary-modal-header p {
+    margin: 7px 0 0;
+    color: #66758f;
+    font-size: 12px;
+}
+
+.ai-summary-modal-close {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #d8e4ef;
+    border-radius: 50%;
+    background: #fff;
+    color: #52617a;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ai-summary-modal-close:hover {
+    border-color: #67b9b7;
+    color: #167b7e;
+}
+
+.ai-summary-modal-body {
+    max-height: calc(90vh - 96px);
+    overflow-y: auto;
+    padding: 20px 22px 24px;
+}
+
+@media (max-width: 680px) {
+    .ai-title-list-item {
+        align-items: flex-start;
+        padding: 13px 14px;
+    }
+
+    .ai-title-list-main strong {
+        white-space: normal;
+    }
+
+    .ai-title-list-side .ai-review-badge {
+        display: none;
+    }
+
+    .ai-summary-modal {
+        width: calc(100vw - 18px);
+        max-height: 94vh;
+    }
+
+    .ai-summary-modal-header,
+    .ai-summary-modal-body {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .ai-summary-modal-body {
+        max-height: calc(94vh - 96px);
+    }
+}
+
+.ai-automation-card {
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.ai-automation-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.ai-section-label {
+    display: inline-flex;
+    margin-bottom: 7px;
+    color: #178489;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .04em;
+}
+
+.ai-automation-head h2 {
+    margin: 0;
+    color: #041b4d;
+    font-size: 20px;
+}
+
+.ai-automation-head p,
+.ai-manual-panel p {
+    margin: 7px 0 0;
+    color: #66758f;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.ai-toggle-form input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.ai-toggle-form label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #66758f;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.ai-switch-track {
+    position: relative;
+    width: 54px;
+    height: 30px;
+    border: 1px solid #cad8e4;
+    border-radius: 999px;
+    background: #e8eef3;
+    transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.ai-switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 7px rgba(4, 27, 77, .2);
+    transition: transform .2s ease;
+}
+
+.ai-toggle-form input:checked + label {
+    color: #167b7e;
+}
+
+.ai-toggle-form input:checked + label .ai-switch-track {
+    border-color: #178f93;
+    background: linear-gradient(135deg, #2ca5a2, #147c85);
+}
+
+.ai-toggle-form input:checked + label .ai-switch-thumb {
+    transform: translateX(24px);
+}
+
+.ai-toggle-form input:focus-visible + label .ai-switch-track {
+    box-shadow: 0 0 0 4px rgba(36, 140, 143, .18);
+}
+
+.ai-toggle-form input:disabled + label {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.ai-manual-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 18px;
+    padding: 16px 18px;
+    border: 1px solid #cce8e7;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f0fbfa, #f8fcff);
+}
+
+.ai-manual-panel strong {
+    color: #07315c;
+    font-size: 14px;
+}
+
+.ai-manual-panel form {
+    flex-shrink: 0;
+}
+
+.ai-batch-status {
+    display: grid;
+    gap: 9px;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px solid #d9e6ef;
+    border-radius: 14px;
+    background: #f8fbfd;
+}
+
+.ai-batch-status div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ai-batch-status strong {
+    color: #041b4d;
+    font-size: 13px;
+}
+
+.ai-batch-status span,
+.ai-batch-status small {
+    color: #66758f;
+    font-size: 12px;
+}
+
+.ai-batch-status progress {
+    width: 100%;
+    height: 9px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    background: #e4edf3;
+}
+
+.ai-batch-status progress::-webkit-progress-bar {
+    border-radius: 999px;
+    background: #e4edf3;
+}
+
+.ai-batch-status progress::-webkit-progress-value {
+    border-radius: 999px;
+    background: linear-gradient(90deg, #54c2bd, #18858c);
+}
+
+.ai-batch-status progress::-moz-progress-bar {
+    border-radius: 999px;
+    background: linear-gradient(90deg, #54c2bd, #18858c);
+}
+
+.ai-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 980px) {
+    .ai-stat-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .ai-automation-head,
+    .ai-manual-panel,
+    .ai-batch-status div {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ai-toggle-form,
+    .ai-manual-panel form,
+    .ai-manual-panel .admin-btn {
+        width: 100%;
+    }
 }
