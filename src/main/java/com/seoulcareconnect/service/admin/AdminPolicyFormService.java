@@ -1,6 +1,7 @@
 package com.seoulcareconnect.service.admin;
 
 import com.seoulcareconnect.dto.admin.AdminPolicyFormDTO;
+import com.seoulcareconnect.dto.ai.AiPolicyExplanationDto;
 import com.seoulcareconnect.entity.admin.enums.AdminActivityType;
 import com.seoulcareconnect.entity.policy.Policy;
 import com.seoulcareconnect.entity.policy.PolicyDetail;
@@ -13,6 +14,7 @@ import com.seoulcareconnect.entity.report.MissingPolicyReport;
 import com.seoulcareconnect.repository.policy.PolicyRepository;
 import com.seoulcareconnect.repository.policy.PolicySourceRepository;
 import com.seoulcareconnect.repository.report.MissingPolicyReportRepository;
+import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,9 @@ public class AdminPolicyFormService {
             missingPolicyReportRepository;
     private final AdminActivityLogService
             adminActivityLogService;
+
+    private final AiPolicyExplanationService
+            aiPolicyExplanationService;
 
     public AdminPolicyFormDTO createEmptyForm() {
         AdminPolicyFormDTO dto =
@@ -59,7 +64,22 @@ public class AdminPolicyFormService {
                         )
                 );
 
-        return AdminPolicyFormDTO.from(policy);
+        AdminPolicyFormDTO form =
+                AdminPolicyFormDTO.from(policy);
+
+        aiPolicyExplanationService
+                .findLatest(policyId)
+                .ifPresent(explanation -> {
+                    form.setEasySummary(
+                            explanation.easySummary()
+                    );
+
+                    form.setCheckPoint(
+                            buildCheckPoint(explanation)
+                    );
+                });
+
+        return form;
     }
 
     @Transactional
@@ -435,5 +455,52 @@ public class AdminPolicyFormService {
             default ->
                     "정책 정보를 수정하고 검수 대기로 저장했습니다.";
         };
+    }
+
+    private String buildCheckPoint(
+            AiPolicyExplanationDto explanation
+    ) {
+        StringBuilder builder =
+                new StringBuilder();
+
+        appendSection(
+                builder,
+                "신청 자격",
+                explanation.eligibilitySummary()
+        );
+
+        appendSection(
+                builder,
+                "신청 방법",
+                explanation.applicationSummary()
+        );
+
+        appendSection(
+                builder,
+                "확인사항",
+                explanation.cautionSummary()
+        );
+
+        return builder.toString().trim();
+    }
+
+    private void appendSection(
+            StringBuilder builder,
+            String title,
+            String content
+    ) {
+        if (content == null
+                || content.isBlank()) {
+            return;
+        }
+
+        if (!builder.isEmpty()) {
+            builder.append("\n\n");
+        }
+
+        builder.append("[")
+                .append(title)
+                .append("]\n")
+                .append(content.trim());
     }
 }

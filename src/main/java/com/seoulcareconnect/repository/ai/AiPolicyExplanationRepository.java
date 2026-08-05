@@ -55,4 +55,10 @@ public interface AiPolicyExplanationRepository extends JpaRepository<AiPolicyExp
             @Param("policyIds")
             Collection<Long> policyIds
     );
+
+    Optional<AiPolicyExplanation>
+    findFirstByPolicyPolicyIdAndReviewStatusNotOrderByCreatedAtDesc(
+            Long policyId,
+            AiPolicyExplanation.ReviewStatus reviewStatus
+    );
 }

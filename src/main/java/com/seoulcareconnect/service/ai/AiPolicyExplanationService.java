@@ -286,4 +286,15 @@ public class AiPolicyExplanationService {
 
     private record GeneratedContent(AiPolicyExplanation.Content content, String modelName) {
     }
+
+    public Optional<AiPolicyExplanationDto> findLatest(
+            Long policyId
+    ) {
+        return explanationRepository
+                .findFirstByPolicyPolicyIdAndReviewStatusNotOrderByCreatedAtDesc(
+                        policyId,
+                        ReviewStatus.SUPERSEDED
+                )
+                .map(this::toDto);
+    }
 }

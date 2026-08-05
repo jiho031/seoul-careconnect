@@ -4,6 +4,8 @@ import com.seoulcareconnect.dto.admin.AdminPolicyFormDTO;
 import com.seoulcareconnect.entity.policy.enums.ApplyStatus;
 import com.seoulcareconnect.entity.policy.enums.PolicyCategory;
 import com.seoulcareconnect.service.admin.AdminPolicyFormService;
+import com.seoulcareconnect.service.ai.AiModelGateway;
+import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,12 +16,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.seoulcareconnect.dto.ai.AiPolicyExplanationDto;
+import com.seoulcareconnect.service.ai.AiPolicyExplanationService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 public class AdminPolicyFormController {
 
     private final AdminPolicyFormService
             adminPolicyFormService;
+
+    private final AiPolicyExplanationService
+            aiPolicyExplanationService;
 
     @GetMapping("/admin/policies/new")
     public String createForm(
@@ -145,5 +158,124 @@ public class AdminPolicyFormController {
             default ->
                     "정책이 검수 대기 상태로 저장되었습니다.";
         };
+    }
+
+    /**
+     * 정책 수정 화면 AI 쉬운 설명 생성
+     */
+    @PostMapping("/admin/policies/{policyId}/ai-summary")
+    @ResponseBody
+    public ResponseEntity<?> generateAiSummary(
+            @PathVariable Long policyId
+    ) {
+        try {
+            AiPolicyExplanationDto explanation =
+                    aiPolicyExplanationService.generate(
+                            policyId
+                    );
+
+            String checkPoint =
+                    buildCheckPoint(explanation);
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "easySummary",
+                            safeValue(
+                                    explanation.easySummary()
+                            ),
+                            "checkPoint",
+                            checkPoint
+                    )
+            );
+
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            Map.of(
+                                    "message",
+                                    exception.getMessage()
+                            )
+                    );
+
+        } catch (AiModelGateway.UnavailableException exception) {
+            return ResponseEntity
+                    .status(
+                            HttpStatus.SERVICE_UNAVAILABLE
+                    )
+                    .body(
+                            Map.of(
+                                    "message",
+                                    exception.getMessage()
+                            )
+                    );
+
+        } catch (RuntimeException exception) {
+            return ResponseEntity
+                    .status(
+                            HttpStatus.INTERNAL_SERVER_ERROR
+                    )
+                    .body(
+                            Map.of(
+                                    "message",
+                                    "AI 요약 생성 중 오류가 발생했습니다."
+                            )
+                    );
+        }
+    }
+
+    private String buildCheckPoint(
+            AiPolicyExplanationDto explanation
+    ) {
+        StringBuilder builder =
+                new StringBuilder();
+
+        appendSection(
+                builder,
+                "신청 자격",
+                explanation.eligibilitySummary()
+        );
+
+        appendSection(
+                builder,
+                "신청 방법",
+                explanation.applicationSummary()
+        );
+
+        appendSection(
+                builder,
+                "확인사항",
+                explanation.cautionSummary()
+        );
+
+        return builder.toString().trim();
+    }
+
+    private void appendSection(
+            StringBuilder builder,
+            String title,
+            String content
+    ) {
+        if (content == null
+                || content.isBlank()) {
+            return;
+        }
+
+        if (!builder.isEmpty()) {
+            builder.append("\n\n");
+        }
+
+        builder.append("[")
+                .append(title)
+                .append("]\n")
+                .append(content.trim());
+    }
+
+    private String safeValue(
+            String value
+    ) {
+        return value == null
+                ? ""
+                : value;
     }
 }
