@@ -170,9 +170,7 @@ public class AdminPolicyFormController {
     ) {
         try {
             AiPolicyExplanationDto explanation =
-                    aiPolicyExplanationService.generate(
-                            policyId
-                    );
+                    aiPolicyExplanationService.generateIfMissing(policyId);
 
             String checkPoint =
                     buildCheckPoint(explanation);
